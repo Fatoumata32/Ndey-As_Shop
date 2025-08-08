@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDEY'AS SHOP - Détails du Produit</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --white: #ffffff;
+            --primary: #d81b60;
+            --black: #000000;
+            --light-gray: #f8f9fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--white);
+            color: var(--black);
+            line-height: 1.6;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px rgba(216, 27, 96, 0.2);
+            z-index: 1000;
+            background: var(--primary);
+        }
+
+        .navbar-brand {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--white);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--white);
+            font-weight: 600;
+            margin: 0 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--black);
+            transform: translateY(-2px);
+        }
+
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            background: var(--black);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .navbar-nav .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .cart-badge {
+            background: var(--black);
+            color: var(--white);
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .item-container {
+            padding: 3rem 0;
+        }
+
+        .item-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .media-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .media-preview-item {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .media-preview-item img,
+        .media-preview-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-preview-item.active {
+            border: 2px solid var(--primary);
+        }
+
+        .item-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .item-price {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .item-price .original-price {
+            text-decoration: line-through;
+            color: #666;
+            margin-left: 0.5rem;
+        }
+
+        .item-description {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .size-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .size-button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 5px;
+            background: var(--white);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .size-button.selected {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        .size-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .add-to-cart {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--black), #333);
+            color: var(--white);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-to-cart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(216, 27, 96, 0.4);
+            background: linear-gradient(135deg, var(--primary), #ff4081);
+        }
+
+        .add-to-cart:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .back-btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #19f6d2, #2196f3);
+            color: var(--white);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(25, 118, 210, 0.4);
+        }
+
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--black);
+            color: var(--white);
+            padding: 1.2rem 2rem;
+            border-radius: 15px;
+            z-index: 1001;
+            animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .item-title { font-size: 2rem; }
+            .item-price { font-size: 1.2rem; }
+            .item-image { max-height: 300px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg header">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag me-2"></i>NDEY'AS SHOP
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shop.html">Boutique</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="cart.html">Panier
+                            <span class="cart-badge" id="cartCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link hidden" id="adminLink" href="admin.html">Admin</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Item Details -->
+    <div class="container item-container">
+        <a href="shop.html" class="back-btn">
+            <i class="fas fa-arrow-left me-2"></i>Retour
+        </a>
+        <div class="row">
+            <div class="col-md-6">
+                <img id="item-image" class="item-image" src="" alt="Product Image">
+                <div id="media-preview" class="media-preview"></div>
+            </div>
+            <div class="col-md-6">
+                <h1 id="item-title" class="item-title"></h1>
+                <p id="item-price" class="item-price"></p>
+                <p id="item-description" class="item-description"></p>
+                <p><strong>Catégorie:</strong> <span id="item-category"></span></p>
+                <div class="size-buttons" id="size-buttons"></div>
+                <button id="add-to-cart-btn" class="add-to-cart">
+                    <i class="fas fa-cart-plus me-2"></i>Ajouter au panier
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-4">
+        <div class="container text-center text-md-start">
+            <div class="row text-center text-md-start">
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">NDEY'AS SHOP</h5>
+                    <p>Mode et accessoires sénégalais authentiques pour toutes les occasions. Fabriqués avec passion et tradition.</p>
+                </div>
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Liens</h5>
+                    <p><a href="#shop" class="text-white text-decoration-none">Boutique</a></p>
+                    <p><a href="#contact" class="text-white text-decoration-none">Contact</a></p>
+                </div>
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Contact</h5>
+                    <p><i class="fas fa-home me-3"></i> Zac Mbao, Dakar, Senegal</p>
+                    <p><i class="fas fa-envelope me-3"></i> contact@ndeyas.com</p>
+                    <p><i class="fas fa-phone me-3"></i> +221 77 545 74 82</p>
+                </div>
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Suivez-Nous</h5>
+                    <a href="#" class="text-white me-4"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white me-4"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white me-4"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white me-4"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row align-items-center">
+                <div class="col-md-7 col-lg-8">
+                    <p>© 2025 NDEY'AS SHOP. Tous droits réservés.</p>
+                </div>
+                <div class="col-md-5 col-lg-4">
+                    <p class="text-end">Made with ❤️ in Senegal by Fatoumata</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let products = JSON.parse(localStorage.getItem('products')) || [];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let selectedSize = null;
+
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            const cartCountElement = document.getElementById('cartCount');
+            if (cartCountElement) {
+                cartCountElement.textContent = totalItems;
+                cartCountElement.style.animation = totalItems > 0 ? 'pulse 2s infinite' : 'none';
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const existingNotifications = document.querySelectorAll(".notification");
+            existingNotifications.forEach(notif => notif.remove());
+            const notification = document.createElement("div");
+            notification.className = "notification";
+            const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+            notification.innerHTML = `<i class="${icon} me-2"></i>${message}`;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = "slideIn 0.4s reverse";
+                setTimeout(() => {
+                    if (notification.parentNode) document.body.removeChild(notification);
+                }, 400);
+            }, 2500);
+        }
+
+        function loadItemDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = parseInt(urlParams.get('id'));
+            const product = products.find(p => p.id === productId);
+
+            if (!product) {
+                document.querySelector('.item-container').innerHTML = '<p class="text-center text-muted">Produit non trouvé.</p>';
+                return;
+            }
+
+            // Set main image
+            const itemImage = document.getElementById('item-image');
+            itemImage.src = product.media && product.media.length > 0 ? product.media[0] : 'img/placeholder.jpg';
+            itemImage.alt = product.name;
+
+            // Set media preview
+            const mediaPreview = document.getElementById('media-preview');
+            mediaPreview.innerHTML = '';
+            if (product.media && product.media.length > 0) {
+                product.media.forEach((src, index) => {
+                    const mediaDiv = document.createElement('div');
+                    mediaDiv.className = `media-preview-item ${index === 0 ? 'active' : ''}`;
+                    const isImage = src.includes('image/');
+                    mediaDiv.innerHTML = isImage
+                        ? `<img src="${src}" alt="Product media ${index + 1}">`
+                        : `<video src="${src}" controls></video>`;
+                    mediaDiv.onclick = () => {
+                        itemImage.src = src;
+                        mediaPreview.querySelectorAll('.media-preview-item').forEach(item => item.classList.remove('active'));
+                        mediaDiv.classList.add('active');
+                    };
+                    mediaPreview.appendChild(mediaDiv);
+                });
+            }
+
+            // Set product details
+            document.getElementById('item-title').innerHTML = `<i class="${product.icon || 'fas fa-box'} me-2"></i>${product.name}`;
+            const priceDisplay = product.onSale && product.salePrice
+                ? `${product.salePrice.toLocaleString()} F CFA <span class="original-price">${product.price.toLocaleString()} F CFA</span>`
+                : `${product.price.toLocaleString()} F CFA`;
+            document.getElementById('item-price').innerHTML = priceDisplay;
+            document.getElementById('item-description').textContent = product.description;
+            document.getElementById('item-category').textContent = product.category;
+
+            // Set sizes
+            const sizeButtons = document.getElementById('size-buttons');
+            if (product.sizes && product.sizes.length > 0) {
+                sizeButtons.innerHTML = product.sizes.map(size => `
+                    <button class="size-button" onclick="selectSize('${size}')">${size}</button>
+                `).join('');
+            } else {
+                sizeButtons.innerHTML = '<p class="text-muted">Taille unique</p>';
+            }
+
+            // Disable add to cart if sold out
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            if (product.soldOut) {
+                addToCartBtn.disabled = true;
+                addToCartBtn.innerHTML = '<i class="fas fa-ban me-2"></i>Rupture de stock';
+            } else {
+                addToCartBtn.onclick = () => addToCart(productId);
+            }
+        }
+
+        function selectSize(size) {
+            selectedSize = size;
+            const buttons = document.querySelectorAll('.size-button');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            document.querySelector(`.size-button[onclick="selectSize('${size}')"]`).classList.add('selected');
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product.soldOut) {
+                showNotification('Ce produit est en rupture de stock!', 'error');
+                return;
+            }
+            if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+                showNotification('Veuillez sélectionner une taille!', 'error');
+                return;
+            }
+            const existingItem = cart.find(item => item.id === productId && item.selectedSize === selectedSize);
+            if (existingItem) {
+                existingItem.quantity = (existingItem.quantity || 1) + 1;
+            } else {
+                cart.push({ ...product, quantity: 1, selectedSize });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            showNotification(`${product.name} ajouté au panier!`);
+            const button = document.getElementById('add-to-cart-btn');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<div class="loading"></div>';
+            button.disabled = true;
+            setTimeout(() => {
+                button.innerHTML = '<i class="fas fa-check me-2"></i>Ajouté!';
+                button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = '';
+                    button.disabled = false;
+                }, 1000);
+            }, 500);
+        }
+
+        let adminMode = false;
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                adminMode = !adminMode;
+                document.getElementById('adminLink').classList.toggle('hidden', !adminMode);
+                showNotification(adminMode ? '🔐 Mode admin activé' : '🔓 Mode admin désactivé');
+            }
+        });
+
+        window.onload = () => {
+            loadItemDetails();
+            updateCartCount();
+        };
+    </script>
+</body>
+</html>

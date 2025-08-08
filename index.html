@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDEY'AS SHOP - Boutique</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --white: #ffffff;
+            --primary: #d81b60;
+            --black: #000000;
+            --light-gray: #f8f9fa;
+            --danger: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--white);
+            color: var(--black);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px rgba(216, 27, 96, 0.2);
+            z-index: 1000;
+            background: var(--primary);
+        }
+
+        .navbar-brand {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--white);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--white);
+            font-weight: 600;
+            margin: 0 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--black);
+            transform: translateY(-2px);
+        }
+
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            background: var(--black);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .navbar-nav .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .cart-badge {
+            background: var(--black);
+            color: var(--white);
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 300px;
+            margin: 1rem auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 2.5rem 0.8rem 1rem;
+            border-radius: 25px;
+            border: 2px solid var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(216, 27, 96, 0.1);
+            outline: none;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+        }
+
+        .hero {
+            position: relative;
+            height: 700px;
+            overflow: hidden;
+        }
+
+        .hero-slideshow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .hero-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding-top: 120px;
+            text-align: center;
+            color: var(--white);
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero h2 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 3rem;
+            opacity: 0.95;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .btn-hero {
+            background: var(--black);
+            color: var(--white);
+            padding: 1.2rem 3rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .btn-hero:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-hero:hover::before {
+            left: 100%;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section {
+            padding: 5rem 0;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 4rem;
+            color: var(--black);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), #ff4081);
+            border-radius: 2px;
+        }
+
+        .product-carousel {
+            position: relative;
+            overflow: hidden;
+            margin: 2rem 0;
+            padding: 2rem 0;
+        }
+
+        .carousel-container {
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+
+        .product-card {
+            width: 100%;
+            max-width: 280px;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+            transition: all 0.4s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(216, 27, 96, 0.3);
+        }
+
+        .product-card.sold-out {
+            opacity: 0.7;
+            border: 2px solid var(--danger);
+        }
+
+        
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, var(--primary), #ff4081, #f06292);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.1);
+        }
+
+        .product-info {
+            padding: 0.8rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0.4rem 0;
+            color: var(--black);
+        }
+
+        .product-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 0.4rem;
+            line-height: 1.5;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .product-price {
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 0.6rem;
+        }
+
+        .product-price .original-price {
+            text-decoration: line-through;
+            color: #666;
+            margin-left: 0.5rem;
+        }
+
+        .stock-info {
+            font-size: 12px;
+            color: var(--danger);
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--light-gray);
+            padding: 0.4rem;
+            border-radius: 10px;
+            margin-bottom: 0.6rem;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: var(--white);
+            font-weight: bold;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: var(--black);
+            transform: scale(1.1);
+        }
+
+        .quantity-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .quantity-display {
+            width: 30px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--black);
+        }
+
+        .add-to-cart, .view-product {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .add-to-cart {
+            background: linear-gradient(135deg, var(--black), #333);
+            color: var(--white);
+            margin-bottom: 0.4rem;
+        }
+
+        .add-to-cart:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .view-product {
+            background: linear-gradient(135deg, #623d0c, #8d6e63);
+            color: var(--white);
+        }
+
+        .add-to-cart:hover, .view-product:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(216, 27, 96, 0.4);
+        }
+
+        .add-to-cart:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--primary), #ff4081);
+        }
+
+        .view-product:hover {
+            background: linear-gradient(135deg, #1976d2, #2196f3);
+        }
+
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            border: none;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--white);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .carousel-nav:hover {
+            background: var(--black);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .carousel-nav.prev {
+            left: -40px;
+        }
+
+        .carousel-nav.next {
+            right: -40px;
+        }
+
+        .carousel-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--black);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            z-index: 1001;
+            animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+/dp>            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .size-select {
+            font-size: 14px;
+            padding: 0.3rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .size-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .hero { height: 500px; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero h2 { font-size: 2rem; }
+            .section-title { font-size: 2rem; }
+            .product-card {
+                width: 280px;
+                min-width: 280px;
+                max-width: 280px;
+                height: 480px;
+            }
+            .product-image { height: 260px; }
+            .carousel-nav {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            .carousel-nav.prev { left: -30px; }
+            .carousel-nav.next { right: -30px; }
+            .search-container {
+                max-width: 100%;
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .product-card {
+                width: 100%;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg header">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag me-2"></i>NDEY'AS SHOP
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shop.html">Boutique</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="cart.html">Panier
+                            <span class="cart-badge" id="cartCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link hidden" id="adminLink" href="admin.html">Admin</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="home" class="page active">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-slideshow">
+                <div class="hero-slide active" style="background-image: url('img/SHOP-BG 1.jpg');"></div>
+                <div class="hero-slide" style="background-image: url('img/SHOP-BG 2.jpg');"></div>
+                <div class="hero-slide" style="background-image: url('img/SHOP-BG 3.jpg');"></div>
+                <div class="hero-slide" style="background-image: url('img/SHOP-BG 4.jpg');"></div>
+            </div>
+            <div class="container">
+                <div class="hero-content">
+                    <h1>BIENVENUE</h1>
+                    <h2>NDEY'AS SHOP</h2>
+                    <p>Découvrez notre collection organisée de vêtements et d'accessoires d'inspiration africaine</p>
+                    <a href="#fabrics" class="btn-hero">
+                        <i class="fas fa-shopping-bag me-2"></i>Achetez Maintenant !
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="Rechercher des produits..." aria-label="Rechercher des produits">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+
+        <!-- Dynamic Product Sections -->
+        <div id="product-sections"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-4">
+        <div class="container text-center text-md-start">
+            <div class="row text-center text-md-start">
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">NDEY'AS SHOP</h5>
+                    <p>Mode et accessoires sénégalais authentiques pour toutes les occasions. Fabriqués avec passion et tradition.</p>
+                </div>
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Liens</h5>
+                    <p><a href="index.html" class="text-white text-decoration-none">Boutique</a></p>
+                    <p><a href="contact.html" class="text-white text-decoration-none">Contact</a></p>
+                </div>
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Contact</h5>
+                    <p><i class="fas fa-home me-3"></i> Zac Mbao, Dakar, Senegal</p>
+                    <p><i class="fas fa-envelope me-3"></i> contact@ndeyas.com</p>
+                    <p><i class="fas fa-phone me-3"></i> +221 77 545 74 82</p>
+                </div>
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Suivez-Nous</h5>
+                    <a href="#" class="text-white me-4"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white me-4"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white me-4"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white me-4"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row align-items-center">
+                <div class="col-md-7 col-lg-8">
+                    <p>© 2025 NDEY'AS SHOP. Tous droits réservés.</p>
+                </div>
+                <div class="col-md-5 col-lg-4">
+                    <p class="text-end">Made with ❤️ in Senegal by Fatoumata</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+let products = JSON.parse(localStorage.getItem('products')) || [];
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let productQuantities = {};
+let carouselPositions = {};
+
+const categoryIcons = {
+    fabrics: 'fas fa-cut',
+    clothing: 'fas fa-tshirt',
+    kids: 'fas fa-child',
+    accessories: 'fas fa-gem',
+    default: 'fas fa-box'
+};
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function isFabricCategory(categoryId) {
+    const categories = JSON.parse(localStorage.getItem('categories')) || [];
+    const category = categories.find(cat => cat.id === categoryId);
+    return category && category.type === 'fabric';
+}
+
+function calculateFabricPrice(basePrice, meters) {
+    if (isNaN(basePrice) || isNaN(meters) || basePrice < 0 || meters <= 0) {
+        return 0;
+    }
+    return basePrice * meters;
+}
+
+function updateCartCount() {
+    const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    const cartCountElement = document.getElementById('cartCount');
+    if (cartCountElement) {
+        cartCountElement.textContent = totalItems;
+        cartCountElement.style.animation = totalItems > 0 ? 'pulse 2s infinite' : 'none';
+    }
+}
+
+function showNotification(message, type = 'success') {
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notif => notif.remove());
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+    notification.innerHTML = `<i class="${icon} me-2"></i>${message}`;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.style.animation = 'slideIn 0.4s reverse';
+        setTimeout(() => {
+            if (notification.parentNode) document.body.removeChild(notification);
+        }, 400);
+    }, 2500);
+}
+
+function displayProducts(filteredProducts = products) {
+    const sectionsContainer = document.getElementById('product-sections');
+    const categories = [...new Set(products.map(p => p.category))];
+    sectionsContainer.innerHTML = categories.map(category => {
+        const categoryId = category.toLowerCase().replace(/\s+/g, '-');
+        const categoryName = capitalize(category);
+        const iconClass = categoryIcons[category] || categoryIcons.default;
+        return `
+            <section class="section" id="${categoryId}">
+                <div class="container">
+                    <h2 class="section-title">
+                        <i class="${iconClass} me-3" style="color: var(--primary);"></i>${categoryName}
+                    </h2>
+                    <div class="product-carousel" id="${categoryId}-carousel">
+                        <div class="carousel-container" id="${categoryId}-container"></div>
+                        <button class="carousel-nav prev" onclick="slideCarousel('${categoryId}', -1)" aria-label="Produits ${categoryName} précédents">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="carousel-nav next" onclick="slideCarousel('${categoryId}', 1)" aria-label="Produits ${categoryName} suivants">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        `;
+    }).join('');
+
+    categories.forEach(category => {
+        const categoryId = category.toLowerCase().replace(/\s+/g, '-');
+        const container = document.getElementById(`${categoryId}-container`);
+        if (!container) return;
+        const categoryProducts = filteredProducts.filter(p => p.category === category);
+        container.innerHTML = categoryProducts.map(product => {
+            const isSoldOut = product.quantity === 0 || product.soldOut;
+            const imageSrc = product.media && product.media.length > 0 ? product.media[0] : 'img/placeholder.jpg';
+            const priceDisplay = product.onSale && product.salePrice
+                ? `<span>${isFabricCategory(product.category) ? calculateFabricPrice(product.salePrice, 1).toLocaleString() : product.salePrice.toLocaleString()} F CFA${isFabricCategory(product.category) ? '/meter' : ''}</span><span class="original-price">${isFabricCategory(product.category) ? calculateFabricPrice(product.price, 1).toLocaleString() : product.price.toLocaleString()} F CFA${isFabricCategory(product.category) ? '/meter' : ''}</span>`
+                : `<span>${isFabricCategory(product.category) ? calculateFabricPrice(product.price, 1).toLocaleString() : product.price.toLocaleString()} F CFA${isFabricCategory(product.category) ? '/meter' : ''}</span>`;
+            const stockDisplay = isSoldOut ? '' : `<div class="stock-info">${product.quantity} en stock</div>`;
+            const sizeSelect = product.sizes && product.sizes.length > 0
+                ? `<select class="form-control size-select" id="size-${product.id}" ${isSoldOut ? 'disabled' : ''}>
+                    <option value="">Sélectionnez la taille</option>
+                    ${product.sizes.map(size => `<option value="${size}">${size}</option>`).join('')}
+                </select>`
+                : '';
+            const iconClass = product.icon || categoryIcons[product.category] || categoryIcons.default;
+            return `
+                <div class="product-card ${isSoldOut ? 'sold-out' : ''}" role="article" aria-label="${product.name}">
+                    <div class="product-image">
+                        <img src="${imageSrc}" alt="${product.name}" loading="lazy">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name"><i class="${iconClass} me-2"></i>${product.name}</div>
+                        <div class="product-description">${product.description}</div>
+                        <div class="product-price">${priceDisplay}</div>
+                        ${stockDisplay}
+                        ${sizeSelect}
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="changeQuantity(${product.id}, -1)" aria-label="Diminuer la quantité pour ${product.name}" ${isSoldOut ? 'disabled' : ''}>
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <span class="quantity-display" id="qty-${product.id}">${productQuantities[product.id] || 1}</span>
+                            <button class="quantity-btn" onclick="changeQuantity(${product.id}, 1)" aria-label="Augmenter la quantité pour ${product.name}" ${isSoldOut ? 'disabled' : ''}>
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <button class="add-to-cart" onclick="addToCart(${product.id})" aria-label="Ajouter ${product.name} au panier" ${isSoldOut ? 'disabled' : ''}>
+                            <i class="fas fa-cart-plus me-2"></i>${isSoldOut ? 'Épuisé' : 'Ajouter au panier'}
+                        </button>
+                        <button class="view-product" onclick="viewProduct(${product.id})" aria-label="Voir ${product.name}">
+                            <i class="fas fa-eye me-2"></i>Voir le produit
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        updateCarouselButtons(categoryId);
+    });
+}
+
+function slideCarousel(category, direction) {
+    const container = document.getElementById(`${category}-container`);
+    if (!container) return;
+    const cards = container.children;
+    const cardWidth = 320 + 32;
+    const containerWidth = container.parentElement.offsetWidth;
+    const visibleCards = Math.floor(containerWidth / cardWidth);
+    const maxPosition = Math.max(0, cards.length - visibleCards);
+    carouselPositions[category] = Math.max(0, Math.min((carouselPositions[category] || 0) + direction, maxPosition));
+    container.style.transform = `translateX(${-carouselPositions[category] * cardWidth}px)`;
+    updateCarouselButtons(category);
+}
+
+function updateCarouselButtons(category) {
+    const carousel = document.getElementById(`${category}-carousel`);
+    if (!carousel) return;
+    const container = document.getElementById(`${category}-container`);
+    const cards = container.children;
+    const cardWidth = 320 + 32;
+    const containerWidth = carousel.offsetWidth;
+    const visibleCards = Math.floor(containerWidth / cardWidth);
+    const maxPosition = Math.max(0, cards.length - visibleCards);
+    const prevBtn = carousel.querySelector('.carousel-nav.prev');
+    const nextBtn = carousel.querySelector('.carousel-nav.next');
+    prevBtn.disabled = (carouselPositions[category] || 0) === 0;
+    nextBtn.disabled = (carouselPositions[category] || 0) >= maxPosition;
+}
+
+function changeQuantity(productId, change) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    productQuantities[productId] = (productQuantities[productId] || 1) + change;
+    if (productQuantities[productId] < 1) productQuantities[productId] = 1;
+    if (productQuantities[productId] > product.quantity) {
+        productQuantities[productId] = product.quantity;
+        showNotification(`❌ Stock limité à ${product.quantity} unités !`, 'error');
+    }
+    const qtyElement = document.getElementById(`qty-${productId}`);
+    if (qtyElement) {
+        qtyElement.textContent = productQuantities[productId];
+        qtyElement.style.transform = 'scale(1.2)';
+        qtyElement.style.color = 'var(--primary)';
+        setTimeout(() => {
+            qtyElement.style.transform = 'scale(1)';
+            qtyElement.style.color = 'var(--black)';
+        }, 200);
+    }
+}
+
+function addToCart(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    if (product.soldOut || product.quantity === 0) {
+        showNotification('❌ Produit épuisé !', 'error');
+        return;
+    }
+    
+    const sizeSelect = product.sizes && product.sizes.length > 0 ? document.getElementById(`size-${productId}`) : null;
+    const selectedSize = sizeSelect ? sizeSelect.value : null;
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+        showNotification('❌ Veuillez sélectionner une taille !', 'error');
+        return;
+    }
+    
+    const quantity = productQuantities[productId] || 1;
+    const existingItem = cart.find(item => item.id === productId && item.selectedSize === selectedSize);
+    const currentCartQuantity = existingItem ? existingItem.quantity : 0;
+    
+    if (currentCartQuantity + quantity > product.quantity) {
+        showNotification(`❌ Stock insuffisant ! Seulement ${product.quantity - currentCartQuantity} unités disponibles.`, 'error');
+        return;
+    }
+    
+    if (existingItem) {
+        existingItem.quantity += quantity;
+    } else {
+        cart.push({ ...product, quantity, selectedSize });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    showNotification(`${product.icon || categoryIcons[product.category] || categoryIcons.default} ${product.name} ajouté au panier !`);
+    
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<div class="loading"></div>';
+    button.disabled = true;
+    setTimeout(() => {
+        button.innerHTML = '<i class="fas fa-check me-2"></i>Ajouté !';
+        button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.style.background = '';
+            button.disabled = product.soldOut || product.quantity === 0;
+        }, 1000);
+    }, 500);
+}
+
+function viewProduct(productId) {
+    window.location.href = `item.html?id=${productId}`;
+}
+
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm) ||
+        product.description.toLowerCase().includes(searchTerm)
+    );
+    displayProducts(filteredProducts);
+});
+
+let adminMode = false;
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        adminMode = !adminMode;
+        document.getElementById('adminLink').classList.toggle('hidden', !adminMode);
+        showNotification(adminMode ? '🔐 Mode admin activé' : '🔓 Mode admin désactivé');
+    }
+});
+
+window.addEventListener('resize', function() {
+    const categories = [...new Set(products.map(p => p.category))];
+    categories.forEach(category => {
+        const categoryId = category.toLowerCase().replace(/\s+/g, '-');
+        updateCarouselButtons(categoryId);
+    });
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.matches('a[href^="#"]')) {
+        e.preventDefault();
+        const target = document.querySelector(e.target.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+});
+
+const slides = document.querySelectorAll('.hero-slide');
+let current = 0;
+
+function showSlide(index) {
+    slides.forEach((slide, i) => {
+        slide.classList.remove('active');
+        if (i === index) {
+            slide.classList.add('active');
+        }
+    });
+}
+
+function nextSlide() {
+    current = (current + 1) % slides.length;
+    showSlide(current);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    showSlide(current);
+    setInterval(nextSlide, 3000);
+    displayProducts();
+    updateCartCount();
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeInUp 0.6s ease-out forwards';
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.section').forEach(section => observer.observe(section));
+});
+    </script>
+</body>
+</html>
