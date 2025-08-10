@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDEY'AS SHOP - Panier</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --white: #ffffff;
+            --primary: #d81b60;
+            --black: #000000;
+            --light-gray: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--white);
+            color: var(--black);
+            line-height: 1.6;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px rgba(216, 27, 96, 0.2);
+            z-index: 1000;
+            background: var(--primary);
+        }
+
+        .navbar-brand {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--white);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--white);
+            font-weight: 600;
+            margin: 0 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--black);
+            transform: translateY(-2px);
+        }
+
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            background: var(--black);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .navbar-nav .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .cart-badge {
+            background: var(--black);
+            color: var(--white);
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .cart-container {
+            padding: 3rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            color: var(--black);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), #ff4081);
+            border-radius: 2px;
+        }
+
+        .cart-item {
+            background: var(--white);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 30px rgba(216, 27, 96, 0.15);
+        }
+
+        .cart-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .cart-item .item-price {
+            font-size: 1rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .cart-item .item-price .original-price {
+            text-decoration: line-through;
+            color: #666;
+            margin-left: 0.5rem;
+        }
+
+        .cart-total {
+            background: linear-gradient(135deg, var(--primary), #ff4081);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            margin: 2rem 0;
+            color: var(--white);
+            box-shadow: 0 15px 40px rgba(216, 27, 96, 0.3);
+        }
+
+        .cart-total h3 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .order-form {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--black);
+        }
+
+        .form-control {
+            border: 2px solid var(--light-gray);
+            border-radius: 15px;
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(216, 27, 96, 0.1);
+            outline: none;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--light-gray);
+            padding: 0.4rem;
+            border-radius: 10px;
+            width: fit-content;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: var(--white);
+            font-weight: bold;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: var(--black);
+            transform: scale(1.1);
+        }
+
+        .quantity-display {
+            width: 30px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--black);
+        }
+
+        .remove-btn {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--black);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            z-index: 1001;
+            animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-hero {
+            background: var(--primary);
+            color: var(--white);
+            padding: 0.8rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            border-radius: 20px;
+            border: none;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-hero:hover {
+            background: var(--black);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .section-title { font-size: 2rem; }
+            .cart-item img { width: 60px; height: 60px; }
+            .cart-total { padding: 1.5rem; }
+            .cart-total h3 { font-size: 1.5rem; }
+            .order-form { padding: 1.5rem; }
+            .cart-item { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+   <nav class="navbar navbar-expand-lg header">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'shop:index' %}">
+            <i class="fas fa-shopping-bag me-2"></i>NDEY'AS SHOP
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'shop:index' %}">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'shop' %}active{% endif %}" href="{% url 'shop:shop' %}">Boutique</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'cart' %}active{% endif %}" href="{% url 'shop:cart' %}">Panier
+                        <span class="cart-badge" id="cartCount">{{ cart_count|default:0 }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'shop:contact' %}">Contact</a>
+                </li>
+                {% if user.is_staff %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+    <!-- Cart Page -->
+    <div class="container cart-container">
+        <h1 class="section-title"><i class="fas fa-shopping-cart me-3" style="color: var(--primary);"></i>Mon panier</h1>
+        <div id="cartItems" class="row"></div>
+        <div class="cart-total">
+            <h3><i class="fas fa-calculator me-2"></i>Total: <span id="cartTotal">0 F CFA</span></h3>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="order-form">
+                    <h3 class="mb-4"><i class="fas fa-user me-2"></i>Informations sur la commande</h3>
+                    <div id="orderForm">
+                        <div class="form-group">
+                            <label for="customerName"><i class="fas fa-user me-2"></i>Prénom et Nom</label>
+                            <input type="text" class="form-control" id="customerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerPhone"><i class="fas fa-phone me-2"></i>Téléphone</label>
+                            <input type="tel" class="form-control" id="customerPhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerAddress"><i class="fas fa-map-marker-alt me-2"></i>Adresse</label>
+                            <textarea class="form-control" id="customerAddress" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentMethod"><i class="fas fa-credit-card me-2"></i>Méthode de Paiement</label>
+                            <select class="form-control" id="paymentMethod" required>
+                                <option value="">Sélectionnez le mode de paiement</option>
+                                <option value="orange-money">💳 Orange Money</option>
+                                <option value="wave">💳 Wave</option>
+                                <option value="cash">💵 Paiement à la livraison</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn-hero" onclick="submitOrder()">
+                            <i class="fas fa-check me-2"></i>Passer la commande
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-4">
+        <div class="container text-center text-md-start">
+            <div class="row text-center text-md-start">
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">NDEY'AS SHOP</h5>
+                    <p>Mode et accessoires sénégalais authentiques pour toutes les occasions. Fabriqués avec passion et tradition.</p>
+                </div>
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Liens</h5>
+                    <p><a href="#shop" class="text-white text-decoration-none">Boutique</a></p>
+                    <p><a href="#contact" class="text-white text-decoration-none">Contact</a></p>
+                </div>
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Contact</h5>
+                    <p><i class="fas fa-home me-3"></i> Zac Mbao, Dakar, Senegal</p>
+                    <p><i class="fas fa-envelope me-3"></i> contact@ndeyas.com</p>
+                    <p><i class="fas fa-phone me-3"></i> +221 77 545 74 82</p>
+                </div>
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Suivez-Nous</h5>
+                    <a href="#" class="text-white me-4"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white me-4"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white me-4"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white me-4"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row align-items-center">
+                <div class="col-md-7 col-lg-8">
+                    <p>© 2025 NDEY'AS SHOP. Tous droits réservés.</p>
+                </div>
+                <div class="col-md-5 col-lg-4">
+                    <p class="text-end">Made with ❤️ in Senegal</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            const cartCountElement = document.getElementById('cartCount');
+            if (cartCountElement) {
+                cartCountElement.textContent = totalItems;
+                cartCountElement.style.animation = totalItems > 0 ? 'pulse 2s infinite' : 'none';
+            }
+        }
+
+        function displayCart() {
+            const container = document.getElementById('cartItems');
+            const totalDisplay = document.getElementById('cartTotal');
+            if (cart.length === 0) {
+                container.innerHTML = `<div class="text-center col-12"><h3>Votre panier est vide</h3></div>`;
+                totalDisplay.textContent = "0 F CFA";
+                return;
+            }
+
+            let html = "";
+            let total = 0;
+            cart.forEach(item => {
+                const price = item.onSale && item.salePrice ? item.salePrice : item.price;
+                const itemTotal = price * item.quantity;
+                total += itemTotal;
+                const priceDisplay = item.onSale && item.salePrice
+                    ? `<span>${item.salePrice.toLocaleString()} F CFA</span><span class="original-price">${item.price.toLocaleString()} F CFA</span>`
+                    : `<span>${item.price.toLocaleString()} F CFA</span>`;
+                const imageSrc = item.media && item.media.length > 0 ? item.media[0] : 'img/placeholder.jpg';
+                const sizeDisplay = item.selectedSize ? `<p><strong>Taille:</strong> ${item.selectedSize}</p>` : '';
+                const categoryDisplay = item.category ? `<p><strong>Catégorie:</strong> ${item.category}</p>` : '';
+
+                html += `
+                    <div class="col-12 mb-3">
+                        <div class="cart-item">
+                            <div class="row align-items-center">
+                                <div class="col-md-2 text-center">
+                                    <img src="${imageSrc}" alt="${item.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px;">
+                                </div>
+                                <div class="col-md-4">
+                                    <h5><i class="${item.icon || 'fas fa-box'} me-2"></i>${item.name}</h5>
+                                    <p>${item.description}</p>
+                                    ${sizeDisplay}
+                                    ${categoryDisplay}
+                                    <div class="item-price">${priceDisplay}</div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="quantity-controls">
+                                        <button class="quantity-btn" onclick="updateCartQuantity(${item.id}, '${item.selectedSize || ''}', -1)">-</button>
+                                        <span class="quantity-display">${item.quantity}</span>
+                                        <button class="quantity-btn" onclick="updateCartQuantity(${item.id}, '${item.selectedSize || ''}', 1)">+</button>
+                                    </div>
+                                    <p><strong>Total:</strong> ${itemTotal.toLocaleString()} F CFA</p>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <button class="btn btn-outline-danger remove-btn" onclick="removeFromCart(${item.id}, '${item.selectedSize || ''}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            totalDisplay.textContent = total.toLocaleString() + " F CFA";
+        }
+
+        function updateCartQuantity(id, selectedSize, change) {
+            const product = cart.find(p => p.id === id && p.selectedSize === selectedSize);
+            if (!product) return;
+            product.quantity += change;
+            if (product.quantity <= 0) {
+                cart = cart.filter(p => p.id !== id || p.selectedSize !== selectedSize);
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            displayCart();
+        }
+
+        function removeFromCart(id, selectedSize) {
+            cart = cart.filter(p => p.id !== id || p.selectedSize !== selectedSize);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            displayCart();
+            showNotification("Produit supprimé du panier.");
+        }
+
+        function showNotification(msg, type = 'success') {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+            notif.innerHTML = `<i class="${icon} me-2"></i>${msg}`;
+            document.body.appendChild(notif);
+            setTimeout(() => {
+                notif.style.animation = 'slideIn 0.4s reverse';
+                setTimeout(() => notif.remove(), 400);
+            }, 2500);
+        }
+
+        function submitOrder() {
+            if (cart.length === 0) {
+                showNotification('❌ Votre panier est vide !', 'error');
+                return;
+            }
+
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+            const payment = document.getElementById('paymentMethod').value;
+
+            if (!name || !phone || !address || !payment) {
+                showNotification('❌ Veuillez remplir toutes les informations de commande !', 'error');
+                return;
+            }
+
+            const submitBtn = document.querySelector('#orderForm button');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="loading"></div> Traitement...';
+            submitBtn.disabled = true;
+
+            setTimeout(() => {
+                showNotification('✅ Commande passée avec succès !');
+                cart = [];
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartCount();
+                displayCart();
+                document.getElementById('orderForm').reset();
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+        }
+
+        let adminMode = false;
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                adminMode = !adminMode;
+                document.getElementById('adminLink').classList.toggle('hidden', !adminMode);
+                showNotification(adminMode ? '🔐 Mode admin activé' : '🔓 Mode admin désactivé');
+            }
+        });
+
+        window.onload = () => {
+            displayCart();
+            updateCartCount();
+        };
+    </script>
+</body>
+</html>

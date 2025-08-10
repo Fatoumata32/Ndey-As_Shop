@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDEY'AS SHOP - Admin Panel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        :root {
+    --white: #ffffff;
+    --primary: #d81b60;
+    --black: #000000;
+    --light-gray: #f8f9fa;
+    --danger: #dc3545;
+    --success: #28a745;
+    --warning: #ffc107;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--white);
+    color: var(--black);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    padding: 1rem 0;
+    box-shadow: 0 4px 20px rgba(216, 27, 96, 0.2);
+    z-index: 1000;
+    background: var(--primary);
+}
+
+.navbar-brand {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--white) !important;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.navbar-nav .nav-link {
+    color: var(--white) !important;
+    font-weight: 600;
+    margin: 0 1rem;
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--black) !important;
+    transform: translateY(-2px);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 4rem;
+    color: var(--black);
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), #ff4081);
+    border-radius: 2px;
+}
+
+.admin-container {
+    padding: 3rem 0;
+}
+
+.admin-form {
+    background: var(--white);
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    margin-bottom: 3rem;
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+    color: var(--black);
+}
+
+.form-control {
+    border: 2px solid var(--light-gray);
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(216, 27, 96, 0.1);
+    outline: none;
+}
+
+.btn-hero {
+    background: var(--black);
+    color: var(--white);
+    padding: 1.2rem 3rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    text-decoration: none;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-hero:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    color: var(--white);
+}
+
+.btn-hero.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.btn-hero.btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+}
+
+.btn-hero.btn-outline:hover {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.btn-hero.btn-danger {
+    background: var(--danger);
+}
+
+.btn-hero.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-hero.btn-edit {
+    background: var(--success);
+}
+
+.btn-hero.btn-edit:hover {
+    background: #218838;
+}
+
+.btn-hero.btn-warning {
+    background: var(--warning);
+    color: var(--black);
+}
+
+.btn-hero.btn-warning:hover {
+    background: #e0a800;
+    color: var(--black);
+}
+
+.category-manager {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.category-manager .form-control {
+    flex: 1;
+}
+
+.size-options, .sale-section, .stock-section {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-top: 1rem;
+}
+
+.size-options h6, .sale-section h6, .stock-section h6 {
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.size-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.size-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--white);
+    border: 2px solid var(--light-gray);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.size-checkbox:hover {
+    border-color: var(--primary);
+    background: rgba(216, 27, 96, 0.05);
+}
+
+.size-checkbox input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.selected-sizes-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.size-tag {
+    background: var(--primary);
+    color: var(--white);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.size-tag .remove-size {
+    background: rgba(255,255,255,0.3);
+    border: none;
+    color: var(--white);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.attributes-list {
+    background: var(--white);
+    border: 2px solid var(--light-gray);
+    border-radius: 10px;
+    padding: 1rem;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.attribute-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.attribute-checkbox input[type="checkbox"] {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.product-list {
+    background: var(--white);
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.product-item {
+    background: var(--light-gray);
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.product-item.sold-out {
+    opacity: 0.7;
+    border: 2px solid var(--danger);
+}
+
+.product-item.sold-out::before {
+    content: 'SOLD OUT';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--warning);
+    color: var(--white);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    z-index: 1;
+}
+
+.product-info h5 {
+    margin-bottom: 0.5rem;
+    color: var(--black);
+}
+
+.product-info p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.product-price {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.sale-price {
+    color: var(--danger);
+    font-weight: 700;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.notification {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    background: var(--black);
+    color: var(--white);
+    padding: 1.2rem 2rem;
+    border-radius: 15px;
+    z-index: 1001;
+    animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-left: 5px solid var(--primary);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1002;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: var(--white);
+    margin: 5% auto;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--black);
+}
+
+.media-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.media-preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--light-gray);
+}
+
+.media-preview img, .media-preview video {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+}
+
+.media-preview .remove-media {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--danger);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.media-preview .media-order {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    background: rgba(0,0,0,0.7);
+    color: var(--white);
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.media-info {
+    background: rgba(216, 27, 96, 0.1);
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #721c24;
+}
+
+.fabric-price-note {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid var(--warning);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #856404;
+}
+
+@media (max-width: 768px) {
+    .section-title { font-size: 2rem; }
+    .category-manager { flex-direction: column; align-items: stretch; }
+    .product-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
+}
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg header">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-bag me-2"></i>NDEY'AS SHOP
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="shop.html">
+                            <i class="fas fa-home me-1"></i>Retour à la boutique
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Panel -->
+    <div class="container admin-container">
+        <h1 class="section-title">
+            <i class="fas fa-cogs me-3" style="color: var(--primary);"></i>Admin Panel
+        </h1>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="admin-form">
+                    <h3 class="mb-4"><i class="fas fa-plus me-2"></i>Ajouter le produit</h3>
+                    <form id="adminForm">
+                        <div class="form-group">
+                            <label for="productTitle"><i class="fas fa-tag me-2"></i>Titre du produit</label>
+                            <input type="text" class="form-control" id="productTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productDescription"><i class="fas fa-align-left me-2"></i>Description</label>
+                            <textarea class="form-control" id="productDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice"><i class="fas fa-money-bill me-2"></i>Prix (F CFA)</label>
+                            <input type="number" class="form-control" id="productPrice" required min="0">
+                            <div id="fabricPriceNote" class="fabric-price-note" style="display: none;">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> Pour les tissus, indiquez le prix au mètre.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="productQuantity"><i class="fas fa-boxes me-2"></i>Quantité en stock</label>
+                            <input type="number" class="form-control" id="productQuantity" required min="0">
+                        </div>
+                        <!-- On Sale Section -->
+                        <div class="form-group">
+                            <div class="size-checkbox">
+                                <input type="checkbox" id="onSale">
+                                <label for="onSale"><i class="fas fa-percentage me-2"></i>En Solde</label>
+                            </div>
+                            <div class="sale-section" id="saleSection" style="display: none;">
+                                <label for="salePrice">Nouveau Prix (F CFA)</label>
+                                <input type="number" class="form-control" id="salePrice" min="0">
+                            </div>
+                        </div>
+                        <!-- Stock Section -->
+                        
+                        <div class="form-group">
+                            <label for="productCategory"><i class="fas fa-list me-2"></i>Catégorie</label>
+                            <div class="category-manager">
+                                <select class="form-control" id="productCategory" required>
+                                    <option value="">Sélectionnez une catégorie</option>
+                                </select>
+                                <button type="button" class="btn-hero btn-sm btn-outline" onclick="openCategoryModal()">
+                                    <i class="fas fa-plus"></i> Ajouter une catégorie
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Dynamic Size/Attribute Options -->
+                        <div id="sizeOptions" style="display: none;">
+                            <div class="size-options">
+                                <h6><i class="fas fa-ruler me-2"></i>Sélectionnez les tailles/options disponibles</h6>
+                                <div class="size-checkboxes" id="sizeCheckboxes"></div>
+                                <div class="text-center mb-3">
+                                    <button type="button" class="btn-hero btn-sm" id="selectAllSizes">Tout sélectionner</button>
+                                    <button type="button" class="btn-hero btn-sm btn-outline" id="clearSizes">Tout effacer</button>
+                                </div>
+                                <div id="selectedSizesDisplay" class="selected-sizes-display"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-image me-2"></i>Médias produits (images/vidéos)</label>
+                            <input type="file" class="form-control" id="productMedia" accept="image/*,video/*" style="display: none;" multiple>
+                            <button type="button" class="btn-hero btn-outline btn-sm mt-2" onclick="triggerFileInput()">
+                                <i class="fas fa-plus me-1"></i> Ajouter un média
+                            </button>
+                            <div class="media-info" style="display: none;" id="mediaInfo">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Logique d'affichage des médias :</strong> La première image/vidéo sera affichée comme image principale du produit.
+                            </div>
+                            <div id="mediaPreview" class="media-preview mt-2"></div>
+                        </div>
+                        <button type="submit" class="btn-hero w-100">
+                            <i class="fas fa-save me-2"></i>Ajouter le produit
+                        </button>
+                    </form>
+                </div>
+                <!-- Product List -->
+                <div class="product-list">
+                    <h3 class="mb-4"><i class="fas fa-list me-2"></i>Produits actuels</h3>
+                    <div id="productsList">
+                        <!-- Products will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCategoryModal()">&times;</span>
+            <h4><i class="fas fa-plus me-2"></i>Ajouter une nouvelle catégorie</h4>
+            <div class="form-group">
+                <label for="categoryName">Nom de la catégorie</label>
+                <input type="text" class="form-control" id="categoryName" placeholder="e.g., Tote Bags">
+            </div>
+           
+            <div class="form-group">
+                <label for="categoryType">Type de catégorie</label>
+                <select class="form-control" id="categoryType">
+                    <option value="">Sélectionnez le type</option>
+                    <option value="clothing">Tailles de vêtements</option>
+                    <option value="fabric">Longueurs de tissu</option>
+                    <option value="bag">Tailles des sacs</option>
+                    <option value="jewelry">Tailles de bijoux</option>
+                    <option value="shoe">Pointures de chaussures</option>
+                    <option value="none">Aucune option de taille</option>
+                </select>
+            </div>
+            <div class="form-group" id="customAttributesDiv" style="display: none;">
+                <label for="customAttributes">Options disponibles</label>
+                <div id="attributesList" class="attributes-list"></div>
+                <div class="text-center mt-2">
+                    <button type="button" class="btn-hero btn-sm" id="selectAllAttributes">Tout sélectionner</button>
+                    <button type="button" class="btn-hero btn-sm btn-outline" id="clearAllAttributes">Tout effacer</button>
+                </div>
+            </div>
+            <button type="button" class="btn-hero w-100" onclick="saveCategory()">
+                <i class="fas fa-save me-2"></i>Enregistrer la catégorie
+            </button>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal" id="editProductModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h4><i class="fas fa-edit me-2"></i>Modifier le produit</h4>
+            <form id="editProductForm">
+                <div class="form-group">
+                    <label for="editProductTitle"><i class="fas fa-tag me-2"></i>Titre du produit</label>
+                    <input type="text" class="form-control" id="editProductTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="editProductDescription"><i class="fas fa-align-left me-2"></i>Description</label>
+                    <textarea class="form-control" id="editProductDescription" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editProductPrice"><i class="fas fa-money-bill me-2"></i>Prix (F CFA)</label>
+                    <input type="number" class="form-control" id="editProductPrice" required min="0">
+                    <div id="editFabricPriceNote" class="fabric-price-note" style="display: none;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Pour les tissus, indiquez le prix au mètre.
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editProductQuantity"><i class="fas fa-boxes me-2"></i>Quantité en stock</label>
+                    <input type="number" class="form-control" id="editProductQuantity" required min="0">
+                </div>
+                <div class="form-group">
+                    <div class="size-checkbox">
+                        <input type="checkbox" id="editOnSale">
+                        <label for="editOnSale"><i class="fas fa-percentage me-2"></i>En solde</label>
+                    </div>
+                    <div class="sale-section" id="editSaleSection" style="display: none;">
+                        <label for="editSalePrice">Nouveau Prix (F CFA)</label>
+                        <input type="number" class="form-control" id="editSalePrice" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="size-checkbox">
+                        <input type="checkbox" id="editSoldOut" disabled>
+                        <label for="editSoldOut"><i class="fas fa-times-circle me-2"></i>Sold Out</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editProductCategory"><i class="fas fa-list me-2"></i>Catégorie</label>
+                    <select class="form-control" id="editProductCategory" required>
+                        <option value="">Sélectionnez la catégorie</option>
+                    </select>
+                </div>
+                <div id="editSizeOptions" style="display: none;">
+                    <div class="size-options">
+                        <h6><i class="fas fa-ruler me-2"></i>Sélectionnez les tailles/options disponibles</h6>
+                        <div class="size-checkboxes" id="editSizeCheckboxes"></div>
+                        <div class="text-center mb-3">
+                            <button type="button" class="btn-hero btn-sm" id="editSelectAllSizes">Tout sélectionner </button>
+                            <button type="button" class="btn-hero btn-sm btn-outline" id="editClearSizes">Tout effacer</button>
+                        </div>
+                        <div id="editSelectedSizesDisplay" class="selected-sizes-display"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-image me-2"></i>Médias produits (images/vidéos)</label>
+                    <input type="file" class="form-control" id="editProductMedia" accept="image/*,video/*" style="display: none;" multiple>
+                    <button type="button" class="btn-hero btn-outline btn-sm mt-2" onclick="triggerEditFileInput()">
+                        <i class="fas fa-plus me-1"></i> Ajouter plus de médias
+                    </button>
+                    <div id="editMediaPreview" class="media-preview mt-2"></div>
+                </div>
+                <button type="submit" class="btn-hero w-100">
+                    <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+const attributeOptions = {
+    clothing: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
+    fabric: ['1 meter'],
+    bag: ['Mini', 'Small', 'Medium', 'Large', 'Extra Large'],
+    jewelry: ['XS (14-15cm)', 'S (16-17cm)', 'M (18-19cm)', 'L (20-21cm)', 'XL (22-23cm)', 'Adjustable'],
+    shoe: ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'],
+    none: []
+};
+
+let categories = JSON.parse(localStorage.getItem('categories')) || [
+    { id: 'fabrics', name: 'Fabrics', icon: '🧵', attributes: ['1 meter'], type: 'fabric' },
+    { id: 'clothing', name: 'Clothing', icon: '👗', attributes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'], type: 'clothing' },
+    { id: 'accessories', name: 'Accessories', icon: '💎', attributes: [], type: 'none' }
+];
+
+if (!localStorage.getItem('categories')) {
+    localStorage.setItem('categories', JSON.stringify(categories));
+}
+
+let selectedMediaFiles = [];
+let editingProductMediaFiles = [];
+let currentEditingProductId = null;
+
+function debounce(fn, delay) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+function calculateFabricPrice(basePrice, meters) {
+    if (isNaN(basePrice) || isNaN(meters) || basePrice < 0 || meters <= 0) {
+        return 0;
+    }
+    return basePrice * meters;
+}
+
+function isFabricCategory(categoryId) {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category && category.type === 'fabric';
+}
+
+function showNotification(message, type = 'success') {
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notif => notif.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+    notification.innerHTML = `<i class="${icon} me-2"></i>${message}`;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideIn 0.4s reverse';
+        setTimeout(() => {
+            if (notification.parentNode) document.body.removeChild(notification);
+        }, 400);
+    }, 2500);
+}
+
+function loadCategories(selectElementId = 'productCategory') {
+    const categorySelect = document.getElementById(selectElementId);
+    categorySelect.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
+    
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = `${category.icon} ${category.name}`;
+        categorySelect.appendChild(option);
+    });
+}
+
+function showSizeOptions(categoryId, containerId = 'sizeOptions', checkboxesId = 'sizeCheckboxes', displayId = 'selectedSizesDisplay') {
+    const sizeOptionsDiv = document.getElementById(containerId);
+    const sizeCheckboxes = document.getElementById(checkboxesId);
+    const category = categories.find(cat => cat.id === categoryId);
+    
+    if (category && category.attributes && category.attributes.length > 0) {
+        sizeCheckboxes.innerHTML = '';
+        category.attributes.forEach((attr, index) => {
+            const checkboxDiv = document.createElement('div');
+            checkboxDiv.className = 'size-checkbox';
+            checkboxDiv.innerHTML = `
+                <input type="checkbox" id="${containerId}_size_${index}" value="${attr}" onchange="updateSelectedSizesDisplay('${checkboxesId}', '${displayId}')">
+                <label for="${containerId}_size_${index}">${attr}</label>
+            `;
+            sizeCheckboxes.appendChild(checkboxDiv);
+        });
+        
+        updateSelectedSizesDisplay(checkboxesId, displayId);
+        sizeOptionsDiv.style.display = 'block';
+    } else {
+        sizeOptionsDiv.style.display = 'none';
+    }
+}
+
+function updateSelectedSizesDisplay(checkboxesId, displayId) {
+    const selectedSizesDisplay = document.getElementById(displayId);
+    const checkedBoxes = document.querySelectorAll(`#${checkboxesId} input[type="checkbox"]:checked`);
+    
+    selectedSizesDisplay.innerHTML = '';
+    checkedBoxes.forEach(checkbox => {
+        const sizeTag = document.createElement('div');
+        sizeTag.className = 'size-tag';
+        sizeTag.innerHTML = `
+            ${checkbox.value}
+            <button type="button" class="remove-size" onclick="removeSize('${checkbox.id}', '${checkboxesId}', '${displayId}')">×</button>
+        `;
+        selectedSizesDisplay.appendChild(sizeTag);
+    });
+}
+
+function removeSize(checkboxId, checkboxesId, displayId) {
+    const checkbox = document.getElementById(checkboxId);
+    if (checkbox) {
+        checkbox.checked = false;
+        updateSelectedSizesDisplay(checkboxesId, displayId);
+    }
+}
+
+function showCategoryAttributes(categoryType) {
+    const customAttributesDiv = document.getElementById('customAttributesDiv');
+    const attributesList = document.getElementById('attributesList');
+    
+    if (categoryType && categoryType !== 'none' && attributeOptions[categoryType]) {
+        const attributes = attributeOptions[categoryType];
+        attributesList.innerHTML = '';
+        
+        attributes.forEach(attr => {
+            const checkboxDiv = document.createElement('div');
+            checkboxDiv.className = 'attribute-checkbox';
+            checkboxDiv.innerHTML = `
+                <input type="checkbox" id="attr_${attr.replace(/\s+/g, '_')}" value="${attr}">
+                <label for="attr_${attr.replace(/\s+/g, '_')}">${attr}</label>
+            `;
+            attributesList.appendChild(checkboxDiv);
+        });
+        
+        customAttributesDiv.style.display = 'block';
+    } else {
+        customAttributesDiv.style.display = 'none';
+    }
+}
+
+async function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+function previewMedia(inputId, previewId, fileArray = [], isEdit = false) {
+    const preview = document.getElementById(previewId);
+    preview.innerHTML = '';
+
+    const files = fileArray.length > 0 ? fileArray : Array.from(document.getElementById(inputId).files);
+    files.forEach((file, index) => {
+        const mediaDiv = document.createElement('div');
+        mediaDiv.className = 'media-preview-item';
+
+        if (typeof file === 'string') {
+            const isImage = file.match(/^data:image\/(jpg|jpeg|png|gif|webp)/i);
+            const isVideo = file.match(/^data:video\/(mp4|webm|mov)/i);
+            if (isImage) {
+                mediaDiv.innerHTML = `
+                    <img src="${file}" alt="Product image preview ${index + 1}">
+                    <button type="button" class="remove-media" onclick="removeExistingMedia(${index}, '${previewId}')" aria-label="Remove media item ${index + 1}">×</button>
+                    <div class="media-order">${index + 1}</div>
+                `;
+            } else if (isVideo) {
+                mediaDiv.innerHTML = `
+                    <video src="${file}" controls aria-label="Product video preview ${index + 1}"></video>
+                    <button type="button" class="remove-media" onclick="removeExistingMedia(${index}, '${previewId}')" aria-label="Remove media item ${index + 1}">×</button>
+                    <div class="media-order">${index + 1}</div>
+                `;
+            }
+            preview.appendChild(mediaDiv);
+        } else {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const isImage = file.type.startsWith('image/');
+                const isVideo = file.type.startsWith('video/');
+                if (isImage) {
+                    mediaDiv.innerHTML = `
+                        <img src="${e.target.result}" alt="Product image preview ${index + 1}">
+                        <button type="button" class="remove-media" onclick="removeMedia(${index}, '${inputId}', '${previewId}', ${fileArray.length > 0}, ${isEdit})" aria-label="Remove media item ${index + 1}">×</button>
+                        <div class="media-order">${index + 1}</div>
+                    `;
+                } else if (isVideo) {
+                    mediaDiv.innerHTML = `
+                        <video src="${e.target.result}" controls aria-label="Product video preview ${index + 1}"></video>
+                        <button type="button" class="remove-media" onclick="removeMedia(${index}, '${inputId}', '${previewId}', ${fileArray.length > 0}, ${isEdit})" aria-label="Remove media item ${index + 1}">×</button>
+                        <div class="media-order">${index + 1}</div>
+                    `;
+                }
+                preview.appendChild(mediaDiv);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    const mediaInfo = document.getElementById(isEdit ? 'editMediaInfo' : 'mediaInfo');
+    if (mediaInfo) {
+        mediaInfo.style.display = files.length > 0 ? 'block' : 'none';
+    }
+}
+
+function removeMedia(index, inputId, previewId, hasFileArray, isEdit) {
+    if (isEdit) {
+        editingProductMediaFiles.splice(index, 1);
+        previewMedia(inputId, previewId, editingProductMediaFiles, true);
+    } else {
+        selectedMediaFiles.splice(index, 1);
+        previewMedia(inputId, previewId, selectedMediaFiles);
+    }
+}
+
+function removeExistingMedia(index, previewId) {
+    editingProductMediaFiles.splice(index, 1);
+    previewMedia('editProductMedia', previewId, editingProductMediaFiles, true);
+}
+
+function displayProducts() {
+    const products = JSON.parse(localStorage.getItem('products')) || [];
+    const productsList = document.getElementById('productsList');
+    
+    if (products.length === 0) {
+        productsList.innerHTML = '<p class="text-center text-muted">Aucun produit ajouté.</p>';
+        return;
+    }
+    
+    productsList.innerHTML = '';
+    products.forEach(product => {
+        const productItem = document.createElement('div');
+        productItem.className = `product-item ${product.soldOut ? 'sold-out' : ''}`;
+        productItem.innerHTML = `
+            <div class="product-info">
+                <h5>${product.icon || '📦'} ${product.name}</h5>
+                <p><strong>Category:</strong> ${product.category}</p>
+                <p><strong>Description:</strong> ${product.description}</p>
+                <p><strong>Quantity:</strong> ${product.quantity}</p>
+                ${product.sizes && product.sizes.length > 0 ? `<p><strong>Sizes:</strong> ${product.sizes.join(', ')}</p>` : ''}
+                ${product.media && product.media.length > 0 ? `<p><strong>Media:</strong> ${product.media.length} file(s) ${product.media.length > 1 ? '(La première sera la principale image)' : ''}</p>` : ''}
+                <div class="product-price">
+                    ${product.onSale ?
+                        `<span class="sale-price">${isFabricCategory(product.category) ? calculateFabricPrice(product.salePrice, 1).toLocaleString() : product.salePrice.toLocaleString()} XOF${isFabricCategory(product.category) ? '/meter' : ''}</span>
+                         <span class="original-price">${isFabricCategory(product.category) ? calculateFabricPrice(product.price, 1).toLocaleString() : product.price.toLocaleString()} XOF${isFabricCategory(product.category) ? '/meter' : ''}</span>` :
+                        `${isFabricCategory(product.category) ? calculateFabricPrice(product.price, 1).toLocaleString() : product.price.toLocaleString()} XOF${isFabricCategory(product.category) ? '/meter' : ''}`
+                    }
+                </div>
+            </div>
+            <div>
+                <button class="btn-hero btn-sm btn-edit" onclick="editProduct(${product.id})" aria-label="Edit product ${product.name}">
+                    <i class="fas fa-edit"></i> Modifier
+                </button>
+                <button class="btn-hero btn-sm btn-danger" onclick="deleteProduct(${product.id})" aria-label="Delete product ${product.name}">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+        `;
+        productsList.appendChild(productItem);
+    });
+}
+
+function updateProductQuantity(productId, change) {
+    const products = JSON.parse(localStorage.getItem('products')) || [];
+    const product = products.find(p => p.id === productId);
+    if (product) {
+        const newQuantity = Math.max(0, product.quantity + change);
+        if (change > 0 && newQuantity > product.quantity) {
+            showNotification('Cannot exceed available stock!', 'error');
+            return;
+        }
+        product.quantity = newQuantity;
+        product.soldOut = newQuantity === 0;
+        localStorage.setItem('products', JSON.stringify(products));
+        displayProducts();
+        showNotification(`✅ Quantité de produit mise à jour à ${newQuantity}!`);
+    }
+}
+
+function editProduct(productId) {
+    const products = JSON.parse(localStorage.getItem('products')) || [];
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    currentEditingProductId = productId;
+    
+    document.getElementById('editProductTitle').value = product.name;
+    document.getElementById('editProductDescription').value = product.description;
+    document.getElementById('editProductPrice').value = product.price;
+    document.getElementById('editProductQuantity').value = product.quantity;
+    document.getElementById('editOnSale').checked = product.onSale || false;
+    document.getElementById('editSaleSection').style.display = product.onSale ? 'block' : 'none';
+    document.getElementById('editSalePrice').value = product.salePrice || '';
+    document.getElementById('editSoldOut').checked = product.soldOut || false;
+    
+    loadCategories('editProductCategory');
+    document.getElementById('editProductCategory').value = product.category;
+    document.getElementById('editFabricPriceNote').style.display = isFabricCategory(product.category) ? 'block' : 'none';
+    
+    showSizeOptions(product.category, 'editSizeOptions', 'editSizeCheckboxes', 'editSelectedSizesDisplay');
+
+    setTimeout(() => {
+        const checkboxes = document.querySelectorAll('#editSizeCheckboxes input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            if (product.sizes && product.sizes.includes(cb.value)) cb.checked = true;
+        });
+        updateSelectedSizesDisplay('editSizeCheckboxes', 'editSelectedSizesDisplay');
+    }, 100);
+
+    editingProductMediaFiles = product.media ? [...product.media] : [];
+    previewMedia('editProductMedia', 'editMediaPreview', editingProductMediaFiles, true);
+    
+    document.getElementById('editProductMedia').value = '';
+    
+    document.getElementById('editProductModal').style.display = 'block';
+}
+
+function deleteProduct(productId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) {
+        let products = JSON.parse(localStorage.getItem('products')) || [];
+        products = products.filter(product => product.id !== productId);
+        localStorage.setItem('products', JSON.stringify(products));
+        displayProducts();
+        showNotification('🗑️Produit supprimé avec succès !');
+    }
+}
+
+function openCategoryModal() {
+    document.getElementById('categoryModal').style.display = 'block';
+}
+
+function closeCategoryModal() {
+    document.getElementById('categoryModal').style.display = 'none';
+    document.getElementById('categoryName').value = '';
+    document.getElementById('categoryType').value = '';
+    document.getElementById('customAttributesDiv').style.display = 'none';
+}
+
+function closeEditModal() {
+    document.getElementById('editProductModal').style.display = 'none';
+    currentEditingProductId = null;
+    editingProductMediaFiles = [];
+}
+
+function saveCategory() {
+    const name = document.getElementById('categoryName').value.trim();
+    const icon = document.getElementById('categoryIcon').value.trim();
+    const categoryType = document.getElementById('categoryType').value;
+    
+    let attributes = [];
+    if (categoryType && categoryType !== 'none') {
+        const selectedCheckboxes = document.querySelectorAll('#attributesList input[type="checkbox"]:checked');
+        attributes = Array.from(selectedCheckboxes).map(cb => cb.value);
+    }
+
+    if (!name) {
+        showNotification('Veuillez entrer un nom de catégorie !', 'error');
+        return;
+    }
+
+    if (!categoryType) {
+        showNotification('Veuillez sélectionner un type de catégorie !', 'error');
+        return;
+    }
+
+    const id = name.toLowerCase().replace(/\s+/g, '_');
+    
+    if (categories.some(cat => cat.id === id)) {
+        showNotification('La catégorie existe déjà !', 'error');
+        return;
+    }
+    
+    const newCategory = { id, name, icon: icon || '📦', attributes, type: categoryType };
+    
+    categories.push(newCategory);
+    localStorage.setItem('categories', JSON.stringify(categories));
+    
+    loadCategories();
+    loadCategories('editProductCategory');
+    closeCategoryModal();
+    
+    showNotification('✅ Catégorie ajoutée avec succès !');
+}
+
+function triggerFileInput() {
+    document.getElementById('productMedia').click();
+}
+
+function triggerEditFileInput() {
+    document.getElementById('editProductMedia').click();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    categories = JSON.parse(localStorage.getItem('categories')) || categories;
+    loadCategories();
+    loadCategories('editProductCategory');
+    displayProducts();
+
+    document.getElementById('categoryType').addEventListener('change', function() {
+        showCategoryAttributes(this.value);
+    });
+
+    document.getElementById('productCategory').addEventListener('change', function() {
+        showSizeOptions(this.value);
+        document.getElementById('fabricPriceNote').style.display = isFabricCategory(this.value) ? 'block' : 'none';
+    });
+
+    document.getElementById('editProductCategory').addEventListener('change', function() {
+        showSizeOptions(this.value, 'editSizeOptions', 'editSizeCheckboxes', 'editSelectedSizesDisplay');
+        document.getElementById('editFabricPriceNote').style.display = isFabricCategory(this.value) ? 'block' : 'none';
+    });
+
+    document.getElementById('selectAllAttributes').onclick = function() {
+        const checkboxes = document.querySelectorAll('#attributesList input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = true);
+    };
+
+    document.getElementById('clearAllAttributes').onclick = function() {
+        const checkboxes = document.querySelectorAll('#attributesList input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+    };
+
+    document.getElementById('selectAllSizes').onclick = function() {
+        document.querySelectorAll('#sizeCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = true);
+        updateSelectedSizesDisplay('sizeCheckboxes', 'selectedSizesDisplay');
+    };
+
+    document.getElementById('clearSizes').onclick = function() {
+        document.querySelectorAll('#sizeCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
+        updateSelectedSizesDisplay('sizeCheckboxes', 'selectedSizesDisplay');
+    };
+
+    document.getElementById('editSelectAllSizes').onclick = function() {
+        document.querySelectorAll('#editSizeCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = true);
+        updateSelectedSizesDisplay('editSizeCheckboxes', 'editSelectedSizesDisplay');
+    };
+
+    document.getElementById('editClearSizes').onclick = function() {
+        document.querySelectorAll('#editSizeCheckboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
+        updateSelectedSizesDisplay('editSizeCheckboxes', 'editSelectedSizesDisplay');
+    };
+
+    document.getElementById('onSale').addEventListener('change', function() {
+        const saleSection = document.getElementById('saleSection');
+        saleSection.style.display = this.checked ? 'block' : 'none';
+        if (!this.checked) {
+            document.getElementById('salePrice').value = '';
+        }
+    });
+
+    document.getElementById('editOnSale').addEventListener('change', function() {
+        const saleSection = document.getElementById('editSaleSection');
+        saleSection.style.display = this.checked ? 'block' : 'none';
+        if (!this.checked) {
+            document.getElementById('editSalePrice').value = '';
+        }
+    });
+
+    document.getElementById('productMedia').addEventListener('change', debounce(async function () {
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const files = Array.from(this.files);
+        
+        const validFiles = files.filter(file => {
+            if (file.size > maxSize) {
+                showNotification(`File ${file.name} exceeds 10MB limit!`, 'error');
+                return false;
+            }
+            if (!file.type.match(/image\/(jpg|jpeg|png|gif|webp)|video\/(mp4|webm)/i)) {
+                showNotification(`Le fichier ${file.name} a un format non pris en charge !`, 'error');
+                return false;
+            }
+            return true;
+        });
+
+        if (selectedMediaFiles.length + validFiles.length > 5) {
+            showNotification('Vous ne pouvez télécharger que 5 fichiers multimédias.', 'error');
+            return;
+        }
+
+        selectedMediaFiles = [...selectedMediaFiles, ...validFiles].slice(0, 5);
+        previewMedia('productMedia', 'mediaPreview', selectedMediaFiles);
+        const mediaInfo = document.getElementById('mediaInfo');
+        if (mediaInfo) {
+            mediaInfo.style.display = selectedMediaFiles.length > 0 ? 'block' : 'none';
+        }
+    }, 300));
+
+    document.getElementById('editProductMedia').addEventListener('change', debounce(async function() {
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const files = Array.from(this.files);
+        
+        const validFiles = files.filter(file => {
+            if (file.size > maxSize) {
+                showNotification(`Le fichier ${file.name} dépasse la limite de 10 Mo !`, 'error');
+                return false;
+            }
+            if (!file.type.match(/image\/(jpg|jpeg|png|gif|webp)|video\/(mp4|webm)/i)) {
+                showNotification(`Le fichier ${file.name}  a un format non pris en charge !`, 'error');
+                return false;
+            }
+            return true;
+        });
+
+        if (editingProductMediaFiles.length + validFiles.length > 5) {
+            showNotification('Vous ne pouvez télécharger que 5 fichiers multimédias.', 'error');
+            return;
+        }
+
+        const newFileUrls = await Promise.all(validFiles.map(file => getBase64(file)));
+        editingProductMediaFiles = [...editingProductMediaFiles, ...newFileUrls].slice(0, 5);
+        previewMedia('editProductMedia', 'editMediaPreview', editingProductMediaFiles, true);
+    }, 300));
+
+    document.getElementById('adminForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<div class="loading"></div> Ajout...';
+        submitBtn.disabled = true;
+
+        const price = Number(document.getElementById('productPrice').value);
+        const quantity = Number(document.getElementById('productQuantity').value);
+        const onSale = document.getElementById('onSale').checked;
+        const salePrice = onSale ? Number(document.getElementById('salePrice').value) || null : null;
+
+        if (price < 0) {
+            showNotification('Le prix doit être un nombre non négatif !', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+        if (quantity < 0) {
+            showNotification('La quantité doit être un nombre non négatif !', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+        if (onSale && (!salePrice || salePrice < 0)) {
+            showNotification('Le prix de solde doit être un nombre non négatif !', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+        if (onSale && salePrice >= price) {
+            showNotification('Le prix de solde doit être inférieur au prix initial !', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        try {
+            const categoryId = document.getElementById('productCategory').value;
+            const category = categories.find(cat => cat.id === categoryId);
+            
+            let mediaPaths = [];
+            if (selectedMediaFiles.length > 0) {
+                mediaPaths = await Promise.all(
+                    selectedMediaFiles.map(file => getBase64(file))
+                );
+            }
+            
+            const selectedSizes = Array.from(document.querySelectorAll('#sizeCheckboxes input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            const newProduct = {
+                id: Date.now(),
+                name: document.getElementById('productTitle').value,
+                price: price,
+                quantity: quantity,
+                category: categoryId,
+                icon: category ? category.icon : '📦',
+                description: document.getElementById('productDescription').value,
+                sizes: selectedSizes,
+                media: mediaPaths.slice(0, 5),
+                onSale: onSale,
+                salePrice: salePrice,
+                soldOut: quantity === 0
+            };
+            
+            const products = JSON.parse(localStorage.getItem('products')) || [];
+            products.push(newProduct);
+            localStorage.setItem('products', JSON.stringify(products));
+            
+            showNotification('✅ Produit ajouté avec succès !');
+            this.reset();
+            document.getElementById('sizeOptions').style.display = 'none';
+            document.getElementById('saleSection').style.display = 'none';
+            document.getElementById('soldOut').checked = false;
+            document.getElementById('mediaPreview').innerHTML = '';
+            const mediaInfo = document.getElementById('mediaInfo');
+            if (mediaInfo) {
+                mediaInfo.style.display = 'none';
+            }
+            document.getElementById('fabricPriceNote').style.display = 'none';
+            selectedMediaFiles = [];
+            displayProducts();
+            
+        } catch (error) {
+            console.error('Erreur ajout du produit:', error);
+            showNotification('Erreur ajout du produit. Veuillez réessayer.', 'error');
+        }
+        
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+
+    document.getElementById('editProductForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<div class="loading"></div> Sauvegarde des modifications...';
+        submitBtn.disabled = true;
+
+        const price = Number(document.getElementById('editProductPrice').value);
+        const quantity = Number(document.getElementById('editProductQuantity').value);
+        const onSale = document.getElementById('editOnSale').checked;
+        const salePrice = onSale ? Number(document.getElementById('editSalePrice').value) || null : null;
+
+        if (price < 0) {
+            showNotification('Le prix doit être un nombre non négatif !', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+        if (quantity < 0) {
+            showNotification('La quantité doit être un nombre non négatif !', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+        if (onSale && (!salePrice || salePrice < 0)) {
+            showNotification('Le prix de solde doit être un nombre non négatif !', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+        if (onSale && salePrice >= price) {
+            showNotification('Le prix de solde doit être inférieur au prix initial !', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        try {
+            const categoryId = document.getElementById('editProductCategory').value;
+            const category = categories.find(cat => cat.id === categoryId);
+            
+            const mediaInput = document.getElementById('editProductMedia');
+            const newMedia = mediaInput.files.length > 0 ? await Promise.all(
+                Array.from(mediaInput.files).map(file => getBase64(file))
+            ) : [];
+            const allMedia = [...editingProductMediaFiles, ...newMedia].slice(0, 5);
+            
+            const selectedSizes = Array.from(document.querySelectorAll('#editSizeCheckboxes input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            const updatedProduct = {
+                id: currentEditingProductId,
+                name: document.getElementById('editProductTitle').value,
+                description: document.getElementById('editProductDescription').value,
+                price: price,
+                quantity: quantity,
+                category: categoryId,
+                icon: category ? category.icon : '📦',
+                sizes: selectedSizes,
+                media: allMedia,
+                onSale: onSale,
+                salePrice: salePrice,
+                soldOut: quantity === 0
+            };
+
+            const products = JSON.parse(localStorage.getItem('products')) || [];
+            const index = products.findIndex(p => p.id === currentEditingProductId);
+            if (index !== -1) {
+                products[index] = updatedProduct;
+                localStorage.setItem('products', JSON.stringify(products));
+                showNotification('✅ Produit ajouté avec succès !');
+                displayProducts();
+                closeEditModal();
+            }
+
+        } catch (error) {
+            console.error('Erreur ajout du produit:', error);
+            showNotification('Erreur ajout du produit. Veuillez réessayer.', 'error');
+        }
+
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+
+    window.onclick = function(event) {
+        const categoryModal = document.getElementById('categoryModal');
+        const editModal = document.getElementById('editProductModal');
+        if (event.target === categoryModal) {
+            closeCategoryModal();
+        }
+        if (event.target === editModal) {
+            closeEditModal();
+        }
+    };
+});
+    </script>
+</body>
+</html>
