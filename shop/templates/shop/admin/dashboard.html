@@ -1,0 +1,622 @@
+{% load static %}
+{% load shop_extras %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDEY'AS SHOP - Dashboard Admin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --white: #ffffff;
+            --primary: #d81b60;
+            --black: #000000;
+            --light-gray: #f8f9fa;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--black);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px rgba(216, 27, 96, 0.2);
+            z-index: 1000;
+            background: var(--primary);
+        }
+
+        .navbar-brand {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--white) !important;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--white) !important;
+            font-weight: 600;
+            margin: 0 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--black) !important;
+            transform: translateY(-2px);
+        }
+
+        /* Dashboard Header */
+        .dashboard-header {
+            background: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .dashboard-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--black);
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: var(--primary);
+            opacity: 0.1;
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon.primary {
+            background: rgba(216, 27, 96, 0.1);
+            color: var(--primary);
+        }
+
+        .stat-icon.success {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .stat-icon.warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-icon.info {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .btn-action {
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-action.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-action.primary:hover {
+            background: #c2185b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(216, 27, 96, 0.3);
+        }
+
+        .btn-action.secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-action.secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Tables */
+        .dashboard-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--black);
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: #666;
+            padding: 1rem;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .product-image-small {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+
+        .badge-success {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+
+        .btn-group-action {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Footer */
+        .footer {
+            background: #222;
+            color: #ccc;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-title { font-size: 2rem; }
+            .stat-value { font-size: 1.5rem; }
+            .action-buttons { flex-direction: column; }
+            .btn-action { width: 100%; justify-content: center; }
+            .table { font-size: 0.9rem; }
+            .btn-group-action { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg header">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'shop:index' %}">
+                <i class="fas fa-shopping-bag me-2"></i>NDEY'AS SHOP
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shop:index' %}">
+                            <i class="fas fa-home me-1"></i>Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shop:shop' %}">
+                            <i class="fas fa-store me-1"></i>Boutique
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin:index' %}">
+                            <i class="fas fa-cog me-1"></i>Django Admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shop:logout' %}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Header -->
+    <section class="dashboard-header">
+        <div class="container">
+            <h1 class="dashboard-title">
+                <i class="fas fa-tachometer-alt me-3"></i>Dashboard Admin
+            </h1>
+            <p class="dashboard-subtitle">Bienvenue, {{ user.username }} ! Gérez votre boutique en ligne.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon primary">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-value">{{ total_products }}</div>
+                <div class="stat-label">Produits</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-value">{{ total_orders }}</div>
+                <div class="stat-label">Commandes</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon warning">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="stat-value">{{ total_categories }}</div>
+                <div class="stat-label">Catégories</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon info">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-value">{{ unread_messages }}</div>
+                <div class="stat-label">Messages non lus</div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'admin:shop_product_add' %}" class="btn-action primary">
+                <i class="fas fa-plus"></i>
+                Ajouter un produit
+            </a>
+            <a href="{% url 'admin:shop_category_add' %}" class="btn-action secondary">
+                <i class="fas fa-folder-plus"></i>
+                Ajouter une catégorie
+            </a>
+            <a href="{% url 'admin:shop_order_changelist' %}" class="btn-action secondary">
+                <i class="fas fa-list"></i>
+                Voir toutes les commandes
+            </a>
+            <a href="{% url 'admin:shop_contact_changelist' %}" class="btn-action secondary">
+                <i class="fas fa-envelope-open"></i>
+                Messages clients
+            </a>
+        </div>
+
+        <!-- Recent Products -->
+        <div class="dashboard-section">
+            <h2 class="section-title">
+                <i class="fas fa-box me-2"></i>Produits récents
+            </h2>
+            {% if products %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Nom</th>
+                            <th>Catégorie</th>
+                            <th>Prix</th>
+                            <th>Stock</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products|slice:":10" %}
+                        <tr>
+                            <td>
+                                {% if product.images.first %}
+                                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="product-image-small">
+                                {% else %}
+                                    <div class="product-image-small bg-light d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ product.name }}</strong></td>
+                            <td>{{ product.category.icon }} {{ product.category.name }}</td>
+                            <td>
+                                {% if product.on_sale and product.sale_price %}
+                                    <span class="text-danger">{{ product.sale_price|floatformat:0 }} F</span>
+                                    <del class="text-muted">{{ product.price|floatformat:0 }} F</del>
+                                {% else %}
+                                    {{ product.price|floatformat:0 }} F
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if product.sold_out %}
+                                    <span class="badge badge-danger">Épuisé</span>
+                                {% else %}
+                                    <span class="badge badge-success">{{ product.quantity }} en stock</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if product.is_new %}
+                                    <span class="badge badge-info">Nouveau</span>
+                                {% endif %}
+                                {% if product.on_sale %}
+                                    <span class="badge badge-warning">En solde</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group-action">
+                                    <a href="{% url 'shop:product_detail' product.id %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'admin:shop_product_change' product.id %}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'admin:shop_product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'admin:shop_product_changelist' %}" class="btn btn-primary">
+                    Voir tous les produits
+                </a>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <p>Aucun produit trouvé</p>
+                <a href="{% url 'admin:shop_product_add' %}" class="btn btn-primary mt-3">
+                    Ajouter votre premier produit
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="dashboard-section">
+            <h2 class="section-title">
+                <i class="fas fa-shopping-cart me-2"></i>Commandes récentes
+            </h2>
+            {% if orders %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Client</th>
+                            <th>Téléphone</th>
+                            <th>Montant</th>
+                            <th>Paiement</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.customer_name }}</td>
+                            <td>{{ order.customer_phone }}</td>
+                            <td><strong>{{ order.total_amount|floatformat:0 }} F</strong></td>
+                            <td>{{ order.get_payment_method_display }}</td>
+                            <td>
+                                {% if order.status == 'pending' %}
+                                    <span class="badge badge-warning">En attente</span>
+                                {% elif order.status == 'processing' %}
+                                    <span class="badge badge-info">En traitement</span>
+                                {% elif order.status == 'shipped' %}
+                                    <span class="badge badge-primary">Expédié</span>
+                                {% elif order.status == 'delivered' %}
+                                    <span class="badge badge-success">Livré</span>
+                                {% elif order.status == 'cancelled' %}
+                                    <span class="badge badge-danger">Annulé</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ order.created_at|date:"d/m/Y" }}</td>
+                            <td>
+                                <a href="{% url 'admin:shop_order_change' order.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Détails
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'admin:shop_order_changelist' %}" class="btn btn-primary">
+                    Voir toutes les commandes
+                </a>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Aucune commande pour le moment</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Categories Overview -->
+        <div class="dashboard-section">
+            <h2 class="section-title">
+                <i class="fas fa-tags me-2"></i>Catégories
+            </h2>
+            {% if categories %}
+            <div class="row">
+                {% for category in categories %}
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <div style="font-size: 2rem;">{{ category.icon }}</div>
+                            <h5 class="card-title mt-2">{{ category.name }}</h5>
+                            <p class="card-text text-muted">{{ category.products.count }} produit{{ category.products.count|pluralize }}</p>
+                            <a href="{% url 'admin:shop_category_change' category.id %}" class="btn btn-sm btn-outline-primary">
+                                Modifier
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <p>Aucune catégorie trouvée</p>
+                <a href="{% url 'admin:shop_category_add' %}" class="btn btn-primary mt-3">
+                    Ajouter une catégorie
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p>&copy; 2025 NDEY'AS SHOP - Dashboard Admin. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
