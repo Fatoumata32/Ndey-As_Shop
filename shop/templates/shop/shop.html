@@ -806,7 +806,7 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script>
+  <script>
         // Get CSRF token
         function getCookie(name) {
             let cookieValue = null;
@@ -823,8 +823,20 @@
             return cookieValue;
         }
 
+        // Check if user is authenticated
+        const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+
         // Add to Cart
         function addToCart(productId) {
+            // Check if user is logged in
+            if (!isAuthenticated) {
+                showNotification('Veuillez vous connecter pour ajouter des produits au panier', 'error');
+                setTimeout(() => {
+                    window.location.href = '{% url "shop:login" %}';
+                }, 1500);
+                return;
+            }
+
             // Get selected size if any
             const productCard = event.target.closest('.product-card');
             const selectedSizeBtn = productCard.querySelector('.size-btn.selected');
@@ -864,9 +876,17 @@
                         button.disabled = false;
                     }, 2000);
                 } else {
-                    showNotification(data.message, 'error');
-                    button.innerHTML = originalText;
-                    button.disabled = false;
+                    // Handle authentication error from backend
+                    if (data.redirect_url) {
+                        showNotification(data.message, 'error');
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1500);
+                    } else {
+                        showNotification(data.message, 'error');
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    }
                 }
             })
             .catch(error => {
@@ -876,60 +896,6 @@
                 button.disabled = false;
             });
         }
-
-        // Quick View (placeholder)
-        function quickView(productId) {
-            window.location.href = `/shop/product/${productId}/`;
-        }
-
-        // Size Selection
-        function selectSize(button) {
-            const card = button.closest('.product-card');
-            card.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('selected'));
-            button.classList.add('selected');
-        }
-
-        // Show Notification
-        function showNotification(message, type = 'success') {
-            // Remove existing notifications
-            document.querySelectorAll('.notification').forEach(notif => notif.remove());
-            
-            const notification = document.createElement('div');
-            notification.className = `notification ${type === 'error' ? 'error' : ''}`;
-            notification.innerHTML = `
-                <i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'} me-2"></i>
-                ${message}
-            `;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideInRight 0.3s ease-out reverse';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-
-        // Update Cart Count
-        function updateCartCount(count) {
-            const cartBadge = document.getElementById('cartCount');
-            if (cartBadge) {
-                cartBadge.textContent = count;
-                cartBadge.style.animation = 'pulse 0.5s ease-out';
-            }
-        }
-
-        // Auto-submit search form with delay
-        let searchTimeout;
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.querySelector('.search-input');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        this.form.submit();
-                    }, 500);
-                });
-            }
-        });
-    </script>
+        </script>
 </body>
 </html>

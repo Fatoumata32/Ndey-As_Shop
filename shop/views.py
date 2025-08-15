@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from .models import Product, Category, Cart, CartItem, Order, OrderItem, Contact
+from django.contrib.auth.models import User
 import json
 
 def get_or_create_cart(request):
@@ -21,7 +22,11 @@ def get_or_create_cart(request):
     return cart
 
 def index(request):
-    """Page d'accueil"""
+    """Page d'accueil (maintenant /home/)"""
+    # Rediriger vers login si non authentifié
+    if not request.user.is_authenticated:
+        return redirect('shop:login')
+    
     products = Product.objects.filter(sold_out=False)[:6]  # 6 derniers produits
     categories = Category.objects.all()
     context = {
@@ -32,6 +37,10 @@ def index(request):
 
 def shop(request):
     """Page boutique avec tous les produits"""
+    # Rediriger vers login si non authentifié
+    if not request.user.is_authenticated:
+        return redirect('shop:login')
+        
     products = Product.objects.all()
     categories = Category.objects.all()
     
@@ -58,6 +67,10 @@ def shop(request):
 
 def product_detail(request, product_id):
     """Détail d'un produit"""
+    # Rediriger vers login si non authentifié
+    if not request.user.is_authenticated:
+        return redirect('shop:login')
+        
     product = get_object_or_404(Product, id=product_id)
     context = {
         'product': product,
@@ -66,6 +79,10 @@ def product_detail(request, product_id):
 
 def cart_view(request):
     """Vue du panier"""
+    # Rediriger vers login si non authentifié
+    if not request.user.is_authenticated:
+        return redirect('shop:login')
+        
     cart = get_or_create_cart(request)
     context = {
         'cart': cart,
@@ -75,6 +92,13 @@ def cart_view(request):
 @csrf_exempt
 def add_to_cart(request):
     """Ajouter au panier (AJAX)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Vous devez être connecté pour ajouter au panier.',
+            'redirect_url': '/'
+        })
+        
     if request.method == 'POST':
         data = json.loads(request.body)
         product_id = data.get('product_id')
@@ -118,6 +142,13 @@ def add_to_cart(request):
 @csrf_exempt
 def update_cart_item(request):
     """Mettre à jour la quantité d'un article (AJAX)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Vous devez être connecté.',
+            'redirect_url': '/'
+        })
+        
     if request.method == 'POST':
         data = json.loads(request.body)
         item_id = data.get('item_id')
@@ -146,6 +177,13 @@ def update_cart_item(request):
 @csrf_exempt
 def remove_from_cart(request):
     """Retirer du panier (AJAX)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'message': 'Vous devez être connecté.',
+            'redirect_url': '/'
+        })
+        
     if request.method == 'POST':
         data = json.loads(request.body)
         item_id = data.get('item_id')
@@ -162,6 +200,10 @@ def remove_from_cart(request):
 
 def checkout(request):
     """Page de commande"""
+    # Rediriger vers login si non authentifié
+    if not request.user.is_authenticated:
+        return redirect('shop:login')
+        
     cart = get_or_create_cart(request)
     
     if request.method == 'POST':
@@ -193,7 +235,7 @@ def checkout(request):
         cart.items.all().delete()
         
         messages.success(request, 'Commande passée avec succès!')
-        return redirect('shop:index')
+        return redirect('shop:index')  # Redirige vers /home/
     
     context = {
         'cart': cart,
@@ -202,6 +244,10 @@ def checkout(request):
 
 def contact_view(request):
     """Page de contact"""
+    # Rediriger vers login si non authentifié
+    if not request.user.is_authenticated:
+        return redirect('shop:login')
+        
     if request.method == 'POST':
         Contact.objects.create(
             name=request.POST.get('name'),
@@ -213,91 +259,10 @@ def contact_view(request):
     
     return render(request, 'shop/contact.html')
 
-def login_view(request):
-    """Page de connexion"""
-    if request.user.is_authenticated:
-        return redirect('shop:index')
-    
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        
-        # Essayer de se connecter avec l'email comme username
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, 'Connexion réussie!')
-            return redirect('shop:index')
-        else:
-            messages.error(request, 'Email ou mot de passe incorrect.')
-    
-    return render(request, 'shop/login.html')
-
-def register_view(request):
-    """Page d'inscription"""
-    if request.user.is_authenticated:
-        return redirect('shop:index')
-    
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
-        
-        if password != confirm_password:
-            messages.error(request, 'Les mots de passe ne correspondent pas.')
-            return render(request, 'shop/login.html')
-        
-        # Créer l'utilisateur avec l'email comme username
-        from django.contrib.auth.models import User
-        if User.objects.filter(username=email).exists():
-            messages.error(request, 'Cet email est déjà utilisé.')
-            return render(request, 'shop/login.html')
-        
-        user = User.objects.create_user(username=email, email=email, password=password)
-        login(request, user)
-        messages.success(request, 'Inscription réussie!')
-        return redirect('shop:index')
-    
-    return render(request, 'shop/login.html')
-
-def logout_view(request):
-    """Déconnexion"""
-    logout(request)
-    messages.success(request, 'Déconnexion réussie!')
-    return redirect('shop:index')
-
-@login_required
-def admin_dashboard(request):
-    """Dashboard admin personnalisé"""
-    if not request.user.is_staff:
-        messages.error(request, 'Accès non autorisé.')
-        return redirect('shop:index')
-    
-    products = Product.objects.all()
-    categories = Category.objects.all()
-    orders = Order.objects.all()[:10]  # 10 dernières commandes
-    
-    context = {
-        'products': products,
-        'categories': categories,
-        'orders': orders,
-    }
-    return render(request, 'shop/admin.html', context)
-
-# views.py
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.contrib import messages
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-import json
-
 def login_register_view(request):
     """Vue pour afficher la page de connexion/inscription"""
     if request.user.is_authenticated:
-        return redirect('shop:home')  # Rediriger vers la page d'accueil si déjà connecté
+        return redirect('shop:index')  # Rediriger vers /home/ si déjà connecté
     return render(request, 'shop/login.html')
 
 @csrf_exempt
@@ -318,7 +283,7 @@ def ajax_login(request):
                 return JsonResponse({
                     'success': True,
                     'message': 'Connexion réussie!',
-                    'redirect_url': '/shop/'  # URL de redirection après connexion
+                    'redirect_url': '/home/'  # Redirige vers la page d'accueil après connexion
                 })
             else:
                 return JsonResponse({
@@ -378,7 +343,7 @@ def ajax_register(request):
             return JsonResponse({
                 'success': True,
                 'message': 'Inscription réussie!',
-                'redirect_url': '/shop/'
+                'redirect_url': '/home/'  # Redirige vers la page d'accueil après inscription
             })
             
         except Exception as e:
@@ -393,7 +358,7 @@ def logout_view(request):
     """Vue pour la déconnexion"""
     logout(request)
     messages.success(request, 'Vous avez été déconnecté avec succès!')
-    return redirect('shop:login')
+    return redirect('shop:login')  # Redirige vers la page de login
 
 @csrf_exempt
 def reset_password(request):
@@ -417,3 +382,23 @@ def reset_password(request):
             })
     
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée'})
+
+@login_required
+def admin_dashboard(request):
+    """Dashboard admin personnalisé"""
+    if not request.user.is_staff:
+        messages.error(request, 'Accès non autorisé.')
+        return redirect('shop:index')  # Redirige vers /home/
+    
+    products = Product.objects.all()
+    categories = Category.objects.all()
+    orders = Order.objects.all()[:10]  # 10 dernières commandes
+    
+    context = {
+        'products': products,
+        'categories': categories,
+        'orders': orders,
+    }
+    return render(request, 'shop/admin.html', context)
+
+# Supprimer les vieilles vues login_view et register_view car elles sont remplacées
