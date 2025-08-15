@@ -1,3 +1,4 @@
+# shop/urls.py
 from django.urls import path
 from . import views
 
@@ -5,7 +6,7 @@ app_name = 'shop'
 
 urlpatterns = [
     # Page d'accueil = Login
-    path('', views.login_register_view, name='login'),  
+    path('', views.login_register_view, name='login'),
     
     # Authentification
     path('logout/', views.logout_view, name='logout'),
@@ -30,4 +31,12 @@ urlpatterns = [
     
     # Admin
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin/products/', views.admin_products, name='admin_products'),
+    path('admin/products/add/', views.admin_add_product, name='admin_add_product'),
+    path('admin/products/edit/<int:product_id>/', views.admin_edit_product, name='admin_edit_product'),
+    path('admin/products/delete/<int:product_id>/', views.admin_delete_product, name='admin_delete_product'),
+    path('admin/categories/', views.admin_categories, name='admin_categories'),
+    path('admin/categories/add/', views.admin_add_category, name='admin_add_category'),
+    path('admin/orders/', views.admin_orders, name='admin_orders'),
+    path('admin/orders/<int:order_id>/', views.admin_order_detail, name='admin_order_detail'),
 ]

@@ -55,6 +55,19 @@ class Product(models.Model):
             self.sold_out = True
         else:
             self.sold_out = False
+            
+        # S'assurer que sizes est toujours une liste
+        if self.sizes is None:
+            self.sizes = []
+        elif isinstance(self.sizes, str):
+            try:
+                import json
+                self.sizes = json.loads(self.sizes)
+            except:
+                self.sizes = []
+        elif not isinstance(self.sizes, list):
+            self.sizes = []
+            
         super().save(*args, **kwargs)
     
     def get_current_price(self):
@@ -62,7 +75,72 @@ class Product(models.Model):
         if self.on_sale and self.sale_price:
             return self.sale_price
         return self.price
-
+    
+    def get_sizes_list(self):
+        """Retourne les tailles comme une liste Python"""
+        if not self.sizes:
+            return []
+        
+        # Si c'est déjà une liste, la retourner
+        if isinstance(self.sizes, list):
+            return self.sizes
+        
+        # Si c'est une chaîne JSON, la parser
+        if isinstance(self.sizes, str):
+            try:
+                import json
+                sizes = json.loads(self.sizes)
+                return sizes if isinstance(sizes, list) else []
+            except:
+                return []
+        
+        # Pour tout autre type, retourner une liste vide
+        return []
+    
+    @property
+    def discount_percent(self):
+        """Calcule le pourcentage de remise"""
+        if self.on_sale and self.sale_price and self.price > self.sale_price:
+            discount = ((self.price - self.sale_price) / self.price) * 100
+            return round(discount)
+        return 0
+    
+    @property
+    def is_new(self):
+        """Détermine si le produit est nouveau (moins de 30 jours)"""
+        from django.utils import timezone
+        from datetime import timedelta
+        return self.created_at > timezone.now() - timedelta(days=30)
+    
+    @property
+    def primary_image(self):
+        """Retourne l'image principale du produit"""
+        return self.images.filter(is_primary=True).first() or self.images.first()
+    
+    def has_size(self, size):
+        """Vérifie si une taille spécifique est disponible"""
+        return size in self.get_sizes_list()
+    
+    def is_in_stock(self):
+        """Vérifie si le produit est en stock"""
+        return self.quantity > 0 and not self.sold_out
+    
+    def can_purchase(self, quantity=1):
+        """Vérifie si on peut acheter une certaine quantité"""
+        return self.is_in_stock() and self.quantity >= quantity
+    
+    def reduce_stock(self, quantity):
+        """Réduit le stock après un achat"""
+        if self.can_purchase(quantity):
+            self.quantity -= quantity
+            self.save()
+            return True
+        return False
+    
+    def get_absolute_url(self):
+        """Retourne l'URL du produit"""
+        from django.urls import reverse
+        return reverse('shop:product_detail', kwargs={'product_id': self.id})
 
 class ProductImage(models.Model):
     """Modèle pour les images de produits"""

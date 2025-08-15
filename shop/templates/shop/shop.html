@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NDEY'AS SHOP - Boutique en ligne</title>
+    <title>NDEY'AS SHOP - Boutique</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -32,6 +32,7 @@
             line-height: 1.6;
         }
 
+        /* Header */
         .header {
             position: sticky;
             top: 0;
@@ -44,19 +45,20 @@
         .navbar-brand {
             font-size: 2rem;
             font-weight: 800;
-            color: var(--white);
+            color: var(--white) !important;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .navbar-nav .nav-link {
-            color: var(--white);
+            color: var(--white) !important;
             font-weight: 600;
             margin: 0 1rem;
             transition: all 0.3s ease;
         }
 
-        .navbar-nav .nav-link:hover, .navbar-nav .nav-link.active {
-            color: var(--black);
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link.active {
+            color: var(--black) !important;
             transform: translateY(-2px);
         }
 
@@ -80,12 +82,10 @@
             100% { transform: scale(1); }
         }
 
-        /* Hero Section Compacte */
+        /* Hero Section */
         .hero-mini {
-            background: linear-gradient(135deg, rgba(216, 27, 96, 0.8), rgba(255, 64, 129, 0.8)), 
-                        url('{% static "shop/img/SHOP-BG1.jpg" %}');
-            background-size: cover;
-            background-position: center;
+            background: linear-gradient(135deg, rgba(216, 27, 96, 0.9), rgba(255, 64, 129, 0.9)),
+                        url('{% static "shop/img/hero-bg.jpg" %}') center/cover;
             color: white;
             padding: 3rem 0;
             text-align: center;
@@ -97,16 +97,11 @@
             margin-bottom: 0.5rem;
         }
 
-        .hero-mini p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        /* Barre de recherche et filtres */
+        /* Search & Filters */
         .search-filters-section {
             background: white;
             padding: 2rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .search-container {
@@ -134,17 +129,13 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--primary);
+            cursor: pointer;
         }
 
         .filter-select {
             border-radius: 20px;
             border: 2px solid var(--light-gray);
             padding: 0.5rem 1rem;
-        }
-
-        .filter-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(216, 27, 96, 0.1);
         }
 
         .sort-buttons {
@@ -164,14 +155,15 @@
             font-size: 0.9rem;
         }
 
-        .sort-btn.active, .sort-btn:hover {
+        .sort-btn.active,
+        .sort-btn:hover {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
             text-decoration: none;
         }
 
-        /* Section des produits */
+        /* Products Section */
         .products-section {
             padding: 3rem 0;
         }
@@ -185,18 +177,6 @@
             gap: 1rem;
         }
 
-        .admin-actions {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .products-count {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        /* Grille des produits */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -206,7 +186,7 @@
         .product-card {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
             overflow: hidden;
             transition: all 0.3s ease;
             position: relative;
@@ -286,7 +266,7 @@
             border-radius: 50%;
             border: none;
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -377,7 +357,8 @@
             transition: all 0.3s ease;
         }
 
-        .size-btn:hover, .size-btn.selected {
+        .size-btn:hover,
+        .size-btn.selected {
             background: var(--primary);
             color: white;
             border-color: var(--primary);
@@ -421,6 +402,10 @@
             font-weight: 600;
             transition: all 0.3s ease;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .quick-view-btn:hover {
@@ -428,7 +413,7 @@
             color: white;
         }
 
-        /* Messages de notification */
+        /* Notification */
         .notification {
             position: fixed;
             top: 100px;
@@ -439,7 +424,7 @@
             border-radius: 10px;
             z-index: 9999;
             animation: slideInRight 0.3s ease-out;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .notification.error {
@@ -457,45 +442,34 @@
             }
         }
 
-        /* Pagination */
-        .pagination {
-            justify-content: center;
-            margin-top: 3rem;
+        /* Footer */
+        .footer {
+            background: #222;
+            color: #ccc;
         }
 
-        .page-link {
+        .footer h5 {
             color: var(--primary);
-            border-color: var(--light-gray);
         }
 
-        .page-link:hover {
-            color: white;
-            background-color: var(--primary);
-            border-color: var(--primary);
+        .footer a {
+            color: #ccc;
+            text-decoration: none;
         }
 
-        .page-item.active .page-link {
-            background-color: var(--primary);
-            border-color: var(--primary);
+        .footer a:hover {
+            color: var(--primary);
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .hero-mini h1 { font-size: 2rem; }
             .products-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
-            .products-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
             .sort-buttons { width: 100%; }
             .sort-btn { flex: 1; text-align: center; }
         }
-
-        @media (max-width: 480px) {
-            .products-grid { grid-template-columns: 1fr; }
-            .product-image { height: 200px; }
-            .sort-buttons { flex-direction: column; }
-        }
     </style>
 </head>
-
 <body>
     <!-- Header -->
     <nav class="navbar navbar-expand-lg header">
@@ -515,7 +489,8 @@
                         <a class="nav-link active" href="{% url 'shop:shop' %}">Boutique</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'shop:cart' %}">Panier
+                        <a class="nav-link" href="{% url 'shop:cart' %}">
+                            Panier
                             <span class="cart-badge" id="cartCount">{% cart_count request %}</span>
                         </a>
                     </li>
@@ -523,8 +498,27 @@
                         <a class="nav-link" href="{% url 'shop:contact' %}">Contact</a>
                     </li>
                     {% if user.is_staff %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Admin
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'shop:admin_dashboard' %}">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'shop:admin_dashboard' %}">Admin</a>
+                        <a class="nav-link" href="{% url 'shop:logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shop:login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Connexion
+                        </a>
                     </li>
                     {% endif %}
                 </ul>
@@ -532,15 +526,23 @@
         </div>
     </nav>
 
-    <!-- Hero Mini -->
+    <!-- Hero Section -->
     <section class="hero-mini">
         <div class="container">
             <h1><i class="fas fa-store me-3"></i>Boutique</h1>
             <p>Découvrez notre collection authentique de mode africaine</p>
-            {% if user.is_staff %}
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                <div class="mt-3">
+                    <a href="{% url 'admin:shop_product_add' %}" class="btn btn-light btn-lg">
+                        <i class="fas fa-plus me-2"></i>Ajouter un produit
+                    </a>
+                </div>
+                {% endif %}
+            {% else %}
             <div class="mt-3">
-                <a href="{% url 'admin:shop_product_add' %}" class="btn btn-light btn-lg">
-                    <i class="fas fa-plus me-2"></i>Ajouter un produit
+                <a href="{% url 'shop:login' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-user me-2"></i>Se connecter pour commander
                 </a>
             </div>
             {% endif %}
@@ -558,9 +560,8 @@
                             <input type="text" class="search-input" name="q" 
                                    value="{{ search_query|default:'' }}" 
                                    placeholder="Rechercher des produits...">
-                            <i class="fas fa-search search-icon"></i>
+                            <i class="fas fa-search search-icon" onclick="this.closest('form').submit()"></i>
                         </div>
-                        <!-- Conserver les autres filtres -->
                         {% if current_category %}
                             <input type="hidden" name="category" value="{{ current_category }}">
                         {% endif %}
@@ -568,7 +569,7 @@
                 </div>
             </div>
 
-            <!-- Filters Row -->
+            <!-- Filters -->
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <form method="GET" action="{% url 'shop:shop' %}">
@@ -639,21 +640,21 @@
             </div>
 
             <!-- Products Grid -->
-            <div class="products-grid" id="productsGrid">
+            <div class="products-grid">
                 {% for product in products %}
                 <div class="product-card" onclick="window.location.href='{% url 'shop:product_detail' product.id %}'">
                     <!-- Product Image -->
                     <div class="product-image">
                         {% if product.images.first %}
-                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" loading="lazy">
+                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
                         {% else %}
-                            <img src="{% static 'shop/img/placeholder.jpg' %}" alt="{{ product.name }}" loading="lazy">
+                            <img src="{% static 'shop/img/placeholder.jpg' %}" alt="{{ product.name }}">
                         {% endif %}
 
                         <!-- Badges -->
                         <div class="product-badges">
                             {% if product.on_sale and product.sale_price %}
-                                <span class="badge-sale">-{{ product.price|discount_percent:product.sale_price }}%</span>
+                                <span class="badge-sale">-{{ product.discount_percent }}%</span>
                             {% endif %}
                             {% if product.sold_out %}
                                 <span class="badge-soldout">Épuisé</span>
@@ -662,11 +663,13 @@
 
                         <!-- Quick Actions -->
                         <div class="product-actions">
-                            <button class="action-btn" title="Aperçu rapide" onclick="event.stopPropagation(); quickView({{ product.id }})">
+                            <button class="action-btn" title="Aperçu rapide" 
+                                    onclick="event.stopPropagation(); viewProduct({{ product.id }})">
                                 <i class="far fa-eye"></i>
                             </button>
                             {% if user.is_staff %}
-                            <button class="action-btn" title="Modifier" onclick="event.stopPropagation(); window.location.href='{% url 'admin:shop_product_change' product.id %}'">
+                            <button class="action-btn" title="Modifier" 
+                                    onclick="event.stopPropagation(); window.location.href='{% url 'admin:shop_product_change' product.id %}'">
                                 <i class="fas fa-edit"></i>
                             </button>
                             {% endif %}
@@ -676,7 +679,9 @@
                     <!-- Product Info -->
                     <div class="product-info">
                         {% if product.category %}
-                        <div class="product-category">{{ product.category.icon }} {{ product.category.name }}</div>
+                        <div class="product-category">
+                            {{ product.category.icon }} {{ product.category.name }}
+                        </div>
                         {% endif %}
                         
                         <h3 class="product-name">{{ product.name }}</h3>
@@ -688,7 +693,6 @@
                             {% if product.on_sale and product.sale_price %}
                                 <span class="current-price">{{ product.sale_price|floatformat:0 }} F CFA</span>
                                 <span class="original-price">{{ product.price|floatformat:0 }} F CFA</span>
-                                <span class="discount-percent">-{{ product.price|discount_percent:product.sale_price }}%</span>
                             {% else %}
                                 <span class="current-price">{{ product.price|floatformat:0 }} F CFA</span>
                             {% endif %}
@@ -696,17 +700,18 @@
 
                         <!-- Stock Info -->
                         {% if not product.sold_out %}
-                        <div class="stock-info text-muted">
+                        <div class="stock-info text-muted mb-2">
                             <small><i class="fas fa-box me-1"></i>{{ product.quantity }} en stock</small>
                         </div>
                         {% endif %}
 
                         <!-- Sizes -->
-                        {% if product.sizes %}
+                        {% if product.get_sizes_list %}
                         <div class="product-sizes">
                             <div class="size-options">
-                                {% for size in product.sizes %}
-                                <button class="size-btn" data-size="{{ size }}" onclick="event.stopPropagation(); selectSize(this)">
+                                {% for size in product.get_sizes_list %}
+                                <button class="size-btn" data-size="{{ size }}" 
+                                        onclick="event.stopPropagation(); selectSize(this, {{ product.id }})">
                                     {{ size }}
                                 </button>
                                 {% endfor %}
@@ -720,11 +725,13 @@
                                     onclick="event.stopPropagation(); addToCart({{ product.id }})"
                                     {% if product.sold_out %}disabled{% endif %}>
                                 <i class="fas fa-cart-plus me-2"></i>
-                                {% if product.sold_out %}Épuisé{% else %}Ajouter au panier{% endif %}
+                                {% if product.sold_out %}Épuisé{% else %}Ajouter{% endif %}
                             </button>
-                            <button class="quick-view-btn" onclick="event.stopPropagation(); quickView({{ product.id }})">
+                            <a href="{% url 'shop:product_detail' product.id %}" 
+                               class="quick-view-btn" 
+                               onclick="event.stopPropagation();">
                                 <i class="fas fa-eye"></i>
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -752,61 +759,42 @@
                 </div>
                 {% endfor %}
             </div>
-
-            <!-- Quick Add Product (Admin only) -->
-            {% if user.is_staff %}
-            <div class="text-center mt-4">
-                <a href="{% url 'admin:shop_product_add' %}" class="btn btn-success btn-lg">
-                    <i class="fas fa-plus-circle me-2"></i>Ajouter un nouveau produit
-                </a>
-            </div>
-            {% endif %}
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer bg-dark text-white pt-5 pb-4">
-        <div class="container text-center text-md-start">
-            <div class="row text-center text-md-start">
-                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
-                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">NDEY'AS SHOP</h5>
-                    <p>Mode et accessoires sénégalais authentiques pour toutes les occasions. Fabriqués avec passion et tradition.</p>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5>NDEY'AS SHOP</h5>
+                    <p>Mode et accessoires sénégalais authentiques pour toutes les occasions.</p>
                 </div>
-                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
-                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Liens</h5>
-                    <p><a href="{% url 'shop:index' %}" class="text-white text-decoration-none">Accueil</a></p>
-                    <p><a href="{% url 'shop:shop' %}" class="text-white text-decoration-none">Boutique</a></p>
-                    <p><a href="{% url 'shop:contact' %}" class="text-white text-decoration-none">Contact</a></p>
+                <div class="col-md-4 mb-4">
+                    <h5>Liens Rapides</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'shop:index' %}">Accueil</a></li>
+                        <li><a href="{% url 'shop:shop' %}">Boutique</a></li>
+                        <li><a href="{% url 'shop:contact' %}">Contact</a></li>
+                    </ul>
                 </div>
-                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
-                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Contact</h5>
-                    <p><i class="fas fa-home me-3"></i> Zac Mbao, Dakar, Senegal</p>
-                    <p><i class="fas fa-envelope me-3"></i> contact@ndeyas.com</p>
-                    <p><i class="fas fa-phone me-3"></i> +221 77 545 74 82</p>
-                </div>
-                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
-                    <h5 class="text-uppercase mb-4 font-weight-bold text-warning">Suivez-Nous</h5>
-                    <a href="#" class="text-white me-4"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="text-white me-4"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="text-white me-4"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-white me-4"><i class="fab fa-whatsapp"></i></a>
+                <div class="col-md-4 mb-4">
+                    <h5>Contact</h5>
+                    <p><i class="fas fa-map-marker-alt me-2"></i>Zac Mbao, Dakar, Sénégal</p>
+                    <p><i class="fas fa-phone me-2"></i>+221 77 545 74 82</p>
+                    <p><i class="fas fa-envelope me-2"></i>contact@ndeyas.com</p>
                 </div>
             </div>
-            <hr class="my-3">
-            <div class="row align-items-center">
-                <div class="col-md-7 col-lg-8">
-                    <p>© 2025 NDEY'AS SHOP. Tous droits réservés.</p>
-                </div>
-                <div class="col-md-5 col-lg-4">
-                    <p class="text-end">Made with ❤️ in Senegal by Fatoumata</p>
-                </div>
+            <hr class="my-4">
+            <div class="text-center">
+                <p>&copy; 2025 NDEY'AS SHOP. Tous droits réservés. Made with ❤️ in Senegal</p>
             </div>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-  <script>
+    <script>
         // Get CSRF token
         function getCookie(name) {
             let cookieValue = null;
@@ -823,12 +811,62 @@
             return cookieValue;
         }
 
-        // Check if user is authenticated
+        const csrftoken = getCookie('csrftoken');
         const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
 
-        // Add to Cart
+        // Selected sizes for each product
+        const selectedSizes = {};
+
+        // Select size
+        function selectSize(button, productId) {
+            // Remove selected class from other buttons of the same product
+            const productCard = button.closest('.product-card');
+            productCard.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked button
+            button.classList.add('selected');
+            
+            // Store selected size
+            selectedSizes[productId] = button.dataset.size;
+        }
+
+        // View product
+        function viewProduct(productId) {
+            window.location.href = `/product/${productId}/`;
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notif => notif.remove());
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type === 'error' ? 'error' : ''}`;
+            notification.innerHTML = `
+                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} me-2"></i>
+                ${message}
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Update cart count
+        function updateCartCount(count) {
+            const cartBadge = document.getElementById('cartCount');
+            if (cartBadge) {
+                cartBadge.textContent = count;
+                cartBadge.style.animation = 'pulse 0.5s ease-out';
+            }
+        }
+
+        // Add to cart
         function addToCart(productId) {
-            // Check if user is logged in
             if (!isAuthenticated) {
                 showNotification('Veuillez vous connecter pour ajouter des produits au panier', 'error');
                 setTimeout(() => {
@@ -837,12 +875,16 @@
                 return;
             }
 
-            // Get selected size if any
             const productCard = event.target.closest('.product-card');
-            const selectedSizeBtn = productCard.querySelector('.size-btn.selected');
-            const selectedSize = selectedSizeBtn ? selectedSizeBtn.dataset.size : '';
+            const selectedSize = selectedSizes[productId] || '';
+            
+            // Check if size is required
+            const sizeButtons = productCard.querySelectorAll('.size-btn');
+            if (sizeButtons.length > 0 && !selectedSize) {
+                showNotification('Veuillez sélectionner une taille', 'error');
+                return;
+            }
 
-            // Show loading state
             const button = event.target.closest('.add-to-cart-btn');
             const originalText = button.innerHTML;
             button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Ajout...';
@@ -852,7 +894,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-CSRFToken': csrftoken
                 },
                 body: JSON.stringify({
                     'product_id': productId,
@@ -863,10 +905,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showNotification(data.message, 'success');
+                    showNotification(data.message);
                     updateCartCount(data.cart_count);
                     
-                    // Success animation
                     button.innerHTML = '<i class="fas fa-check me-2"></i>Ajouté !';
                     button.style.background = 'var(--success)';
                     
@@ -876,17 +917,9 @@
                         button.disabled = false;
                     }, 2000);
                 } else {
-                    // Handle authentication error from backend
-                    if (data.redirect_url) {
-                        showNotification(data.message, 'error');
-                        setTimeout(() => {
-                            window.location.href = data.redirect_url;
-                        }, 1500);
-                    } else {
-                        showNotification(data.message, 'error');
-                        button.innerHTML = originalText;
-                        button.disabled = false;
-                    }
+                    showNotification(data.message, 'error');
+                    button.innerHTML = originalText;
+                    button.disabled = false;
                 }
             })
             .catch(error => {
@@ -896,6 +929,6 @@
                 button.disabled = false;
             });
         }
-        </script>
+    </script>
 </body>
 </html>
