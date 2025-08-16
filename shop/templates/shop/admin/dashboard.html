@@ -968,6 +968,60 @@
                 }, 5000);
             });
         });
+
+        function addToCart(productId) {
+    const sizeSelect = document.getElementById(`size-${productId}`);
+    const selectedSize = sizeSelect ? sizeSelect.value : '';
+    const quantity = productQuantities[productId] || 1;
+    
+    // Préparer les données
+    const requestData = {
+        'product_id': productId,
+        'quantity': quantity,
+        'selected_size': selectedSize || ''  // S'assurer que ce n'est jamais undefined
+    };
+    
+    // Si c'est un ID de taille, l'envoyer aussi
+    if (selectedSize && !isNaN(selectedSize)) {
+        requestData.size_id = selectedSize;
+    }
+    
+    fetch('{% url "shop:add_to_cart" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message);
+            document.getElementById('cartCount').textContent = data.cart_count;
+            
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<div class="loading"></div>';
+            button.disabled = true;
+            setTimeout(() => {
+                button.innerHTML = '<i class="fas fa-check me-2"></i>Ajouté !';
+                button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = '';
+                    button.disabled = false;
+                }, 1000);
+            }, 500);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showNotification('Une erreur est survenue', 'error');
+    });
+}
     </script>
 </body>
 </html>

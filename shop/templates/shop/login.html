@@ -497,7 +497,7 @@
         function handleForgotPassword() {
             const email = prompt("Entrez votre adresse email pour réinitialiser votre mot de passe:");
             if (email && isValidEmail(email)) {
-                fetch('/api/reset-password/', {
+                fetch('{% url "shop:reset_password" %}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -542,7 +542,7 @@
             loginBtn.disabled = true;
 
             // Send login request to backend
-            fetch('/api/login/', {
+            fetch('{% url "shop:ajax_login" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -559,7 +559,7 @@
                     showNotification(data.message, 'success');
                     // Redirect to home page
                     setTimeout(() => {
-                        window.location.href = data.redirect_url || '/home/';
+                        window.location.href = data.redirect_url || '{% url "shop:index" %}';
                     }, 1000);
                 } else {
                     showNotification(data.message, 'error');
@@ -608,7 +608,7 @@
             registerBtn.disabled = true;
 
             // Send register request to backend
-            fetch('/api/register/', {
+            fetch('{% url "shop:ajax_register" %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -626,7 +626,7 @@
                     showNotification(data.message, 'success');
                     // Redirect to home page
                     setTimeout(() => {
-                        window.location.href = data.redirect_url || '/home/';
+                        window.location.href = data.redirect_url || '{% url "shop:index" %}';
                     }, 1000);
                 } else {
                     showNotification(data.message, 'error');

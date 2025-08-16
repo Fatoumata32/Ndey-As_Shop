@@ -54,7 +54,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     quantity = models.IntegerField(default=0)
     sold_out = models.BooleanField(default=False)
-    sizes = models.ManyToManyField(Size, blank=True, related_name='products')
+    sizes = models.ManyToManyField(Size, blank=True, related_name='products', null=True)
     icon = models.CharField(max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -161,14 +161,15 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
-    selected_size = models.CharField(max_length=50, blank=True)
+    selected_size = models.CharField(max_length=50, blank=True, null=True, default='')  # Ajout de null=True et default=''
     added_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         unique_together = ('cart', 'product', 'selected_size')
     
     def __str__(self):
-        return f"{self.quantity} x {self.product.name} ({self.selected_size})"
+        size_info = f" - Taille: {self.selected_size}" if self.selected_size else ""
+        return f"{self.quantity} x {self.product.name}{size_info}"
     
     def get_subtotal(self):
         """Calcule le sous-total pour cet article"""

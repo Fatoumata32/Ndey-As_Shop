@@ -137,7 +137,16 @@ def add_to_cart(request):
             data = json.loads(request.body)
             product_id = data.get('product_id')
             quantity = data.get('quantity', 1)
-            selected_size = data.get('selected_size', '')
+            selected_size = data.get('selected_size', '')  # Valeur par défaut vide
+            
+            # Si size_id est envoyé au lieu de selected_size
+            size_id = data.get('size_id')
+            if size_id:
+                try:
+                    size = Size.objects.get(id=size_id)
+                    selected_size = size.name
+                except Size.DoesNotExist:
+                    selected_size = ''
             
             product = get_object_or_404(Product, id=product_id)
             cart = get_or_create_cart(request)
@@ -149,11 +158,11 @@ def add_to_cart(request):
                     'message': f'Stock insuffisant! Seulement {product.quantity} unités disponibles.'
                 })
             
-            # Obtenir ou créer l'article du panier
+            # Obtenir ou créer l'article du panier avec selected_size toujours défini
             cart_item, created = CartItem.objects.get_or_create(
                 cart=cart,
                 product=product,
-                selected_size=selected_size,
+                selected_size=selected_size or '',  # S'assurer que ce n'est jamais None
                 defaults={'quantity': quantity}
             )
             
@@ -175,7 +184,7 @@ def add_to_cart(request):
         except Exception as e:
             return JsonResponse({
                 'success': False,
-                'message': str(e)
+                'message': f'Erreur: {str(e)}'
             })
 
 
