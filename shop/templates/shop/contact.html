@@ -1,3 +1,5 @@
+{% load static %}
+{% load shop_extras %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -677,12 +679,14 @@
     <div id="contact" class="page active">
         <!-- Hero Section with Slideshow -->
 <section class="hero">
-  <div class="hero-slideshow">
-    <div class="hero-slide" style="background-image: url('img/SHOP-BG 1.jpg')"></div>
-    <div class="hero-slide" style="background-image: url('img/SHOP-BG 2.jpg')"></div>
-    <div class="hero-slide" style="background-image: url('img/SHOP-BG\ 3.jpg')"></div>
-    <div class="hero-slide" style="background-image: url('img/SHOP-BG\ 4.jpg')"></div>
-  </div>
+  
+        <div class="hero-slideshow">
+            <div class="hero-slide active" style="background-image: url('{% static "shop/img/SHOP-BG1.jpg" %}');"></div>
+            <div class="hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG2.jpg" %}');"></div>
+            <div class="hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG3.jpg" %}');"></div>
+            <div class="hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG4.jpg" %}');"></div>
+        </div>
+  
   <div class="container">
     <div class="hero-content text-white text-center">
       <h1>CONTACTEZ-NOUS</h1>

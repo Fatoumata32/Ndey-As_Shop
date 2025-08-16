@@ -31,12 +31,17 @@ urlpatterns = [
     
     # Admin
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    path('admin/products/', views.admin_products, name='admin_products'),
-    path('admin/products/add/', views.admin_add_product, name='admin_add_product'),
-    path('admin/products/edit/<int:product_id>/', views.admin_edit_product, name='admin_edit_product'),
-    path('admin/products/delete/<int:product_id>/', views.admin_delete_product, name='admin_delete_product'),
-    path('admin/categories/', views.admin_categories, name='admin_categories'),
-    path('admin/categories/add/', views.admin_add_category, name='admin_add_category'),
-    path('admin/orders/', views.admin_orders, name='admin_orders'),
-    path('admin/orders/<int:order_id>/', views.admin_order_detail, name='admin_order_detail'),
+    
+    # Produits
+    path('products/', views.product_list, name='product_list'),
+    path('product/add/', views.product_add, name='product_add'),
+    path('product/edit/<int:pk>/', views.product_edit, name='product_edit'),
+    path('product/delete/<int:pk>/', views.product_delete, name='product_delete'),
+   
+    
+    # Catégories
+    path('categories/', views.category_list, name='category_list'),
+    path('category/add/', views.category_add, name='category_add'),
+    path('category/edit/<int:pk>/', views.category_edit, name='category_edit'),
+    path('category/delete/<int:pk>/', views.category_delete, name='category_delete'),
 ]

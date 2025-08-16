@@ -1,6 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.text import slugify
+from datetime import timedelta
+
+class Size(models.Model):
+    """Modèle pour les tailles disponibles"""
+    name = models.CharField(max_length=50, unique=True)
+    
+    def __str__(self):
+        return self.name
 
 class Category(models.Model):
     """Modèle pour les catégories de produits"""
@@ -13,10 +22,12 @@ class Category(models.Model):
         ('none', 'Aucune option de taille'),
     ]
     
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True, default='Sans nom')  # Ajout d'une valeur par défaut
+    slug = models.SlugField(max_length=150, unique=True, blank=True)
+    description = models.TextField(blank=True, null=True)
     icon = models.CharField(max_length=50, default='📦')
     category_type = models.CharField(max_length=20, choices=CATEGORY_TYPES, default='none')
-    attributes = models.JSONField(default=list, blank=True)  # Pour stocker les tailles disponibles
+    available_sizes = models.ManyToManyField(Size, blank=True, related_name='categories')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -26,11 +37,16 @@ class Category(models.Model):
     
     def __str__(self):
         return f"{self.icon} {self.name}"
-
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 class Product(models.Model):
     """Modèle pour les produits"""
     name = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -38,7 +54,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     quantity = models.IntegerField(default=0)
     sold_out = models.BooleanField(default=False)
-    sizes = models.JSONField(default=list, blank=True)  # Tailles disponibles pour ce produit
+    sizes = models.ManyToManyField(Size, blank=True, related_name='products')
     icon = models.CharField(max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -50,52 +66,17 @@ class Product(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
-        # Marquer automatiquement comme épuisé si quantité = 0
-        if self.quantity == 0:
-            self.sold_out = True
-        else:
-            self.sold_out = False
+        # Génération automatique du slug
+        if not self.slug:
+            self.slug = slugify(self.name)
             
-        # S'assurer que sizes est toujours une liste
-        if self.sizes is None:
-            self.sizes = []
-        elif isinstance(self.sizes, str):
-            try:
-                import json
-                self.sizes = json.loads(self.sizes)
-            except:
-                self.sizes = []
-        elif not isinstance(self.sizes, list):
-            self.sizes = []
-            
+        # Gestion du stock
+        self.sold_out = self.quantity <= 0
         super().save(*args, **kwargs)
     
     def get_current_price(self):
         """Retourne le prix actuel (solde ou normal)"""
-        if self.on_sale and self.sale_price:
-            return self.sale_price
-        return self.price
-    
-    def get_sizes_list(self):
-        """Retourne les tailles comme une liste Python"""
-        if not self.sizes:
-            return []
-        
-        # Si c'est déjà une liste, la retourner
-        if isinstance(self.sizes, list):
-            return self.sizes
-        
-        # Si c'est une chaîne JSON, la parser
-        if isinstance(self.sizes, str):
-            try:
-                import json
-                sizes = json.loads(self.sizes)
-                return sizes if isinstance(sizes, list) else []
-            except:
-                return []
-        
-        # Pour tout autre type, retourner une liste vide
-        return []
+        return self.sale_price if self.on_sale and self.sale_price else self.price
     
     @property
     def discount_percent(self):
@@ -108,18 +89,12 @@ class Product(models.Model):
     @property
     def is_new(self):
         """Détermine si le produit est nouveau (moins de 30 jours)"""
-        from django.utils import timezone
-        from datetime import timedelta
         return self.created_at > timezone.now() - timedelta(days=30)
     
     @property
     def primary_image(self):
         """Retourne l'image principale du produit"""
         return self.images.filter(is_primary=True).first() or self.images.first()
-    
-    def has_size(self, size):
-        """Vérifie si une taille spécifique est disponible"""
-        return size in self.get_sizes_list()
     
     def is_in_stock(self):
         """Vérifie si le produit est en stock"""
@@ -138,23 +113,34 @@ class Product(models.Model):
         return False
     
     def get_absolute_url(self):
-        """Retourne l'URL du produit"""
+        """Retourne l'URL du produit utilisant le slug"""
         from django.urls import reverse
-        return reverse('shop:product_detail', kwargs={'product_id': self.id})
+        return reverse('shop:product_detail', kwargs={'slug': self.slug})
 
 class ProductImage(models.Model):
     """Modèle pour les images de produits"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='products/')
+    alt_text = models.CharField(max_length=200, blank=True)
+    is_primary = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         ordering = ['order', 'created_at']
+        # Retirer la contrainte unique_together qui peut causer des problèmes
     
     def __str__(self):
         return f"Image for {self.product.name}"
-
+    
+    def save(self, *args, **kwargs):
+        # S'assurer qu'une seule image primaire par produit
+        if self.is_primary:
+            ProductImage.objects.filter(
+                product=self.product, 
+                is_primary=True
+            ).exclude(pk=self.pk).update(is_primary=False)
+        super().save(*args, **kwargs)
 
 class Cart(models.Model):
     """Modèle pour le panier"""
@@ -164,17 +150,11 @@ class Cart(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        if self.user:
-            return f"Cart for {self.user.username}"
-        return f"Cart {self.session_key}"
+        return f"Cart #{self.id} - {self.user.username if self.user else 'Anonymous'}"
     
     def get_total(self):
         """Calcule le total du panier"""
-        total = 0
-        for item in self.items.all():
-            total += item.get_subtotal()
-        return total
-
+        return sum(item.get_subtotal() for item in self.items.all())
 
 class CartItem(models.Model):
     """Modèle pour les articles du panier"""
@@ -188,12 +168,11 @@ class CartItem(models.Model):
         unique_together = ('cart', 'product', 'selected_size')
     
     def __str__(self):
-        return f"{self.quantity} x {self.product.name}"
+        return f"{self.quantity} x {self.product.name} ({self.selected_size})"
     
     def get_subtotal(self):
         """Calcule le sous-total pour cet article"""
         return self.quantity * self.product.get_current_price()
-
 
 class Order(models.Model):
     """Modèle pour les commandes"""
@@ -212,7 +191,8 @@ class Order(models.Model):
     ]
     
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    customer_name = models.CharField(max_length=200)
+    customer_name = models.CharField(max_length=200,null=True, blank=True)
+    customer_email = models.EmailField(null=True, blank=True)
     customer_phone = models.CharField(max_length=20)
     customer_address = models.TextField()
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
@@ -227,27 +207,26 @@ class Order(models.Model):
     def __str__(self):
         return f"Order #{self.id} - {self.customer_name}"
 
-
 class OrderItem(models.Model):
     """Modèle pour les articles d'une commande"""
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     selected_size = models.CharField(max_length=50, blank=True)
     
     def __str__(self):
-        return f"{self.quantity} x {self.product.name}"
+        return f"{self.quantity} x {self.product.name if self.product else 'Deleted Product'}"
     
     def get_subtotal(self):
         return self.quantity * self.price
 
-
 class Contact(models.Model):
     """Modèle pour les messages de contact"""
     name = models.CharField(max_length=200)
+    email = models.EmailField(null=True, blank=True)
     phone = models.CharField(max_length=20, blank=True)
-    message = models.TextField()
+    message = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
     
@@ -255,22 +234,4 @@ class Contact(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Message from {self.name} - {self.created_at.strftime('%Y-%m-%d')}"
-    
-
-
-# Dans models.py, ajoutez ces propriétés à votre modèle Product :
-
-@property
-def discount_percent(self):
-    """Calcule le pourcentage de remise"""
-    if self.on_sale and self.sale_price and self.price > self.sale_price:
-        return round(((self.price - self.sale_price) / self.price) * 100)
-    return 0
-
-@property 
-def is_new(self):
-    """Détermine si le produit est nouveau (moins de 30 jours)"""
-    from django.utils import timezone
-    from datetime import timedelta
-    return self.created_at > timezone.now() - timedelta(days=30)
+        return f"Message from {self.name} ({self.email})"

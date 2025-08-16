@@ -5,7 +5,7 @@ from .models import Category, Product, ProductImage, Cart, CartItem, Order, Orde
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
-    fields = ['image', 'order']
+    fields = ['image', 'order', 'is_primary']  # Ajout du champ is_primary
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -13,6 +13,18 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ['category_type', 'created_at']
     search_fields = ['name']
     ordering = ['name']
+    fields = [
+        'name', 
+        'slug', 
+        'description', 
+        'icon', 
+        'category_type', 
+        'available_sizes'
+    ]
+    filter_horizontal = ['available_sizes'] 
+
+# SUPPRIMER cette ligne en double ↓
+# admin.site.register(Category, CategoryAdmin)
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -26,9 +38,10 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
-    list_display = ['product', 'order', 'created_at']
-    list_filter = ['created_at']
+    list_display = ['product', 'order', 'is_primary', 'created_at']  # Ajout de is_primary
+    list_filter = ['created_at', 'is_primary']
     search_fields = ['product__name']
+    list_editable = ['order', 'is_primary']  # Permet d'éditer directement
 
 class CartItemInline(admin.TabularInline):
     model = CartItem
@@ -61,9 +74,9 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ['name', 'phone', 'is_read', 'created_at']
+    list_display = ['name', 'email', 'phone', 'is_read', 'created_at']  # Ajout de email
     list_filter = ['is_read', 'created_at']
-    search_fields = ['name', 'phone', 'message']
+    search_fields = ['name', 'phone', 'email', 'message']  # Ajout de email
     list_editable = ['is_read']
     ordering = ['-created_at']
-    readonly_fields = ['created_at']
+    readonly_fields = ['created_at']  # Correction: suppression de la virgule en trop

@@ -1,11 +1,10 @@
 {% load static %}
-{% load shop_extras %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NDEY'AS SHOP - Dashboard Admin</title>
+    <title>NDEY'AS SHOP - Ajouter un produit</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -28,12 +27,13 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--light-gray);
+            background-color: var(--white);
             color: var(--black);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        /* Header */
+        /* Header Style identique à index.html */
         .header {
             position: sticky;
             top: 0;
@@ -46,278 +46,542 @@
         .navbar-brand {
             font-size: 2rem;
             font-weight: 800;
-            color: var(--white) !important;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: var(--white);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
         }
 
         .navbar-nav .nav-link {
-            color: var(--white) !important;
+            color: var(--white);
             font-weight: 600;
             margin: 0 1rem;
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
         }
 
         .navbar-nav .nav-link:hover {
-            color: var(--black) !important;
+            color: var(--black);
             transform: translateY(-2px);
         }
 
-        /* Dashboard Header */
-        .dashboard-header {
-            background: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            background: var(--black);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
         }
 
-        .dashboard-title {
-            font-size: 2.5rem;
+        .navbar-nav .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 5rem 0;
+            position: relative;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3rem;
             font-weight: 800;
+            margin-bottom: 4rem;
             color: var(--black);
-            margin-bottom: 0.5rem;
+            position: relative;
         }
 
-        .dashboard-subtitle {
-            color: #666;
-            font-size: 1.1rem;
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), #ff4081);
+            border-radius: 2px;
         }
 
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+        .section-title i {
+            color: var(--primary);
+            margin-right: 1rem;
+        }
+
+        /* Admin Form Styles */
+        .admin-form {
+            background: var(--white);
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
             margin-bottom: 3rem;
         }
 
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        .admin-form:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(216, 27, 96, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--black);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group label i {
+            margin-right: 10px;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
             transition: all 0.3s ease;
+            width: 100%;
+            background: var(--light-gray);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(216, 27, 96, 0.1);
+            background: var(--white);
+            outline: none;
+        }
+
+        /* Button Styles comme index.html */
+        .btn-hero {
+            background: var(--black);
+            color: var(--white);
+            padding: 1.2rem 3rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            display: inline-block;
             position: relative;
             overflow: hidden;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        .btn-hero:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            color: var(--white);
         }
 
-        .stat-card::before {
+        .btn-hero::before {
             content: '';
             position: absolute;
             top: 0;
-            right: 0;
-            width: 100px;
-            height: 100px;
-            background: var(--primary);
-            opacity: 0.1;
-            border-radius: 50%;
-            transform: translate(30px, -30px);
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
         }
 
-        .stat-icon {
-            width: 60px;
-            height: 60px;
+        .btn-hero:hover::before {
+            left: 100%;
+        }
+
+        .btn-hero.btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-hero.btn-outline:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-hero.btn-sm {
+            padding: 0.8rem 2rem;
+            font-size: 1rem;
+        }
+
+        .btn-hero.btn-edit {
+            background: linear-gradient(135deg, #623d0c, #8d6e63);
+        }
+
+        .btn-hero.btn-edit:hover {
+            background: linear-gradient(135deg, #1976d2, #2196f3);
+        }
+
+        .btn-hero.btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-hero.btn-danger:hover {
+            background: #c82333;
+        }
+
+        /* Section Card Style */
+        .section-card {
+            background: var(--light-gray);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-top: 2rem;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-card h6 {
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-card h6 i {
+            margin-right: 10px;
+            font-size: 1.4rem;
+        }
+
+        /* Notification Style comme index.html */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--black);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            z-index: 1001;
+            animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .notification.success {
+            border-left-color: var(--success);
+        }
+
+        .notification.error {
+            border-left-color: var(--danger);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* Media Preview */
+        .media-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .media-preview-item {
+            position: relative;
             border-radius: 12px;
+            overflow: hidden;
+            background: var(--light-gray);
+            width: 120px;
+            height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
         }
 
-        .stat-icon.primary {
-            background: rgba(216, 27, 96, 0.1);
-            color: var(--primary);
+        .media-preview-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
 
-        .stat-icon.success {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--success);
+        .media-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        .stat-icon.warning {
-            background: rgba(255, 193, 7, 0.1);
-            color: var(--warning);
+        .media-preview .remove-media {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--danger);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
         }
 
-        .stat-icon.info {
+        .media-preview .remove-media:hover {
+            transform: scale(1.1);
+            background: #bd2130;
+        }
+
+        .media-preview .media-order {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.7);
+            color: var(--white);
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Info Card */
+        .info-card {
             background: rgba(23, 162, 184, 0.1);
+            border: 1px solid var(--info);
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            color: #0c5460;
+        }
+
+        .info-card i {
+            margin-right: 10px;
             color: var(--info);
         }
 
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--black);
-            margin-bottom: 0.5rem;
+        /* Error List */
+        .errorlist {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 12px;
+            padding: 0.8rem 1.2rem;
+            margin-top: 0.8rem;
+            color: var(--danger);
+            list-style: none;
         }
 
-        .stat-label {
-            color: #666;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .errorlist li {
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .errorlist li i {
+            margin-right: 10px;
         }
 
         /* Action Buttons */
         .action-buttons {
             display: flex;
             gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 3rem;
+            margin-top: 2rem;
+            justify-content: center;
         }
 
-        .btn-action {
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-action.primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-action.primary:hover {
-            background: #c2185b;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(216, 27, 96, 0.3);
-        }
-
-        .btn-action.secondary {
-            background: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-action.secondary:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Tables */
-        .dashboard-section {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--black);
-        }
-
-        .table {
-            margin: 0;
-        }
-
-        .table th {
-            border-top: none;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            color: #666;
-            padding: 1rem;
-        }
-
-        .table td {
-            padding: 1rem;
-            vertical-align: middle;
-        }
-
-        .product-image-small {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 0.8rem;
-        }
-
-        .badge-success {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--success);
-        }
-
-        .badge-warning {
-            background: rgba(255, 193, 7, 0.1);
-            color: var(--warning);
-        }
-
-        .badge-danger {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-
-        .badge-info {
-            background: rgba(23, 162, 184, 0.1);
-            color: var(--info);
-        }
-
-        .btn-sm {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.85rem;
-            border-radius: 6px;
-        }
-
-        .btn-group-action {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
+        /* Product List */
+        .product-list {
+            background: var(--white);
             padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .product-item {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            border: 2px solid var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+        .product-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 40px rgba(216, 27, 96, 0.2);
+            border-color: var(--primary);
+        }
+
+        .product-item.sold-out {
+            opacity: 0.7;
+            border: 2px solid var(--danger);
+        }
+
+        .product-item.sold-out::before {
+            content: 'ÉPUISÉ';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--danger);
+            color: var(--white);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            z-index: 1;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+        }
+
+        .product-info h5 {
+            margin-bottom: 0.8rem;
+            color: var(--black);
+            font-weight: 700;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-info h5 i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+
+        .product-info p {
+            margin: 0.4rem 0;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .product-price {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin: 0.8rem 0;
+        }
+
+        .sale-price {
+            color: var(--danger);
+            font-weight: 800;
+        }
+
+        .original-price {
+            text-decoration: line-through;
             color: #999;
+            font-size: 1rem;
+            margin-left: 0.8rem;
         }
 
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        /* Footer */
+        /* Footer Style */
         .footer {
             background: #222;
-            color: #ccc;
-            padding: 2rem 0;
-            margin-top: 4rem;
+            color: var(--white);
+            padding: 3rem 0 2rem;
+            margin-top: 5rem;
         }
 
-        /* Responsive */
+        .footer h5 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .social-links a {
+            color: #ccc;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        /* Animation for page load */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .admin-form, .product-list {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
         @media (max-width: 768px) {
-            .dashboard-title { font-size: 2rem; }
-            .stat-value { font-size: 1.5rem; }
+            .section-title { font-size: 2rem; }
+            .admin-form, .product-list { padding: 2rem; }
+            .product-item { flex-direction: column; gap: 1.5rem; }
             .action-buttons { flex-direction: column; }
-            .btn-action { width: 100%; justify-content: center; }
-            .table { font-size: 0.9rem; }
-            .btn-group-action { flex-direction: column; }
+            .btn-hero { 
+                width: 100%;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <!-- Header identique à index.html -->
     <nav class="navbar navbar-expand-lg header">
         <div class="container">
             <a class="navbar-brand" href="{% url 'shop:index' %}">
@@ -329,294 +593,381 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'shop:index' %}">
-                            <i class="fas fa-home me-1"></i>Accueil
+                        <a class="nav-link" href="{% url 'shop:index' %}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shop:shop' %}">Boutique</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'shop:cart' %}">
+                            Panier
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'shop:shop' %}">
-                            <i class="fas fa-store me-1"></i>Boutique
-                        </a>
+                        <a class="nav-link" href="{% url 'shop:contact' %}">Contact</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'admin:index' %}">
-                            <i class="fas fa-cog me-1"></i>Django Admin
+                    {% if user.is_staff %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Admin
                         </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'shop:admin_dashboard' %}">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{% url 'shop:product_list' %}">Produits</a></li>
+                            <li><a class="dropdown-item" href="{% url 'shop:category_list' %}">Catégories</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Django Admin</a></li>
+                        </ul>
                     </li>
+                    {% endif %}
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'shop:logout' %}">
-                            <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Dashboard Header -->
-    <section class="dashboard-header">
+    <!-- Admin Panel -->
+    <section class="section">
         <div class="container">
-            <h1 class="dashboard-title">
-                <i class="fas fa-tachometer-alt me-3"></i>Dashboard Admin
-            </h1>
-            <p class="dashboard-subtitle">Bienvenue, {{ user.username }} ! Gérez votre boutique en ligne.</p>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <div class="container">
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon primary">
-                    <i class="fas fa-box"></i>
-                </div>
-                <div class="stat-value">{{ total_products }}</div>
-                <div class="stat-label">Produits</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon success">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <div class="stat-value">{{ total_orders }}</div>
-                <div class="stat-label">Commandes</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon warning">
-                    <i class="fas fa-tags"></i>
-                </div>
-                <div class="stat-value">{{ total_categories }}</div>
-                <div class="stat-label">Catégories</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon info">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div class="stat-value">{{ unread_messages }}</div>
-                <div class="stat-label">Messages non lus</div>
-            </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-            <a href="{% url 'admin:shop_product_add' %}" class="btn-action primary">
-                <i class="fas fa-plus"></i>
-                Ajouter un produit
-            </a>
-            <a href="{% url 'admin:shop_category_add' %}" class="btn-action secondary">
-                <i class="fas fa-folder-plus"></i>
-                Ajouter une catégorie
-            </a>
-            <a href="{% url 'admin:shop_order_changelist' %}" class="btn-action secondary">
-                <i class="fas fa-list"></i>
-                Voir toutes les commandes
-            </a>
-            <a href="{% url 'admin:shop_contact_changelist' %}" class="btn-action secondary">
-                <i class="fas fa-envelope-open"></i>
-                Messages clients
-            </a>
-        </div>
-
-        <!-- Recent Products -->
-        <div class="dashboard-section">
             <h2 class="section-title">
-                <i class="fas fa-box me-2"></i>Produits récents
+                <i class="fas fa-plus"></i>Ajouter un produit
             </h2>
-            {% if products %}
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>Nom</th>
-                            <th>Catégorie</th>
-                            <th>Prix</th>
-                            <th>Stock</th>
-                            <th>Statut</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for product in products|slice:":10" %}
-                        <tr>
-                            <td>
-                                {% if product.images.first %}
-                                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="product-image-small">
-                                {% else %}
-                                    <div class="product-image-small bg-light d-flex align-items-center justify-content-center">
-                                        <i class="fas fa-image text-muted"></i>
-                                    </div>
-                                {% endif %}
-                            </td>
-                            <td><strong>{{ product.name }}</strong></td>
-                            <td>{{ product.category.icon }} {{ product.category.name }}</td>
-                            <td>
-                                {% if product.on_sale and product.sale_price %}
-                                    <span class="text-danger">{{ product.sale_price|floatformat:0 }} F</span>
-                                    <del class="text-muted">{{ product.price|floatformat:0 }} F</del>
-                                {% else %}
-                                    {{ product.price|floatformat:0 }} F
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if product.sold_out %}
-                                    <span class="badge badge-danger">Épuisé</span>
-                                {% else %}
-                                    <span class="badge badge-success">{{ product.quantity }} en stock</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if product.is_new %}
-                                    <span class="badge badge-info">Nouveau</span>
-                                {% endif %}
-                                {% if product.on_sale %}
-                                    <span class="badge badge-warning">En solde</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="btn-group-action">
-                                    <a href="{% url 'shop:product_detail' product.id %}" class="btn btn-sm btn-outline-primary" target="_blank">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{% url 'admin:shop_product_change' product.id %}" class="btn btn-sm btn-outline-success">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="{% url 'admin:shop_product_delete' product.id %}" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="notification {% if message.tags %}{{ message.tags }}{% endif %}">
+                        <i class="fas {% if 'success' in message.tags %}fa-check-circle{% elif 'error' in message.tags %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="admin-form">
+                        <h3 class="mb-4" style="color: var(--primary); font-weight: 700;">
+                            <i class="fas fa-plus me-2"></i>Nouveau produit
+                        </h3>
+                        <form method="post" enctype="multipart/form-data" id="productForm">
+                            {% csrf_token %}
+                            
+                            <!-- Affichage des erreurs non liées aux champs -->
+                            {% if form.non_field_errors %}
+                                <div class="errorlist">
+                                    {% for error in form.non_field_errors %}
+                                        <li><i class="fas fa-exclamation-circle"></i>{{ error }}</li>
+                                    {% endfor %}
                                 </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="text-center mt-3">
-                <a href="{% url 'admin:shop_product_changelist' %}" class="btn btn-primary">
-                    Voir tous les produits
-                </a>
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-box-open"></i>
-                <p>Aucun produit trouvé</p>
-                <a href="{% url 'admin:shop_product_add' %}" class="btn btn-primary mt-3">
-                    Ajouter votre premier produit
-                </a>
-            </div>
-            {% endif %}
-        </div>
+                            {% endif %}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.name.id_for_label }}">
+                                            <i class="fas fa-tag"></i>{{ form.name.label }}
+                                        </label>
+                                        {{ form.name }}
+                                        {% if form.name.errors %}
+                                            <ul class="errorlist">
+                                                {% for error in form.name.errors %}
+                                                    <li><i class="fas fa-exclamation-circle"></i>{{ error }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.price.id_for_label }}">
+                                            <i class="fas fa-money-bill"></i>{{ form.price.label }}
+                                        </label>
+                                        {{ form.price }}
+                                        {% if form.price.errors %}
+                                            <ul class="errorlist">
+                                                {% for error in form.price.errors %}
+                                                    <li><i class="fas fa-exclamation-circle"></i>{{ error }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
 
-        <!-- Recent Orders -->
-        <div class="dashboard-section">
-            <h2 class="section-title">
-                <i class="fas fa-shopping-cart me-2"></i>Commandes récentes
-            </h2>
-            {% if orders %}
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Client</th>
-                            <th>Téléphone</th>
-                            <th>Montant</th>
-                            <th>Paiement</th>
-                            <th>Statut</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for order in orders %}
-                        <tr>
-                            <td>#{{ order.id }}</td>
-                            <td>{{ order.customer_name }}</td>
-                            <td>{{ order.customer_phone }}</td>
-                            <td><strong>{{ order.total_amount|floatformat:0 }} F</strong></td>
-                            <td>{{ order.get_payment_method_display }}</td>
-                            <td>
-                                {% if order.status == 'pending' %}
-                                    <span class="badge badge-warning">En attente</span>
-                                {% elif order.status == 'processing' %}
-                                    <span class="badge badge-info">En traitement</span>
-                                {% elif order.status == 'shipped' %}
-                                    <span class="badge badge-primary">Expédié</span>
-                                {% elif order.status == 'delivered' %}
-                                    <span class="badge badge-success">Livré</span>
-                                {% elif order.status == 'cancelled' %}
-                                    <span class="badge badge-danger">Annulé</span>
+                            <div class="form-group">
+                                <label for="{{ form.description.id_for_label }}">
+                                    <i class="fas fa-align-left"></i>{{ form.description.label }}
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <ul class="errorlist">
+                                        {% for error in form.description.errors %}
+                                            <li><i class="fas fa-exclamation-circle"></i>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
                                 {% endif %}
-                            </td>
-                            <td>{{ order.created_at|date:"d/m/Y" }}</td>
-                            <td>
-                                <a href="{% url 'admin:shop_order_change' order.id %}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i> Détails
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="text-center mt-3">
-                <a href="{% url 'admin:shop_order_changelist' %}" class="btn btn-primary">
-                    Voir toutes les commandes
-                </a>
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-shopping-cart"></i>
-                <p>Aucune commande pour le moment</p>
-            </div>
-            {% endif %}
-        </div>
+                            </div>
 
-        <!-- Categories Overview -->
-        <div class="dashboard-section">
-            <h2 class="section-title">
-                <i class="fas fa-tags me-2"></i>Catégories
-            </h2>
-            {% if categories %}
-            <div class="row">
-                {% for category in categories %}
-                <div class="col-md-4 col-lg-3 mb-3">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <div style="font-size: 2rem;">{{ category.icon }}</div>
-                            <h5 class="card-title mt-2">{{ category.name }}</h5>
-                            <p class="card-text text-muted">{{ category.products.count }} produit{{ category.products.count|pluralize }}</p>
-                            <a href="{% url 'admin:shop_category_change' category.id %}" class="btn btn-sm btn-outline-primary">
-                                Modifier
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.quantity.id_for_label }}">
+                                            <i class="fas fa-boxes"></i>{{ form.quantity.label }}
+                                        </label>
+                                        {{ form.quantity }}
+                                        {% if form.quantity.errors %}
+                                            <ul class="errorlist">
+                                                {% for error in form.quantity.errors %}
+                                                    <li><i class="fas fa-exclamation-circle"></i>{{ error }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.category.id_for_label }}">
+                                            <i class="fas fa-list"></i>{{ form.category.label }}
+                                        </label>
+                                        {{ form.category }}
+                                        {% if form.category.errors %}
+                                            <ul class="errorlist">
+                                                {% for error in form.category.errors %}
+                                                    <li><i class="fas fa-exclamation-circle"></i>{{ error }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sale Options -->
+                            <div class="section-card">
+                                <h6><i class="fas fa-tag"></i>Options de vente</h6>
+                                <div class="form-group">
+                                    <div class="form-check">
+                                        {{ form.on_sale }}
+                                        <label class="form-check-label" for="{{ form.on_sale.id_for_label }}" style="font-weight:600;">
+                                            {{ form.on_sale.label }}
+                                        </label>
+                                    </div>
+                                    <div class="form-group mt-3" id="salePriceGroup" style="display: none;">
+                                        <label for="{{ form.sale_price.id_for_label }}">
+                                            <i class="fas fa-tag"></i>{{ form.sale_price.label }}
+                                        </label>
+                                        {{ form.sale_price }}
+                                        {% if form.sale_price.errors %}
+                                            <ul class="errorlist">
+                                                {% for error in form.sale_price.errors %}
+                                                    <li><i class="fas fa-exclamation-circle"></i>{{ error }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Images Section -->
+                            <div class="section-card">
+                                <h6><i class="fas fa-images"></i>Images du produit</h6>
+                                <div class="form-group">
+                                    <label for="{{ form.images.id_for_label }}">
+                                        <i class="fas fa-upload"></i>Télécharger des images
+                                    </label>
+                                    {{ form.images }}
+                                    {% if form.images.errors %}
+                                        <ul class="errorlist">
+                                            {% for error in form.images.errors %}
+                                                <li><i class="fas fa-exclamation-circle"></i>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                    <div class="info-card">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Note :</strong> Vous pouvez sélectionner plusieurs images. La première sera l'image principale.
+                                    </div>
+                                    <div id="mediaPreview" class="media-preview"></div>
+                                </div>
+                            </div>
+
+                            <div class="action-buttons">
+                                <button type="submit" class="btn-hero">
+                                    <i class="fas fa-save me-2"></i>Ajouter le produit
+                                </button>
+                                <button type="reset" class="btn-hero btn-outline">
+                                    <i class="fas fa-undo me-2"></i>Réinitialiser
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Product List -->
+                    {% if recent_products %}
+                    <div class="product-list">
+                        <h3 class="mb-4" style="color: var(--primary); font-weight: 700;">
+                            <i class="fas fa-list me-2"></i>Produits récents
+                        </h3>
+                        {% for product in recent_products %}
+                        <div class="product-item {% if product.sold_out %}sold-out{% endif %}">
+                            <div class="product-info">
+                                <h5><i class="fas fa-tshirt"></i>{{ product.name }}</h5>
+                                <p><strong>Catégorie :</strong> {{ product.category.name }}</p>
+                                <p><strong>Description :</strong> {{ product.description|truncatewords:15 }}</p>
+                                <p><strong>Quantité :</strong> {{ product.quantity }}</p>
+                                <div class="product-price">
+                                    {% if product.on_sale and product.sale_price %}
+                                        <span class="sale-price">{{ product.sale_price|floatformat:0 }} F CFA</span>
+                                        <span class="original-price">{{ product.price|floatformat:0 }} F CFA</span>
+                                    {% else %}
+                                        {{ product.price|floatformat:0 }} F CFA
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div>
+                                <a href="{% url 'shop:product_edit' product.pk %}" class="btn-hero btn-sm btn-edit">
+                                    <i class="fas fa-edit me-2"></i>Modifier
+                                </a>
+                                <form method="post" action="{% url 'shop:product_delete' product.pk %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-hero btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')">
+                                        <i class="fas fa-trash me-2"></i>Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="text-center mt-4">
+                            <a href="{% url 'shop:product_list' %}" class="btn-hero">
+                                <i class="fas fa-list me-2"></i>Voir tous les produits
                             </a>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
             </div>
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-folder-open"></i>
-                <p>Aucune catégorie trouvée</p>
-                <a href="{% url 'admin:shop_category_add' %}" class="btn btn-primary mt-3">
-                    Ajouter une catégorie
-                </a>
-            </div>
-            {% endif %}
         </div>
-    </div>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container text-center">
-            <p>&copy; 2025 NDEY'AS SHOP - Dashboard Admin. Tous droits réservés.</p>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5>À Propos</h5>
+                    <p>NDEY'AS SHOP - Votre boutique de mode africaine authentique. Nous célébrons la beauté et l'élégance de l'Afrique à travers nos collections uniques.</p>
+                    <div class="social-links mt-3">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Liens Rapides</h5>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'shop:index' %}">Accueil</a></li>
+                        <li><a href="{% url 'shop:shop' %}">Boutique</a></li>
+                        <li><a href="{% url 'shop:cart' %}">Panier</a></li>
+                        <li><a href="{% url 'shop:contact' %}">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5>Contact</h5>
+                    <p><i class="fas fa-map-marker-alt me-2"></i>Zac Mbao, Dakar, Sénégal</p>
+                    <p><i class="fas fa-phone me-2"></i>+221 77 545 74 82</p>
+                    <p><i class="fas fa-envelope me-2"></i>contact@ndeyas.com</p>
+                </div>
+            </div>
+            <hr class="my-4" style="background: #444;">
+            <div class="text-center">
+                <p>&copy; 2025 NDEY'AS SHOP. Tous droits réservés. Fait avec ❤️ au Sénégal</p>
+            </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fonction pour prévisualiser les images
+        function previewImages() {
+            const input = document.getElementById('id_images');
+            const preview = document.getElementById('mediaPreview');
+            preview.innerHTML = '';
+            
+            if (input.files && input.files.length > 0) {
+                Array.from(input.files).forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const mediaItem = document.createElement('div');
+                            mediaItem.className = 'media-preview-item';
+                            mediaItem.innerHTML = `
+                                <img src="${e.target.result}" alt="Preview">
+                                <div class="media-order">${index + 1}</div>
+                                <button type="button" class="remove-media" onclick="removeImage(${index})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            `;
+                            preview.appendChild(mediaItem);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }
+
+        // Fonction pour supprimer une image de la prévisualisation
+        function removeImage(index) {
+            const input = document.getElementById('id_images');
+            const files = Array.from(input.files);
+            files.splice(index, 1);
+            
+            // Mise à jour du champ input
+            const dataTransfer = new DataTransfer();
+            files.forEach(file => dataTransfer.items.add(file));
+            input.files = dataTransfer.files;
+            
+            // Recharger la prévisualisation
+            previewImages();
+        }
+
+        // Initialisation au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ajouter l'événement de prévisualisation d'images
+            const imageInput = document.getElementById('id_images');
+            if (imageInput) {
+                imageInput.addEventListener('change', previewImages);
+            }
+
+            // Gérer l'affichage du prix en solde
+            const onSaleCheckbox = document.getElementById('id_on_sale');
+            const salePriceGroup = document.getElementById('salePriceGroup');
+            
+            if (onSaleCheckbox && salePriceGroup) {
+                // Afficher/masquer le champ prix en solde
+                onSaleCheckbox.addEventListener('change', function() {
+                    salePriceGroup.style.display = this.checked ? 'block' : 'none';
+                });
+                
+                // Vérifier l'état initial
+                if (onSaleCheckbox.checked) {
+                    salePriceGroup.style.display = 'block';
+                }
+            }
+
+            // Auto-hide notifications après 5 secondes
+            const notifications = document.querySelectorAll('.notification');
+            notifications.forEach(notification => {
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.4s forwards';
+                    setTimeout(() => notification.remove(), 400);
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 </html>
