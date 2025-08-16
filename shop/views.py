@@ -89,16 +89,34 @@ def shop(request):
     }
     return render(request, 'shop/shop.html', context)
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 
 @login_required
 def product_detail(request, product_id):
     """Détail d'un produit"""
-    product = get_object_or_404(Product, id=product_id, sold_out=False)
-    context = {
-        'product': product,
-    }
-    return render(request, 'shop/item.html', context)
-
+    try:
+        product = get_object_or_404(Product, id=product_id)
+        
+        # Vérifier si le produit est épuisé
+        if product.sold_out:
+            messages.warning(request, f"Le produit '{product.name}' est actuellement épuisé.")
+        
+        # Récupérer des produits similaires
+        related_products = Product.objects.filter(
+            category=product.category,
+            sold_out=False
+        ).exclude(id=product.id)[:4]
+        
+        context = {
+            'product': product,
+            'related_products': related_products,
+        }
+        return render(request, 'shop/item.html', context)
+        
+    except:
+        messages.error(request, "Le produit demandé n'existe pas.")
+        return redirect('shop:shop')
 
 @login_required
 def cart_view(request):
