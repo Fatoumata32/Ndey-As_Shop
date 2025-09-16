@@ -49,4 +49,11 @@ urlpatterns = [
     # Commandes
     path('gestion/commandes/', views.order_list, name='order_list'),
     path('gestion/commandes/<int:pk>/', views.order_detail, name='order_detail'),
+
+    # Messages de contact
+    path('gestion/messages/', views.contact_list, name='contact_list'),
+    path('gestion/messages/<int:pk>/', views.contact_detail, name='contact_detail'),
+    path('gestion/messages/<int:pk>/toggle-read/', views.contact_toggle_read, name='contact_toggle_read'),
+    path('gestion/messages/<int:pk>/supprimer/', views.contact_delete, name='contact_delete'),
+    path('gestion/messages/marquer-tout-lu/', views.contact_mark_all_read, name='contact_mark_all_read'),
 ]

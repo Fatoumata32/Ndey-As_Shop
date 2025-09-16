@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ajouter une Catégorie - Administration{% endblock %}
+
+{% block extra_css %}
+<style>
+    .add-category-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 15px;
+    }
+
+    .add-category-header h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .form-container {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-header {
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .required {
+        color: #dc3545;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(216, 27, 96, 0.25);
+    }
+
+    .form-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .btn-group-custom {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .btn-save {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-save:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(216, 27, 96, 0.3);
+    }
+
+    .btn-cancel {
+        background: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-cancel:hover {
+        background: #e9ecef;
+    }
+
+    .alert-custom {
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .recent-categories {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .recent-categories h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .category-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .category-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .category-list li:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="add-category-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1><i class="fas fa-folder-plus"></i> Ajouter une Nouvelle Catégorie</h1>
+                <a href="{% url 'shop:category_list' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <div class="form-header">
+            <h2>Informations de la Catégorie</h2>
+        </div>
+
+        <!-- Display form errors if any -->
+        {% if form.errors %}
+        <div class="alert alert-danger alert-custom">
+            <strong>Erreur!</strong> Veuillez corriger les erreurs ci-dessous:
+            <ul class="mb-0 mt-2">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Display messages -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-custom">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Category Form -->
+        <form method="post" action="{% url 'shop:category_add' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_name" class="form-label">
+                    Nom de la catégorie <span class="required">*</span>
+                </label>
+                <input type="text" class="form-control" id="id_name" name="name"
+                       required maxlength="200" placeholder="Ex: Vêtements, Chaussures, Accessoires..."
+                       value="{{ form.name.value|default:'' }}">
+                <small class="form-text">Le nom de la catégorie doit être unique et descriptif.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="id_description" class="form-label">
+                    Description
+                </label>
+                <textarea class="form-control" id="id_description" name="description"
+                          rows="4" placeholder="Description optionnelle de la catégorie...">{{ form.description.value|default:'' }}</textarea>
+                <small class="form-text">Ajoutez une description pour mieux identifier cette catégorie.</small>
+            </div>
+
+            <div class="btn-group-custom">
+                <a href="{% url 'shop:category_list' %}" class="btn-cancel">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> Enregistrer la Catégorie
+                </button>
+            </div>
+        </form>
+
+        <!-- Recent Categories -->
+        {% if categories %}
+        <div class="recent-categories">
+            <h3><i class="fas fa-clock"></i> Catégories Récentes</h3>
+            <ul class="category-list">
+                {% for category in categories|slice:":5" %}
+                <li>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>{{ category.name }}</span>
+                        <small class="text-muted">{{ category.products.count }} produits</small>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Auto-focus on name field
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('id_name').focus();
+});
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const name = document.getElementById('id_name').value.trim();
+
+    if (!name) {
+        e.preventDefault();
+        alert('Le nom de la catégorie est obligatoire!');
+        return false;
+    }
+
+    // Check for special characters
+    const specialChars = /[!@#$%^&*(),.?":{}|<>]/g;
+    if (specialChars.test(name)) {
+        if (!confirm('Le nom contient des caractères spéciaux. Voulez-vous continuer?')) {
+            e.preventDefault();
+            return false;
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Message de {{ contact.name }} - Administration{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Détail du Message</h1>
+                <div class="btn-group" role="group">
+                    <button onclick="toggleRead({{ contact.id }})" class="btn btn-sm btn-outline-success">
+                        {% if contact.is_read %}
+                            <i class="fas fa-envelope"></i> Marquer non lu
+                        {% else %}
+                            <i class="fas fa-envelope-open"></i> Marquer comme lu
+                        {% endif %}
+                    </button>
+                    <button onclick="deleteContact({{ contact.id }})" class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                    <a href="{% url 'shop:contact_list' %}" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <!-- Message principal -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-1">{{ contact.name }}</h5>
+                            <small class="text-muted">
+                                <i class="fas fa-clock"></i> {{ contact.created_at|date:"d/m/Y à H:i" }}
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            {% if contact.is_read %}
+                                <span class="badge bg-success">Lu</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Non lu</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Informations de contact -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small">Email</label>
+                            <div>
+                                {% if contact.email %}
+                                    <a href="mailto:{{ contact.email }}" class="text-decoration-none">
+                                        <i class="fas fa-envelope"></i> {{ contact.email }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Non fourni</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Téléphone</label>
+                            <div>
+                                {% if contact.phone %}
+                                    <a href="tel:{{ contact.phone }}" class="text-decoration-none">
+                                        <i class="fas fa-phone"></i> {{ contact.phone }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">Non fourni</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message -->
+                    <div class="mb-4">
+                        <label class="text-muted small">Message</label>
+                        <div class="p-3 bg-light rounded">
+                            {{ contact.message|linebreaks }}
+                        </div>
+                    </div>
+
+                    <!-- Actions de réponse -->
+                    <div class="d-flex gap-2">
+                        {% if contact.email %}
+                            <a href="mailto:{{ contact.email }}?subject=Re: Votre message sur Ndeyas Shop"
+                               class="btn btn-primary">
+                                <i class="fas fa-reply"></i> Répondre par email
+                            </a>
+                        {% endif %}
+                        {% if contact.phone %}
+                            <a href="tel:{{ contact.phone }}" class="btn btn-success">
+                                <i class="fas fa-phone"></i> Appeler
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages précédents du même expéditeur -->
+            {% if previous_messages %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Messages précédents de {{ contact.email }}</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for msg in previous_messages %}
+                        <a href="{% url 'shop:contact_detail' msg.id %}"
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <div>
+                                    <h6 class="mb-1">{{ msg.name }}</h6>
+                                    <p class="mb-1 text-muted">
+                                        {{ msg.message|truncatewords:30 }}
+                                    </p>
+                                </div>
+                                <small class="text-muted">
+                                    {{ msg.created_at|date:"d/m/Y" }}
+                                    {% if not msg.is_read %}
+                                        <span class="badge bg-warning text-dark ms-2">Non lu</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Marquer comme lu/non lu
+function toggleRead(contactId) {
+    fetch(`/admin/contact/${contactId}/toggle-read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+// Supprimer le message
+function deleteContact(contactId) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) {
+        return;
+    }
+
+    fetch(`/admin/contact/${contactId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '{% url "shop:contact_list" %}';
+        } else {
+            alert(data.message);
+        }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier {{ category.name }} - Administration{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-category-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 15px;
+    }
+
+    .edit-category-header h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .form-container {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-header {
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .category-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .category-info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+    }
+
+    .category-info-label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .category-info-value {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .required {
+        color: #dc3545;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(216, 27, 96, 0.25);
+    }
+
+    .form-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .btn-group-custom {
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .btn-save {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-save:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(216, 27, 96, 0.3);
+    }
+
+    .btn-cancel {
+        background: #f8f9fa;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-cancel:hover {
+        background: #e9ecef;
+    }
+
+    .btn-delete {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-delete:hover {
+        background: #c82333;
+    }
+
+    .alert-custom {
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .products-using-category {
+        background: #fff3e0;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .products-using-category h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #ff6f00;
+        margin-bottom: 1rem;
+    }
+
+    .product-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .product-list li {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .product-list li:last-child {
+        border-bottom: none;
+    }
+
+    .warning-box {
+        background: #ffebee;
+        border: 1px solid #ffcdd2;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        color: #c62828;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="edit-category-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1><i class="fas fa-edit"></i> Modifier la Catégorie</h1>
+                <a href="{% url 'shop:category_list' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <div class="form-header">
+            <h2>Modifier: {{ category.name }}</h2>
+        </div>
+
+        <!-- Category Info -->
+        <div class="category-info">
+            <div class="category-info-item">
+                <span class="category-info-label">Date de création:</span>
+                <span class="category-info-value">{{ category.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="category-info-item">
+                <span class="category-info-label">Nombre de produits:</span>
+                <span class="category-info-value">{{ category.products.count }}</span>
+            </div>
+        </div>
+
+        <!-- Display form errors if any -->
+        {% if form.errors %}
+        <div class="alert alert-danger alert-custom">
+            <strong>Erreur!</strong> Veuillez corriger les erreurs ci-dessous:
+            <ul class="mb-0 mt-2">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Display messages -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-custom">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Warning if category has products -->
+        {% if category.products.count > 0 %}
+        <div class="warning-box">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Attention:</strong> Cette catégorie est utilisée par {{ category.products.count }} produit(s).
+            La modification affectera tous ces produits.
+        </div>
+        {% endif %}
+
+        <!-- Edit Form -->
+        <form method="post" action="{% url 'shop:category_edit' category.pk %}" id="editForm">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_name" class="form-label">
+                    Nom de la catégorie <span class="required">*</span>
+                </label>
+                <input type="text" class="form-control" id="id_name" name="name"
+                       required maxlength="200" placeholder="Ex: Vêtements, Chaussures, Accessoires..."
+                       value="{{ form.name.value|default:category.name }}">
+                <small class="form-text">Le nom de la catégorie doit être unique et descriptif.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="id_description" class="form-label">
+                    Description
+                </label>
+                <textarea class="form-control" id="id_description" name="description"
+                          rows="4" placeholder="Description optionnelle de la catégorie...">{{ form.description.value|default:category.description|default:'' }}</textarea>
+                <small class="form-text">Ajoutez une description pour mieux identifier cette catégorie.</small>
+            </div>
+
+            <div class="btn-group-custom">
+                <button type="button" class="btn-delete" onclick="deleteCategory()">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+                <div>
+                    <a href="{% url 'shop:category_list' %}" class="btn-cancel">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save"></i> Enregistrer les modifications
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Products using this category -->
+        {% if category.products.count > 0 %}
+        <div class="products-using-category">
+            <h3><i class="fas fa-box"></i> Produits dans cette catégorie</h3>
+            <ul class="product-list">
+                {% for product in category.products.all|slice:":10" %}
+                <li>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>{{ product.name }}</span>
+                        <span class="text-muted">{{ product.price }} F CFA</span>
+                    </div>
+                </li>
+                {% endfor %}
+                {% if category.products.count > 10 %}
+                <li class="text-center text-muted">
+                    ... et {{ category.products.count|add:"-10" }} autre(s) produit(s)
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Form (hidden) -->
+<form id="deleteForm" method="post" action="{% url 'shop:category_delete' category.pk %}" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<script>
+// Auto-focus on name field
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('id_name').focus();
+});
+
+// Form validation
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    const name = document.getElementById('id_name').value.trim();
+
+    if (!name) {
+        e.preventDefault();
+        alert('Le nom de la catégorie est obligatoire!');
+        return false;
+    }
+});
+
+// Delete category
+function deleteCategory() {
+    {% if category.products.count > 0 %}
+        alert('Impossible de supprimer cette catégorie car elle contient {{ category.products.count }} produit(s). Veuillez d\'abord retirer ou réassigner ces produits.');
+        return;
+    {% else %}
+        if (confirm('Êtes-vous sûr de vouloir supprimer la catégorie "{{ category.name|escapejs }}" ? Cette action est irréversible.')) {
+            document.getElementById('deleteForm').submit();
+        }
+    {% endif %}
+}
+</script>
+{% endblock %}

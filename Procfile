@@ -1,0 +1,1 @@
+web: gunicorn ndeyas_shop.wsgi --log-file -

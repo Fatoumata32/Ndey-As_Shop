@@ -351,7 +351,7 @@
             <p>Messages Non Lus</p>
             <div class="stat-card-footer">
                 <span class="text-warning"><i class="fas fa-bell"></i> Nouveau</span>
-                <a href="#">Voir tout <i class="fas fa-arrow-right"></i></a>
+                <a href="{% url 'shop:contact_list' %}">Voir tout <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
     </div>
@@ -375,6 +375,10 @@
             <a href="{% url 'shop:order_list' %}" class="action-btn">
                 <i class="fas fa-clipboard-list"></i>
                 Voir Commandes
+            </a>
+            <a href="{% url 'shop:contact_list' %}" class="action-btn">
+                <i class="fas fa-envelope-open-text"></i>
+                Messages Reçus
             </a>
         </div>
     </div>

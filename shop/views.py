@@ -1,4 +1,61 @@
 # shop/views.py
+
+"""
+======================== GUIDE DE CRÉATION D'UN UTILISATEUR STAFF ========================
+
+Pour créer un utilisateur staff (administrateur) pour gérer la boutique, suivez ces étapes :
+
+1. VIA DJANGO ADMIN (Méthode recommandée) :
+   - Créez d'abord un superutilisateur : python manage.py createsuperuser
+   - Connectez-vous à /admin/ avec ce compte
+   - Allez dans "Utilisateurs"
+   - Créez un nouvel utilisateur ou modifiez un utilisateur existant
+   - Cochez la case "Statut staff" pour donner les droits d'administration
+   - Sauvegardez
+
+2. VIA LE SHELL DJANGO :
+   python manage.py shell
+   >>> from django.contrib.auth.models import User
+   >>> user = User.objects.create_user(username='admin', email='admin@example.com', password='motdepasse')
+   >>> user.is_staff = True
+   >>> user.save()
+
+3. VIA UNE COMMANDE PERSONNALISÉE :
+   Créez un fichier management/commands/create_staff.py dans votre app shop :
+
+   from django.core.management.base import BaseCommand
+   from django.contrib.auth.models import User
+
+   class Command(BaseCommand):
+       def handle(self, *args, **kwargs):
+           user = User.objects.create_user(
+               username='staff_user',
+               email='staff@example.com',
+               password='password123'
+           )
+           user.is_staff = True
+           user.save()
+           self.stdout.write('Staff user created successfully!')
+
+   Puis exécutez : python manage.py create_staff
+
+4. PERMISSIONS DU STAFF :
+   Un utilisateur avec is_staff=True peut accéder aux fonctionnalités suivantes :
+   - Dashboard admin (/admin/dashboard/)
+   - Gestion des produits (ajouter, modifier, supprimer)
+   - Gestion des catégories
+   - Gestion des commandes (voir et modifier le statut)
+   - Voir les messages de contact
+
+   Le décorateur @staff_required vérifie automatiquement ces permissions.
+
+5. DIFFÉRENCE ENTRE STAFF ET SUPERUSER :
+   - is_staff=True : Accès aux fonctions d'administration de la boutique
+   - is_superuser=True : Accès complet à tout le système Django (recommandé pour le propriétaire uniquement)
+
+========================================================================================
+"""
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -990,9 +1047,9 @@ def product_toggle_status(request, pk):
         product = get_object_or_404(Product, pk=pk)
         product.sold_out = not product.sold_out
         product.save()
-        
+
         status = "épuisé" if product.sold_out else "disponible"
-        
+
         return JsonResponse({
             'success': True,
             'message': f'Produit "{product.name}" marqué comme {status}!',
@@ -1003,6 +1060,161 @@ def product_toggle_status(request, pk):
             'success': False,
             'message': f'Erreur: {str(e)}'
         })
+
+
+# ======================== GESTION DES MESSAGES CONTACT ========================
+
+@login_required
+@user_passes_test(is_staff)
+def contact_list(request):
+    """Liste des messages de contact"""
+    contacts = Contact.objects.all().order_by('-created_at')
+
+    # Filtres
+    status_filter = request.GET.get('status')
+    if status_filter == 'unread':
+        contacts = contacts.filter(is_read=False)
+    elif status_filter == 'read':
+        contacts = contacts.filter(is_read=True)
+
+    # Recherche
+    search_query = request.GET.get('q')
+    if search_query:
+        contacts = contacts.filter(
+            Q(name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone__icontains=search_query) |
+            Q(message__icontains=search_query)
+        )
+
+    # Statistiques
+    total_contacts = Contact.objects.count()
+    unread_count = Contact.objects.filter(is_read=False).count()
+    read_count = Contact.objects.filter(is_read=True).count()
+
+    # Pagination
+    paginator = Paginator(contacts, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'contacts': page_obj,
+        'total_contacts': total_contacts,
+        'unread_count': unread_count,
+        'read_count': read_count,
+        'current_status': status_filter,
+        'search_query': search_query,
+    }
+
+    return render(request, 'shop/admin/contact_list.html', context)
+
+
+@login_required
+@user_passes_test(is_staff)
+def contact_detail(request, pk):
+    """Détail d'un message de contact"""
+    contact = get_object_or_404(Contact, pk=pk)
+
+    # Marquer comme lu automatiquement
+    if not contact.is_read:
+        contact.is_read = True
+        contact.save()
+
+    # Récupérer les messages précédents du même expéditeur
+    previous_messages = Contact.objects.filter(
+        email=contact.email
+    ).exclude(pk=pk).order_by('-created_at')[:5]
+
+    context = {
+        'contact': contact,
+        'previous_messages': previous_messages,
+    }
+
+    return render(request, 'shop/admin/contact_detail.html', context)
+
+
+@login_required
+@user_passes_test(is_staff)
+@require_http_methods(["POST"])
+def contact_toggle_read(request, pk):
+    """Marquer un message comme lu/non lu (AJAX)"""
+    try:
+        contact = get_object_or_404(Contact, pk=pk)
+        contact.is_read = not contact.is_read
+        contact.save()
+
+        status = "lu" if contact.is_read else "non lu"
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Message marqué comme {status}',
+            'is_read': contact.is_read
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Erreur: {str(e)}'
+        })
+
+
+@login_required
+@user_passes_test(is_staff)
+@require_http_methods(["POST"])
+def contact_delete(request, pk):
+    """Supprimer un message de contact"""
+    try:
+        contact = get_object_or_404(Contact, pk=pk)
+        contact.delete()
+
+        messages.success(request, 'Message supprimé avec succès!')
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Message supprimé avec succès!'
+            })
+        else:
+            return redirect('shop:contact_list')
+
+    except Exception as e:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': f'Erreur lors de la suppression: {str(e)}'
+            })
+        else:
+            messages.error(request, f'Erreur lors de la suppression: {str(e)}')
+            return redirect('shop:contact_list')
+
+
+@login_required
+@user_passes_test(is_staff)
+@require_http_methods(["POST"])
+def contact_mark_all_read(request):
+    """Marquer tous les messages comme lus"""
+    try:
+        Contact.objects.filter(is_read=False).update(is_read=True)
+
+        messages.success(request, 'Tous les messages ont été marqués comme lus!')
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Tous les messages ont été marqués comme lus!'
+            })
+        else:
+            return redirect('shop:contact_list')
+
+    except Exception as e:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': f'Erreur: {str(e)}'
+            })
+        else:
+            messages.error(request, f'Erreur: {str(e)}')
+            return redirect('shop:contact_list')
     
 
 
