@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load shop_extras %}
+
+{% block title %}Mon Profil - {{ user.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .profile-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .profile-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .profile-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .profile-section h3 {
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card .stat-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--primary);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    .stat-card h4 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+    }
+
+    .stat-card p {
+        color: #6c757d;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(216, 27, 96, 0.1);
+    }
+
+    .btn-update {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(216, 27, 96, 0.3);
+    }
+
+    .btn-update:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(216, 27, 96, 0.4);
+        color: white;
+    }
+
+    .recent-orders-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .recent-orders-table thead {
+        background: #f8f9fa;
+    }
+
+    .recent-orders-table thead th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .recent-orders-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .recent-orders-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .recent-orders-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .status-badge.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.confirmed {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .status-badge.delivered {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .avatar-container {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .avatar {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 1rem;
+    }
+
+    .password-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .profile-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .stat-card {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<div class="profile-header">
+    <div class="container">
+        <h1><i class="fas fa-user-circle"></i> Mon Profil</h1>
+        <p class="mb-0">Gérez vos informations personnelles et vos commandes</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- User Info -->
+            <div class="profile-container">
+                <div class="avatar-container">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3>{{ user.get_full_name|default:user.username }}</h3>
+                    <p class="text-muted">Membre depuis {{ user.date_joined|date:"F Y" }}</p>
+                </div>
+
+                <form method="POST" id="profileForm">
+                    {% csrf_token %}
+
+                    <div class="profile-section">
+                        <h3><i class="fas fa-info-circle"></i> Informations Personnelles</h3>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">Prénom</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name"
+                                       value="{{ user.first_name }}" placeholder="Votre prénom">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name"
+                                       value="{{ user.last_name }}" placeholder="Votre nom">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email"
+                                   value="{{ user.email }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nom d'utilisateur</label>
+                            <input type="text" class="form-control" value="{{ user.username }}" readonly disabled>
+                            <small class="text-muted">Le nom d'utilisateur ne peut pas être modifié</small>
+                        </div>
+                    </div>
+
+                    <!-- Change Password -->
+                    <div class="profile-section">
+                        <h3><i class="fas fa-lock"></i> Changer le Mot de Passe</h3>
+
+                        <div class="password-section">
+                            <div class="mb-3">
+                                <label for="current_password" class="form-label">Mot de passe actuel</label>
+                                <input type="password" class="form-control" id="current_password" name="current_password">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="new_password" class="form-label">Nouveau mot de passe</label>
+                                    <input type="password" class="form-control" id="new_password" name="new_password">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirm_password" class="form-label">Confirmer le mot de passe</label>
+                                    <input type="password" class="form-control" id="confirm_password">
+                                </div>
+                            </div>
+                            <small class="text-muted">Laissez vide si vous ne souhaitez pas changer le mot de passe</small>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-update">
+                            <i class="fas fa-save"></i> Mettre à Jour le Profil
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Recent Orders -->
+            {% if recent_orders %}
+            <div class="profile-container">
+                <div class="profile-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3><i class="fas fa-shopping-bag"></i> Commandes Récentes</h3>
+                        <a href="{% url 'shop:user_orders' %}" class="btn btn-sm btn-outline-primary">
+                            Voir tout
+                        </a>
+                    </div>
+
+                    <table class="recent-orders-table">
+                        <thead>
+                            <tr>
+                                <th>N° Commande</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td><strong>#{{ order.id }}</strong></td>
+                                <td>{{ order.created_at|date:"d/m/Y" }}</td>
+                                <td>{{ order.total_amount|currency }}</td>
+                                <td>
+                                    <span class="status-badge {{ order.status }}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Statistics -->
+            <div class="profile-container">
+                <h4 class="mb-3"><i class="fas fa-chart-bar"></i> Statistiques</h4>
+
+                <div class="stat-card mb-3">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h4>{{ total_orders }}</h4>
+                    <p>Commandes Totales</p>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <h4>{{ total_spent|currency }}</h4>
+                    <p>Total Dépensé</p>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="profile-container">
+                <h4 class="mb-3"><i class="fas fa-link"></i> Liens Rapides</h4>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'shop:user_orders' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-box"></i> Mes Commandes
+                    </a>
+                    <a href="{% url 'shop:shop' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-shopping-bag"></i> Continuer mes Achats
+                    </a>
+                    <a href="{% url 'shop:cart' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-shopping-cart"></i> Mon Panier
+                    </a>
+                    <a href="{% url 'shop:contact' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-envelope"></i> Nous Contacter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password validation
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+
+        if (newPassword && newPassword !== confirmPassword) {
+            e.preventDefault();
+            alert('Les mots de passe ne correspondent pas!');
+        }
+    });
+
+    // Show password fields only when needed
+    document.getElementById('current_password').addEventListener('focus', function() {
+        document.getElementById('new_password').required = true;
+        document.getElementById('confirm_password').required = true;
+    });
+</script>
+{% endblock %}

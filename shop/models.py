@@ -54,7 +54,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     quantity = models.IntegerField(default=0)
     sold_out = models.BooleanField(default=False)
-    sizes = models.ManyToManyField(Size, blank=True, related_name='products', null=True)
+    sizes = models.ManyToManyField(Size, blank=True, related_name='products')
     icon = models.CharField(max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

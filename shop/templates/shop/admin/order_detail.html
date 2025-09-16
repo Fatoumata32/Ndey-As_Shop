@@ -1,0 +1,620 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load shop_extras %}
+
+{% block title %}Commande #{{ order.id }} - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .admin-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .order-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .order-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .order-section:last-child {
+        border-bottom: none;
+    }
+
+    .order-section h3 {
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.confirmed {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .status-badge.processing {
+        background: #e7e8ea;
+        color: #383d41;
+    }
+
+    .status-badge.shipped {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-badge.delivered {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Info Cards */
+    .info-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .info-card h5 {
+        color: #495057;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-card p {
+        margin: 0.25rem 0;
+        color: #333;
+    }
+
+    .info-card strong {
+        color: var(--primary);
+    }
+
+    /* Order Items Table */
+    .order-items-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .order-items-table thead {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+    }
+
+    .order-items-table thead th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        border: none;
+    }
+
+    .order-items-table thead th:first-child {
+        border-top-left-radius: 10px;
+    }
+
+    .order-items-table thead th:last-child {
+        border-top-right-radius: 10px;
+    }
+
+    .order-items-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .order-items-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .order-items-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .product-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .product-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-right: 1rem;
+    }
+
+    .product-details h6 {
+        margin: 0;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .product-details small {
+        color: #6c757d;
+    }
+
+    /* Summary Section */
+    .order-summary {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+    }
+
+    .summary-label {
+        color: #6c757d;
+    }
+
+    .summary-value {
+        font-weight: 600;
+        color: #333;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-status {
+        background: white;
+        border: 2px solid #e0e0e0;
+        color: #333;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-status:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .btn-status.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+
+    .btn-print {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-print:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-back {
+        background: white;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Timeline */
+    .timeline {
+        position: relative;
+        padding: 1rem 0;
+    }
+
+    .timeline-item {
+        display: flex;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    .timeline-marker {
+        width: 12px;
+        height: 12px;
+        background: var(--primary);
+        border-radius: 50%;
+        margin-right: 1rem;
+        margin-top: 0.25rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 20px;
+        width: 2px;
+        height: calc(100% + 8px);
+        background: #e0e0e0;
+        z-index: 1;
+    }
+
+    .timeline-content {
+        flex: 1;
+    }
+
+    .timeline-content h6 {
+        margin: 0;
+        color: #333;
+        font-size: 0.95rem;
+    }
+
+    .timeline-content small {
+        color: #6c757d;
+    }
+
+    /* Notes Section */
+    .notes-section {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .notes-section textarea {
+        width: 100%;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.75rem;
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .notes-section textarea:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(216, 27, 96, 0.1);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .order-items-table {
+            font-size: 0.9rem;
+        }
+
+        .order-items-table thead th,
+        .order-items-table tbody td {
+            padding: 0.5rem;
+        }
+
+        .product-image {
+            width: 40px;
+            height: 40px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-status, .btn-print, .btn-back {
+            width: 100%;
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        .admin-header,
+        .action-buttons,
+        .btn-print,
+        .btn-back,
+        .notes-section form {
+            display: none !important;
+        }
+
+        .order-container {
+            box-shadow: none;
+            border: 1px solid #ddd;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Admin Header -->
+<div class="admin-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="fas fa-file-invoice"></i> Détails de la Commande #{{ order.id }}</h1>
+            <div>
+                <button onclick="window.print()" class="btn btn-light me-2">
+                    <i class="fas fa-print"></i> Imprimer
+                </button>
+                <a href="{% url 'shop:order_list' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="order-container">
+                <!-- Order Status -->
+                <div class="order-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3><i class="fas fa-info-circle"></i> Informations de la Commande</h3>
+                        <span class="status-badge {{ order.status }}">{{ order.get_status_display }}</span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Numéro de commande:</strong> #{{ order.id }}</p>
+                            <p><strong>Date:</strong> {{ order.created_at|date:"d/m/Y à H:i" }}</p>
+                            <p><strong>Méthode de paiement:</strong> {{ order.get_payment_method_display|default:"Non spécifiée" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Client:</strong> {{ order.customer_name }}</p>
+                            <p><strong>Email:</strong> {{ order.customer_email|default:"Non fourni" }}</p>
+                            <p><strong>Téléphone:</strong> {{ order.customer_phone }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="order-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Adresse de Livraison</h3>
+                    <div class="info-card">
+                        <p>{{ order.customer_address }}</p>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="order-section">
+                    <h3><i class="fas fa-shopping-bag"></i> Articles Commandés</h3>
+
+                    <table class="order-items-table">
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Prix Unitaire</th>
+                                <th>Quantité</th>
+                                <th>Taille</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>
+                                    <div class="product-info">
+                                        {% if item.product.primary_image %}
+                                        <img src="{{ item.product.primary_image.image.url }}" alt="{{ item.product.name }}" class="product-image">
+                                        {% else %}
+                                        <div class="product-image bg-secondary"></div>
+                                        {% endif %}
+                                        <div class="product-details">
+                                            <h6>{{ item.product.name }}</h6>
+                                            <small>{{ item.product.category.name }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ item.price|currency }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.selected_size|default:"-" }}</td>
+                                <td><strong>{{ item.get_total|currency }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="order-section">
+                    <h3><i class="fas fa-calculator"></i> Récapitulatif</h3>
+
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span class="summary-label">Sous-total</span>
+                            <span class="summary-value">{{ order.total_amount|currency }}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Livraison</span>
+                            <span class="summary-value">Gratuite</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Total</span>
+                            <span>{{ order.total_amount|currency }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update Status -->
+                <div class="order-section">
+                    <h3><i class="fas fa-edit"></i> Modifier le Statut</h3>
+
+                    <form method="POST" id="statusForm">
+                        {% csrf_token %}
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for status_code, status_label in status_choices %}
+                            <button type="submit" name="status" value="{{ status_code }}"
+                                    class="btn-status {% if order.status == status_code %}active{% endif %}">
+                                {{ status_label }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button onclick="window.print()" class="btn btn-print">
+                        <i class="fas fa-print"></i> Imprimer la Facture
+                    </button>
+                    <a href="{% url 'shop:order_list' %}" class="btn btn-back">
+                        <i class="fas fa-arrow-left"></i> Retour à la Liste
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Order Timeline -->
+            <div class="order-container">
+                <h4 class="mb-3"><i class="fas fa-history"></i> Historique</h4>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h6>Commande créée</h6>
+                            <small>{{ order.created_at|date:"d/m/Y à H:i" }}</small>
+                        </div>
+                    </div>
+
+                    {% if order.status != 'pending' %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h6>Statut mis à jour</h6>
+                            <small>{{ order.updated_at|date:"d/m/Y à H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="order-container">
+                <h4 class="mb-3"><i class="fas fa-user"></i> Informations Client</h4>
+
+                <div class="info-card">
+                    <h5>Contact</h5>
+                    <p><strong>Nom:</strong> {{ order.customer_name }}</p>
+                    <p><strong>Email:</strong> {{ order.customer_email|default:"Non fourni" }}</p>
+                    <p><strong>Téléphone:</strong> {{ order.customer_phone }}</p>
+                </div>
+
+                {% if order.user %}
+                <div class="info-card">
+                    <h5>Compte Utilisateur</h5>
+                    <p><strong>Username:</strong> {{ order.user.username }}</p>
+                    <p><strong>Inscrit le:</strong> {{ order.user.date_joined|date:"d/m/Y" }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Notes -->
+            <div class="order-container">
+                <h4 class="mb-3"><i class="fas fa-sticky-note"></i> Notes Internes</h4>
+
+                <div class="notes-section">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <textarea name="notes" placeholder="Ajouter des notes pour cette commande..."></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm mt-2">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Confirmation avant changement de statut
+    document.querySelectorAll('.btn-status').forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (!this.classList.contains('active')) {
+                if (!confirm('Êtes-vous sûr de vouloir changer le statut de cette commande?')) {
+                    e.preventDefault();
+                }
+            } else {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Auto-save notes (optional)
+    let notesTimeout;
+    const notesTextarea = document.querySelector('textarea[name="notes"]');
+
+    if (notesTextarea) {
+        notesTextarea.addEventListener('input', function() {
+            clearTimeout(notesTimeout);
+            notesTimeout = setTimeout(() => {
+                // Auto-save logic here if needed
+            }, 2000);
+        });
+    }
+</script>
+{% endblock %}

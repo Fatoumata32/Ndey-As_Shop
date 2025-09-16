@@ -4,17 +4,23 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
-from django.db.models import Q
+from django.db.models import Q, Count, Sum, Avg
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 import json
+import logging
 
 from .models import Product, Category, Cart, CartItem, Order, OrderItem, Contact, ProductImage, Size
 from .forms import ProductForm, CategoryForm, ProductImageForm
+
+logger = logging.getLogger(__name__)
 
 
 # ======================== FONCTIONS UTILITAIRES ========================
@@ -39,10 +45,9 @@ def is_staff(user):
 
 # ======================== VUES PUBLIQUES ========================
 
-@login_required
 def index(request):
     """Page d'accueil"""
-    products = Product.objects.filter(sold_out=False)[:6]
+    products = Product.objects.filter(sold_out=False).select_related('category').prefetch_related('images')[:6]
     categories = Category.objects.all()
     context = {
         'products': products,
@@ -51,11 +56,10 @@ def index(request):
     return render(request, 'shop/index.html', context)
 
 
-@login_required
 def shop(request):
     """Page boutique avec tous les produits"""
-    products = Product.objects.filter(sold_out=False)
-    categories = Category.objects.all()
+    products = Product.objects.filter(sold_out=False).select_related('category').prefetch_related('images', 'sizes')
+    categories = Category.objects.annotate(product_count=Count('products'))
     
     # Filtrer par catégorie
     category_filter = request.GET.get('category')
@@ -92,7 +96,6 @@ def shop(request):
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 
-@login_required
 def product_detail(request, product_id):
     """Détail d'un produit"""
     try:
@@ -118,7 +121,6 @@ def product_detail(request, product_id):
         messages.error(request, "Le produit demandé n'existe pas.")
         return redirect('shop:shop')
 
-@login_required
 def cart_view(request):
     """Vue du panier"""
     cart = get_or_create_cart(request)
@@ -129,7 +131,6 @@ def cart_view(request):
 
 
 @csrf_exempt
-@login_required
 def add_to_cart(request):
     """Ajouter au panier (AJAX)"""
     if request.method == 'POST':
@@ -189,7 +190,6 @@ def add_to_cart(request):
 
 
 @csrf_exempt
-@login_required
 def update_cart_item(request):
     """Mettre à jour la quantité d'un article (AJAX)"""
     if request.method == 'POST':
@@ -219,7 +219,6 @@ def update_cart_item(request):
 
 
 @csrf_exempt
-@login_required
 def remove_from_cart(request):
     """Retirer du panier (AJAX)"""
     if request.method == 'POST':
@@ -237,60 +236,114 @@ def remove_from_cart(request):
         })
 
 
-@login_required
 def checkout(request):
-    """Page de commande"""
+    """Page de commande améliorée"""
     cart = get_or_create_cart(request)
-    
+
+    # Vérifier si le panier est vide
+    if not cart.items.exists():
+        messages.warning(request, 'Votre panier est vide.')
+        return redirect('shop:cart')
+
     if request.method == 'POST':
-        # Créer la commande
-        order = Order.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            customer_name=request.POST.get('customer_name'),
-            customer_phone=request.POST.get('customer_phone'),
-            customer_address=request.POST.get('customer_address'),
-            payment_method=request.POST.get('payment_method'),
-            total_amount=cart.get_total()
-        )
-        
-        # Créer les articles de commande et mettre à jour le stock
-        for cart_item in cart.items.all():
-            OrderItem.objects.create(
-                order=order,
-                product=cart_item.product,
-                quantity=cart_item.quantity,
-                price=cart_item.product.price,
-                selected_size=cart_item.selected_size
-            )
-            
-            # Mettre à jour le stock du produit
-            cart_item.product.quantity -= cart_item.quantity
-            cart_item.product.save()
-        
-        # Vider le panier
-        cart.items.all().delete()
-        
-        messages.success(request, 'Commande passée avec succès!')
-        return redirect('shop:index')
-    
+        try:
+            with transaction.atomic():
+                # Récupérer les données du formulaire
+                customer_name = request.POST.get('customer_name', '')
+                customer_email = request.POST.get('customer_email', '')
+                customer_phone = request.POST.get('customer_phone', '')
+                customer_address = request.POST.get('customer_address', '')
+                payment_method = request.POST.get('payment_method', 'cash')
+
+                # Utiliser les infos de l'utilisateur connecté si disponibles
+                if request.user.is_authenticated:
+                    if not customer_name:
+                        customer_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+                    if not customer_email:
+                        customer_email = request.user.email
+
+                # Validation des données
+                if not customer_name or not customer_phone or not customer_address:
+                    messages.error(request, 'Veuillez remplir tous les champs obligatoires.')
+                    return render(request, 'shop/checkout.html', {'cart': cart})
+
+                # Créer la commande
+                order = Order.objects.create(
+                    user=request.user if request.user.is_authenticated else None,
+                    customer_name=customer_name,
+                    customer_email=customer_email,
+                    customer_phone=customer_phone,
+                    customer_address=customer_address,
+                    payment_method=payment_method,
+                    total_amount=cart.get_total(),
+                    status='pending'
+                )
+
+                # Créer les articles de commande et mettre à jour le stock
+                for cart_item in cart.items.all():
+                    # Vérifier le stock disponible
+                    if cart_item.product.quantity < cart_item.quantity:
+                        raise ValueError(f"Stock insuffisant pour {cart_item.product.name}")
+
+                    OrderItem.objects.create(
+                        order=order,
+                        product=cart_item.product,
+                        quantity=cart_item.quantity,
+                        price=cart_item.product.get_current_price(),
+                        selected_size=cart_item.selected_size or ''
+                    )
+
+                    # Mettre à jour le stock du produit
+                    cart_item.product.quantity -= cart_item.quantity
+                    if cart_item.product.quantity == 0:
+                        cart_item.product.sold_out = True
+                    cart_item.product.save()
+
+                # Vider le panier
+                cart.items.all().delete()
+
+                # Envoyer un email de confirmation si configuré
+                if customer_email and hasattr(settings, 'EMAIL_HOST_USER') and settings.EMAIL_HOST_USER:
+                    try:
+                        send_mail(
+                            f'Commande #{order.id} confirmée',
+                            f'Votre commande a été confirmée. Total: {order.total_amount} F CFA',
+                            settings.DEFAULT_FROM_EMAIL,
+                            [customer_email],
+                            fail_silently=True,
+                        )
+                    except Exception as e:
+                        logger.error(f"Erreur envoi email: {e}")
+
+                messages.success(request, f'Commande #{order.id} passée avec succès!')
+                return redirect('shop:index')
+
+        except ValueError as e:
+            messages.error(request, str(e))
+        except Exception as e:
+            messages.error(request, f'Erreur lors de la commande: {str(e)}')
+            logger.error(f"Erreur checkout: {e}")
+
     context = {
         'cart': cart,
+        'cart_items': cart.items.all(),
+        'total': cart.get_total(),
     }
     return render(request, 'shop/checkout.html', context)
 
 
-@login_required
 def contact_view(request):
     """Page de contact"""
     if request.method == 'POST':
         Contact.objects.create(
             name=request.POST.get('name'),
+            email=request.POST.get('email', ''),
             phone=request.POST.get('phone', ''),
             message=request.POST.get('message')
         )
-        messages.success(request, 'Message envoyé avec succès!')
+        messages.success(request, 'Votre message a été envoyé avec succès! Nous vous répondrons dans les plus brefs délais.')
         return redirect('shop:contact')
-    
+
     return render(request, 'shop/contact.html')
 
 
@@ -395,6 +448,65 @@ def logout_view(request):
     return redirect('shop:login')
 
 
+# ======================== VUES COMPTE UTILISATEUR ========================
+
+@login_required
+def user_profile(request):
+    """Vue pour le profil utilisateur"""
+    if request.method == 'POST':
+        # Mise à jour du profil
+        user = request.user
+        user.first_name = request.POST.get('first_name', '')
+        user.last_name = request.POST.get('last_name', '')
+        user.email = request.POST.get('email', user.email)
+
+        # Changement de mot de passe si fourni
+        new_password = request.POST.get('new_password')
+        if new_password:
+            current_password = request.POST.get('current_password')
+            if user.check_password(current_password):
+                user.set_password(new_password)
+                messages.success(request, 'Mot de passe modifié avec succès!')
+                # Re-login après changement de mot de passe
+                login(request, user)
+            else:
+                messages.error(request, 'Mot de passe actuel incorrect!')
+
+        user.save()
+        messages.success(request, 'Profil mis à jour avec succès!')
+        return redirect('shop:user_profile')
+
+    # Statistiques de l'utilisateur
+    user_orders = Order.objects.filter(user=request.user)
+    total_orders = user_orders.count()
+    total_spent = user_orders.aggregate(total=Sum('total_amount'))['total'] or 0
+
+    context = {
+        'user': request.user,
+        'total_orders': total_orders,
+        'total_spent': total_spent,
+        'recent_orders': user_orders[:5],
+    }
+    return render(request, 'shop/user_profile.html', context)
+
+
+@login_required
+def user_orders(request):
+    """Vue pour afficher les commandes de l'utilisateur"""
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+
+    # Pagination
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'orders': page_obj,
+        'page_obj': page_obj,
+    }
+    return render(request, 'shop/user_orders.html', context)
+
+
 @csrf_exempt
 def reset_password(request):
     """Vue pour réinitialiser le mot de passe"""
@@ -420,7 +532,6 @@ def reset_password(request):
 # ======================== VUES ADMINISTRATION ========================
 
 @login_required
-@user_passes_test(is_staff)
 def admin_dashboard(request):
     """Dashboard admin personnalisé"""
     total_products = Product.objects.count()
@@ -447,8 +558,19 @@ def admin_dashboard(request):
 
 # ======================== GESTION DES PRODUITS ========================
 
-@login_required
-@user_passes_test(is_staff)
+def staff_required(view_func):
+    """Décorateur personnalisé pour vérifier les permissions staff"""
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.warning(request, "Vous devez être connecté pour accéder à cette page.")
+            return redirect('shop:login')
+        if not request.user.is_staff:
+            messages.error(request, "Vous n'avez pas les permissions nécessaires pour accéder à cette page.")
+            return redirect('shop:index')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+@staff_required
 def product_list(request):
     """Liste des produits avec pagination et filtres"""
     products = Product.objects.select_related('category').order_by('-created_at')
@@ -492,44 +614,70 @@ def product_list(request):
     return render(request, 'shop/admin/product_list.html', context)
 
 
-@login_required
-@user_passes_test(is_staff)
+@staff_required
 def product_add(request):
     """Ajouter un nouveau produit"""
     if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
-        
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    product = form.save()
-                    
-                    # Gestion des images multiples
-                    images = request.FILES.getlist('images')
-                    for i, image in enumerate(images):
-                        ProductImage.objects.create(
-                            product=product,
-                            image=image,
-                            is_primary=(i == 0)
-                        )
-                    
-                    messages.success(request, f'Produit "{product.name}" ajouté avec succès!')
-                    return redirect('shop:product_list')
-                    
-            except Exception as e:
-                messages.error(request, f'Erreur lors de l\'ajout du produit: {str(e)}')
-        else:
-            messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
-    else:
-        form = ProductForm()
-    
+        try:
+            # Récupération manuelle des données
+            name = request.POST.get('name')
+            description = request.POST.get('description')
+            category_id = request.POST.get('category')
+            price = request.POST.get('price')
+            sale_price = request.POST.get('sale_price')
+            quantity = request.POST.get('quantity', 1)
+            on_sale = request.POST.get('on_sale') == 'on'
+            sold_out = request.POST.get('sold_out') == 'on'
+
+            # Validation basique
+            if not name or not category_id or not price:
+                messages.error(request, 'Veuillez remplir tous les champs obligatoires.')
+                return redirect('shop:product_add')
+
+            # Créer le produit
+            with transaction.atomic():
+                product = Product.objects.create(
+                    name=name,
+                    description=description or '',
+                    category_id=category_id,
+                    price=float(price),
+                    sale_price=float(sale_price) if sale_price else None,
+                    quantity=int(quantity),
+                    on_sale=on_sale,
+                    sold_out=sold_out
+                )
+
+                # Gestion des tailles
+                sizes = request.POST.getlist('sizes')
+                for size_name in sizes:
+                    size, created = Size.objects.get_or_create(name=size_name)
+                    product.sizes.add(size)
+
+                # Gestion des images multiples
+                images = request.FILES.getlist('images')
+                for i, image in enumerate(images):
+                    ProductImage.objects.create(
+                        product=product,
+                        image=image,
+                        is_primary=(i == 0)
+                    )
+
+                messages.success(request, f'Produit "{product.name}" ajouté avec succès!')
+                return redirect('shop:product_list')
+
+        except Exception as e:
+            messages.error(request, f'Erreur lors de l\'ajout du produit: {str(e)}')
+            return redirect('shop:product_add')
+
+    # GET request
+    categories = Category.objects.all()
     recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
-    
+
     context = {
-        'form': form,
+        'categories': categories,
         'recent_products': recent_products,
     }
-    
+
     return render(request, 'shop/admin/product_add.html', context)
 
 
@@ -576,8 +724,7 @@ def product_edit(request, pk):
     return render(request, 'shop/admin/product_edit.html', context)
 
 
-@login_required
-@user_passes_test(is_staff)
+@staff_required
 @require_http_methods(["POST"])
 def product_delete(request, pk):
     """Supprimer un produit"""
@@ -754,23 +901,32 @@ def category_delete(request, pk):
 def order_list(request):
     """Liste des commandes"""
     orders = Order.objects.select_related('user').order_by('-created_at')
-    
+
+    # Calculer les statistiques
+    order_stats = {
+        'pending': Order.objects.filter(status='pending').count(),
+        'confirmed': Order.objects.filter(status='confirmed').count(),
+        'delivered': Order.objects.filter(status='delivered').count(),
+        'cancelled': Order.objects.filter(status='cancelled').count(),
+    }
+
     # Filtres
     status_filter = request.GET.get('status')
     if status_filter:
         orders = orders.filter(status=status_filter)
-    
+
     paginator = Paginator(orders, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
         'page_obj': page_obj,
         'orders': page_obj,
         'current_status': status_filter,
         'status_choices': Order.STATUS_CHOICES,
+        'order_stats': order_stats,
     }
-    
+
     return render(request, 'shop/admin/order_list.html', context)
 
 
@@ -849,48 +1005,4 @@ def product_toggle_status(request, pk):
         })
     
 
-    # Dans views.py - Vue pour ajouter un produit
 
-@login_required
-@user_passes_test(is_staff)
-def product_add(request):
-    """Ajouter un nouveau produit"""
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
-        
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    product = form.save()
-                    
-                    # Gestion des images multiples
-                    images = request.FILES.getlist('images')
-                    for i, image in enumerate(images):
-                        ProductImage.objects.create(
-                            product=product,
-                            image=image,
-                            is_primary=(i == 0)  # La première image est principale
-                        )
-                    
-                    messages.success(request, f'Produit "{product.name}" ajouté avec succès!')
-                    return redirect('shop:product_list')
-                    
-            except Exception as e:
-                messages.error(request, f'Erreur lors de l\'ajout du produit: {str(e)}')
-        else:
-            # Afficher les erreurs du formulaire
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f'{field}: {error}')
-    else:
-        form = ProductForm()
-    
-    # Récupérer les produits récents pour l'affichage
-    recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
-    
-    context = {
-        'form': form,
-        'recent_products': recent_products,
-    }
-    
-    return render(request, 'shop/admin/product_add.html', context)

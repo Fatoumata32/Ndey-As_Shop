@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil - Ndeyas Shop{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 100px 0;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-right">
+                <h1 class="display-3 text-white fw-bold mb-4">Bienvenue chez Ndeyas Shop</h1>
+                <p class="lead text-white mb-4">Découvrez notre collection exclusive de produits de qualité à des prix imbattables.</p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'shop:shop' %}" class="btn btn-light btn-lg px-4 rounded-pill">
+                        <i class="fas fa-shopping-bag"></i> Découvrir la boutique
+                    </a>
+                    <a href="#categories" class="btn btn-outline-light btn-lg px-4 rounded-pill">
+                        <i class="fas fa-th"></i> Voir les catégories
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Ndeyas+Shop" alt="Hero" class="img-fluid rounded-3 shadow-lg">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="text-center p-4 h-100 feature-card">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-truck fa-3x text-primary"></i>
+                    </div>
+                    <h5>Livraison Rapide</h5>
+                    <p class="text-muted">Livraison gratuite à partir de 10.000 FCFA</p>
+                </div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="text-center p-4 h-100 feature-card">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                    </div>
+                    <h5>Paiement Sécurisé</h5>
+                    <p class="text-muted">Transactions 100% sécurisées</p>
+                </div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="text-center p-4 h-100 feature-card">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-undo fa-3x text-primary"></i>
+                    </div>
+                    <h5>Retour Facile</h5>
+                    <p class="text-muted">Retour sous 30 jours</p>
+                </div>
+            </div>
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="text-center p-4 h-100 feature-card">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-headset fa-3x text-primary"></i>
+                    </div>
+                    <h5>Support 24/7</h5>
+                    <p class="text-muted">Service client disponible</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section id="categories" class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold">Nos Catégories</h2>
+            <p class="lead text-muted">Explorez nos différentes catégories de produits</p>
+        </div>
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-lg-3 col-md-4 col-sm-6" data-aos="zoom-in" data-aos-delay="{{ forloop.counter }}00">
+                <a href="{% url 'shop:shop' %}?category={{ category.id }}" class="text-decoration-none">
+                    <div class="category-card h-100 text-center p-4 bg-white rounded-3 shadow-sm">
+                        <div class="category-icon mb-3">
+                            <span style="font-size: 3rem;">{{ category.icon|default:"📦" }}</span>
+                        </div>
+                        <h5 class="text-dark">{{ category.name }}</h5>
+                        <p class="text-muted small">{{ category.products.count }} produits</p>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Aucune catégorie disponible</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold">Produits Vedettes</h2>
+            <p class="lead text-muted">Découvrez nos produits les plus populaires</p>
+        </div>
+        <div class="row g-4">
+            {% for product in products %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
+                <div class="product-card h-100">
+                    <div class="card border-0 shadow-sm h-100">
+                        <!-- Product Image -->
+                        <div class="product-image position-relative overflow-hidden">
+                            {% if product.primary_image %}
+                            <img src="{{ product.primary_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                            {% else %}
+                            <img src="https://via.placeholder.com/400x300/f8f9fa/6c757d?text={{ product.name|truncatechars:20 }}" class="card-img-top" alt="{{ product.name }}">
+                            {% endif %}
+
+                            <!-- Badges -->
+                            <div class="product-badges position-absolute top-0 start-0 p-2">
+                                {% if product.is_new %}
+                                <span class="badge bg-info mb-1">Nouveau</span><br>
+                                {% endif %}
+                                {% if product.on_sale and product.discount_percent %}
+                                <span class="badge bg-danger">-{{ product.discount_percent }}%</span>
+                                {% endif %}
+                                {% if product.sold_out %}
+                                <span class="badge bg-secondary">Rupture</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="product-actions position-absolute bottom-0 w-100 p-3 bg-white bg-opacity-90">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'shop:product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                    {% if not product.sold_out %}
+                                    <button class="btn btn-sm btn-primary add-to-cart" data-product-id="{{ product.id }}">
+                                        <i class="fas fa-cart-plus"></i> Ajouter
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-secondary" disabled>
+                                        <i class="fas fa-times"></i> Épuisé
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Details -->
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'shop:product_detail' product.id %}" class="text-decoration-none text-dark">
+                                    {{ product.name }}
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted small">{{ product.description|truncatechars:100 }}</p>
+
+                            <!-- Price -->
+                            <div class="product-price">
+                                {% if product.on_sale and product.sale_price %}
+                                <span class="text-muted text-decoration-line-through">{{ product.price }} FCFA</span>
+                                <span class="h5 text-danger ms-2">{{ product.sale_price }} FCFA</span>
+                                {% else %}
+                                <span class="h5 text-primary">{{ product.price }} FCFA</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Rating -->
+                            <div class="product-rating mt-2">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="far fa-star text-warning"></i>
+                                <span class="text-muted small ms-2">(4.0)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Aucun produit disponible</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if products %}
+        <div class="text-center mt-5">
+            <a href="{% url 'shop:shop' %}" class="btn btn-primary btn-lg rounded-pill px-5">
+                <i class="fas fa-arrow-right"></i> Voir tous les produits
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8" data-aos="fade-right">
+                <h3 class="display-6 fw-bold mb-3">Inscrivez-vous à notre newsletter</h3>
+                <p class="lead">Recevez les dernières offres et nouveautés directement dans votre boîte mail</p>
+            </div>
+            <div class="col-lg-4" data-aos="fade-left">
+                <form class="newsletter-form">
+                    <div class="input-group">
+                        <input type="email" class="form-control form-control-lg" placeholder="Votre email">
+                        <button class="btn btn-light btn-lg" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+/* Custom Styles for Index Page */
+.feature-card {
+    background: white;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+}
+
+.feature-icon i {
+    color: white !important;
+}
+
+.category-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+}
+
+.product-card .product-image {
+    height: 250px;
+    position: relative;
+}
+
+.product-card .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.1);
+}
+
+.product-actions {
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-actions {
+    transform: translateY(0);
+}
+
+.newsletter-form .form-control {
+    border-radius: 50px 0 0 50px;
+    border: none;
+    padding: 12px 20px;
+}
+
+.newsletter-form .btn {
+    border-radius: 0 50px 50px 0;
+    padding: 12px 30px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add to cart functionality
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+
+            showLoading();
+
+            fetch('{% url "shop:add_to_cart" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    updateCartCount(data.cart_count);
+                    // Show success message
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                    alert.style.zIndex = '9999';
+                    alert.innerHTML = `
+                        <i class="fas fa-check-circle"></i> ${data.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.body.appendChild(alert);
+                    setTimeout(() => alert.remove(), 3000);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
