@@ -3,7 +3,174 @@
 
 {% block title %}Boutique - Ndeyas Shop{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Hero Section pour Shop */
+    .shop-hero {
+        position: relative;
+        height: 50vh;
+        min-height: 400px;
+        overflow: hidden;
+        margin-bottom: 3rem;
+    }
+
+    .shop-hero-slideshow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+
+    .shop-hero-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0;
+        transition: opacity 2s ease-in-out;
+    }
+
+    .shop-hero-slide::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(216, 27, 96, 0.8) 0%, rgba(0, 0, 0, 0.6) 100%);
+    }
+
+    .shop-hero-slide.active {
+        opacity: 1;
+    }
+
+    .shop-hero-content {
+        position: relative;
+        z-index: 2;
+        height: 50vh;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: var(--white);
+        padding: 2rem;
+    }
+
+    .shop-hero-content h1 {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        animation: fadeInUp 1s ease;
+        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .shop-hero-content p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        animation: fadeInUp 1.2s ease;
+        opacity: 0.95;
+    }
+
+    .shop-stats {
+        display: flex;
+        gap: 3rem;
+        animation: fadeInUp 1.4s ease;
+    }
+
+    .shop-stat {
+        text-align: center;
+    }
+
+    .shop-stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .shop-stat-label {
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.9;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .shop-hero-content h1 {
+            font-size: 2.5rem;
+        }
+
+        .shop-hero-content p {
+            font-size: 1rem;
+        }
+
+        .shop-stats {
+            gap: 1.5rem;
+        }
+
+        .shop-stat-number {
+            font-size: 1.8rem;
+        }
+
+        .shop-stat-label {
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<!-- Hero Section Shop -->
+<section class="shop-hero">
+    <div class="shop-hero-slideshow">
+        <div class="shop-hero-slide active" style="background-image: url('{% static "shop/img/SHOP-BG2.jpg" %}');"></div>
+        <div class="shop-hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG3.jpg" %}');"></div>
+        <div class="shop-hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG4.jpg" %}');"></div>
+    </div>
+    <div class="container">
+        <div class="shop-hero-content">
+            <h1>Notre Boutique</h1>
+            <p>Explorez notre collection exclusive de vêtements et accessoires africains authentiques</p>
+            <div class="shop-stats">
+                <div class="shop-stat">
+                    <div class="shop-stat-number">{{ products.count|default:"50+" }}</div>
+                    <div class="shop-stat-label">Produits</div>
+                </div>
+                <div class="shop-stat">
+                    <div class="shop-stat-number">{{ categories.count|default:"10+" }}</div>
+                    <div class="shop-stat-label">Catégories</div>
+                </div>
+                <div class="shop-stat">
+                    <div class="shop-stat-number">100%</div>
+                    <div class="shop-stat-label">Qualité</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <div class="container-fluid py-5">
     <!-- Breadcrumb -->
     <div class="container">
@@ -332,6 +499,26 @@
         </div>
     </div>
 </div>
+
+<script>
+// Slideshow automatique pour la section hero
+let currentShopSlide = 0;
+const shopSlides = document.querySelectorAll('.shop-hero-slide');
+const totalShopSlides = shopSlides.length;
+
+function nextShopSlide() {
+    if (shopSlides.length > 0) {
+        shopSlides[currentShopSlide].classList.remove('active');
+        currentShopSlide = (currentShopSlide + 1) % totalShopSlides;
+        shopSlides[currentShopSlide].classList.add('active');
+    }
+}
+
+// Change de slide toutes les 5 secondes
+if (shopSlides.length > 1) {
+    setInterval(nextShopSlide, 5000);
+}
+</script>
 
 <!-- Quick View Modal -->
 <div class="modal fade" id="quickViewModal" tabindex="-1">
