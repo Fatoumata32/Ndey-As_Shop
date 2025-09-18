@@ -234,10 +234,13 @@ def add_to_cart(request):
                 cart_item.quantity += quantity
                 cart_item.save()
             
+            # Calculate total quantity in cart
+            total_quantity = sum(item.quantity for item in cart.items.all())
+
             return JsonResponse({
                 'success': True,
                 'message': 'Produit ajouté au panier!',
-                'cart_count': cart.items.count()
+                'cart_count': total_quantity
             })
         except Exception as e:
             return JsonResponse({
@@ -271,7 +274,7 @@ def update_cart_item(request):
         return JsonResponse({
             'success': True,
             'cart_total': str(cart.get_total()),
-            'cart_count': cart.items.count()
+            'cart_count': sum(item.quantity for item in cart.items.all())
         })
 
 
@@ -289,7 +292,7 @@ def remove_from_cart(request):
         return JsonResponse({
             'success': True,
             'cart_total': str(cart.get_total()),
-            'cart_count': cart.items.count()
+            'cart_count': sum(item.quantity for item in cart.items.all())
         })
 
 
@@ -570,7 +573,7 @@ def reset_password(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         email = data.get('email')
-        
+
         try:
             user = User.objects.get(email=email)
             return JsonResponse({
@@ -582,7 +585,7 @@ def reset_password(request):
                 'success': False,
                 'message': 'Aucun compte trouvé avec cet email!'
             })
-    
+
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée'})
 
 

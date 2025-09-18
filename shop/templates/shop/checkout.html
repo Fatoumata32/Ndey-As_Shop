@@ -547,14 +547,61 @@ document.addEventListener('DOMContentLoaded', function() {
         e.target.value = formattedValue;
     });
 
-    // Form validation
+    // Form validation and WhatsApp submission
     form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
         if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
+            form.classList.add('was-validated');
+            return;
         }
 
-        form.classList.add('was-validated');
+        // Collect form data
+        const customerName = document.getElementById('customer_name').value;
+        const customerPhone = document.getElementById('customer_phone').value;
+        const customerEmail = document.getElementById('customer_email').value || 'Non fourni';
+        const deliveryAddress = document.getElementById('delivery_address').value;
+        const deliveryOption = document.querySelector('input[name="delivery_option"]:checked').value;
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        const notes = document.querySelector('[name="notes"]').value || 'Aucune';
+
+        // Build order message
+        let message = `*NOUVELLE COMMANDE NDEYAS SHOP*\n\n`;
+        message += `*INFORMATIONS CLIENT:*\n`;
+        message += `Nom: ${customerName}\n`;
+        message += `Téléphone: +221 ${customerPhone}\n`;
+        message += `Email: ${customerEmail}\n\n`;
+
+        message += `*LIVRAISON:*\n`;
+        message += `Adresse: ${deliveryAddress}\n`;
+        message += `Type: ${deliveryOption === 'express' ? 'Express (24h)' : 'Standard (2-3 jours)'}\n\n`;
+
+        message += `*ARTICLES COMMANDÉS:*\n`;
+        {% for item in cart_items %}
+        message += `- {{ item.product.name }} (x{{ item.quantity }}){% if item.selected_size %} - Taille: {{ item.selected_size }}{% endif %}: {{ item.get_subtotal }} FCFA\n`;
+        {% endfor %}
+        message += `\n*TOTAL: {{ total }} FCFA*\n\n`;
+
+        message += `*MODE DE PAIEMENT:* ${paymentMethod === 'cash' ? 'Paiement à la livraison' : paymentMethod === 'wave' ? 'Wave' : 'Orange Money'}\n`;
+        message += `*Instructions:* ${notes}\n`;
+
+        // WhatsApp phone number (owner's number)
+        const ownerPhone = '221771234567'; // Replace with actual owner phone number
+
+        // Create WhatsApp URL
+        const whatsappUrl = `https://wa.me/${ownerPhone}?text=${encodeURIComponent(message)}`;
+
+        // Open WhatsApp
+        window.open(whatsappUrl, '_blank');
+
+        // Show success message
+        alert('Votre commande a été envoyée! Nous vous contacterons bientôt pour confirmer.');
+
+        // Optionally clear the cart after sending
+        setTimeout(() => {
+            window.location.href = '{% url "shop:index" %}';
+        }, 2000);
     }, false);
 });
 </script>

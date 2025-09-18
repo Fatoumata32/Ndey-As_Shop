@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}Connexion - Ndeyas Shop{% endblock %}
 
@@ -164,19 +165,15 @@
                         <ul class="features-list">
                             <li>
                                 <i class="fas fa-check-circle"></i>
-                                <span>Livraison gratuite à partir de 10.000 FCFA</span>
+                                <span>Achetez en toute sécurité</span>
                             </li>
                             <li>
                                 <i class="fas fa-check-circle"></i>
-                                <span>Offres exclusives pour les membres</span>
+                                <span>Livraison rapide</span>
                             </li>
                             <li>
                                 <i class="fas fa-check-circle"></i>
-                                <span>Suivi de vos commandes en temps réel</span>
-                            </li>
-                            <li>
-                                <i class="fas fa-check-circle"></i>
-                                <span>Programme de fidélité avantageux</span>
+                                <span>Service client disponible</span>
                             </li>
                         </ul>
                     </div>
@@ -266,11 +263,8 @@
                                 </div>
 
                                 <div class="social-login">
-                                    <a href="#" class="social-btn">
-                                        <i class="fab fa-google text-danger"></i> Google
-                                    </a>
-                                    <a href="#" class="social-btn">
-                                        <i class="fab fa-facebook text-primary"></i> Facebook
+                                    <a href="{% provider_login_url 'google' %}" class="social-btn w-100">
+                                        <i class="fab fa-google text-danger"></i> Se connecter avec Google
                                     </a>
                                 </div>
 
