@@ -416,88 +416,128 @@ def login_register_view(request):
     return render(request, 'shop/login.html')
 
 
-@csrf_exempt
+@ensure_csrf_cookie
 def ajax_login(request):
     """Vue AJAX pour la connexion"""
     if request.method == 'POST':
-        data = json.loads(request.body)
-        email = data.get('email')
-        password = data.get('password')
-        
         try:
-            user = User.objects.get(email=email)
-            user = authenticate(request, username=user.username, password=password)
-            
-            if user is not None:
-                login(request, user)
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Connexion réussie!',
-                    'redirect_url': '/home/'
-                })
-            else:
+            data = json.loads(request.body)
+            email = data.get('email')
+            password = data.get('password')
+
+            if not email or not password:
                 return JsonResponse({
                     'success': False,
-                    'message': 'Email ou mot de passe incorrect!'
+                    'message': 'Email et mot de passe requis!'
                 })
-        except User.DoesNotExist:
+
+            # Chercher l'utilisateur par email
+            try:
+                user = User.objects.get(email=email)
+                # Authentifier avec le username
+                authenticated_user = authenticate(request, username=user.username, password=password)
+
+                if authenticated_user is not None:
+                    login(request, authenticated_user)
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Connexion réussie!',
+                        'redirect_url': '/home/'
+                    })
+                else:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Email ou mot de passe incorrect!'
+                    })
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Aucun compte trouvé avec cet email!'
+                })
+        except json.JSONDecodeError:
             return JsonResponse({
                 'success': False,
-                'message': 'Aucun compte trouvé avec cet email!'
+                'message': 'Données invalides!'
             })
-    
+        except Exception as e:
+            logger.error(f"Erreur login: {e}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Une erreur est survenue lors de la connexion.'
+            })
+
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée'})
 
 
-@csrf_exempt
+@ensure_csrf_cookie
 def ajax_register(request):
     """Vue AJAX pour l'inscription"""
     if request.method == 'POST':
-        data = json.loads(request.body)
-        email = data.get('email')
-        password = data.get('password')
-        confirm_password = data.get('confirm_password')
-        
-        if password != confirm_password:
-            return JsonResponse({
-                'success': False,
-                'message': 'Les mots de passe ne correspondent pas!'
-            })
-        
-        if User.objects.filter(email=email).exists():
-            return JsonResponse({
-                'success': False,
-                'message': 'Un compte existe déjà avec cet email!'
-            })
-        
         try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            password = data.get('password')
+            confirm_password = data.get('confirm_password')
+
+            if not email or not password:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Email et mot de passe requis!'
+                })
+
+            if password != confirm_password:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Les mots de passe ne correspondent pas!'
+                })
+
+            if len(password) < 8:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Le mot de passe doit contenir au moins 8 caractères!'
+                })
+
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Un compte existe déjà avec cet email!'
+                })
+
+            # Créer un username unique basé sur l'email
             username = email.split('@')[0]
             base_username = username
             counter = 1
             while User.objects.filter(username=username).exists():
                 username = f"{base_username}{counter}"
                 counter += 1
-            
+
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password
             )
-            
+
+            # Connecter automatiquement l'utilisateur après inscription
             login(request, user)
-            
+
             return JsonResponse({
                 'success': True,
                 'message': 'Inscription réussie!',
                 'redirect_url': '/home/'
             })
-            
-        except Exception as e:
+
+        except json.JSONDecodeError:
             return JsonResponse({
                 'success': False,
-                'message': f'Erreur lors de l\'inscription: {str(e)}'
+                'message': 'Données invalides!'
             })
-    
+        except Exception as e:
+            logger.error(f"Erreur inscription: {e}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Une erreur est survenue lors de l\'inscription.'
+            })
+
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée'})
 
 
