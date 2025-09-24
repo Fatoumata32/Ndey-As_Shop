@@ -166,7 +166,7 @@
                                        checked>
                                 <label class="form-check-label" for="standard_delivery">
                                     <strong>Livraison standard</strong> - 24-48h
-                                    <span class="text-success ms-2">Gratuit</span>
+                                    <span class="text-muted ms-2">Frais selon la zone</span>
                                 </label>
                             </div>
                             <div class="form-check">
@@ -342,7 +342,7 @@
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>Livraison</span>
-                                    <span class="text-success" id="delivery-fee">Gratuit</span>
+                                    <span class="text-muted" id="delivery-fee">À calculer</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>Réduction</span>
@@ -527,8 +527,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 deliveryFee.classList.add('text-primary');
                 finalTotal.textContent = (baseTotal + 2000) + ' FCFA';
             } else {
-                deliveryFee.textContent = 'Gratuit';
-                deliveryFee.classList.add('text-success');
+                deliveryFee.textContent = 'À calculer';
+                deliveryFee.classList.add('text-muted');
                 deliveryFee.classList.remove('text-primary');
                 finalTotal.textContent = baseTotal + ' FCFA';
             }

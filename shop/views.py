@@ -65,7 +65,7 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 from django.db.models import Q, Count, Sum, Avg
 from django.contrib.auth.models import User
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.conf import settings
 from django.core.mail import send_mail
@@ -74,7 +74,7 @@ from django.utils.html import strip_tags
 import json
 import logging
 
-from .models import Product, Category, Cart, CartItem, Order, OrderItem, Contact, ProductImage, Size
+from .models import Product, Category, Cart, CartItem, Order, OrderItem, Contact, ProductImage, Size, ProductReview
 from .forms import ProductForm, CategoryForm, ProductImageForm
 
 logger = logging.getLogger(__name__)
@@ -284,16 +284,26 @@ def remove_from_cart(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         item_id = data.get('item_id')
-        
+
         cart_item = get_object_or_404(CartItem, id=item_id)
         cart_item.delete()
-        
+
         cart = get_or_create_cart(request)
         return JsonResponse({
             'success': True,
             'cart_total': str(cart.get_total()),
             'cart_count': sum(item.quantity for item in cart.items.all())
         })
+
+
+def get_cart_count(request):
+    """Obtenir le nombre d'articles dans le panier (AJAX)"""
+    cart = get_or_create_cart(request)
+    count = sum(item.quantity for item in cart.items.all())
+    return JsonResponse({
+        'success': True,
+        'count': count
+    })
 
 
 def checkout(request):
@@ -407,6 +417,118 @@ def contact_view(request):
     return render(request, 'shop/contact.html')
 
 
+@login_required
+@require_http_methods(["POST"])
+def add_review(request, product_id):
+    """Ajouter ou modifier un avis sur un produit (AJAX)"""
+    try:
+        product = get_object_or_404(Product, id=product_id)
+        data = json.loads(request.body)
+        rating = int(data.get('rating', 0))
+        comment = data.get('comment', '')
+
+        if not 1 <= rating <= 5:
+            return JsonResponse({
+                'success': False,
+                'message': 'La note doit être entre 1 et 5'
+            })
+
+        review, created = ProductReview.objects.update_or_create(
+            product=product,
+            user=request.user,
+            defaults={
+                'rating': rating,
+                'comment': comment
+            }
+        )
+
+        average_rating = product.get_average_rating()
+        total_reviews = product.get_rating_count()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Votre avis a été enregistré avec succès!',
+            'average_rating': round(average_rating, 1),
+            'total_reviews': total_reviews,
+            'created': created
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Erreur: {str(e)}'
+        })
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_review(request, product_id):
+    """Supprimer son avis sur un produit (AJAX)"""
+    try:
+        product = get_object_or_404(Product, id=product_id)
+        review = get_object_or_404(ProductReview, product=product, user=request.user)
+        review.delete()
+
+        average_rating = product.get_average_rating()
+        total_reviews = product.get_rating_count()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Votre avis a été supprimé',
+            'average_rating': round(average_rating, 1),
+            'total_reviews': total_reviews
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Erreur: {str(e)}'
+        })
+
+
+def get_product_reviews(request, product_id):
+    """Récupérer les avis d'un produit (AJAX)"""
+    try:
+        product = get_object_or_404(Product, id=product_id)
+        reviews = product.reviews.select_related('user').order_by('-created_at')
+
+        page = request.GET.get('page', 1)
+        paginator = Paginator(reviews, 5)
+
+        try:
+            reviews_page = paginator.page(page)
+        except PageNotAnInteger:
+            reviews_page = paginator.page(1)
+        except EmptyPage:
+            reviews_page = paginator.page(paginator.num_pages)
+
+        reviews_data = []
+        for review in reviews_page:
+            reviews_data.append({
+                'id': review.id,
+                'user': review.user.username,
+                'rating': review.rating,
+                'comment': review.comment,
+                'date': review.created_at.strftime('%d/%m/%Y'),
+                'is_owner': review.user == request.user if request.user.is_authenticated else False
+            })
+
+        return JsonResponse({
+            'success': True,
+            'reviews': reviews_data,
+            'has_next': reviews_page.has_next(),
+            'has_previous': reviews_page.has_previous(),
+            'current_page': reviews_page.number,
+            'total_pages': paginator.num_pages,
+            'average_rating': round(product.get_average_rating(), 1),
+            'total_reviews': product.get_rating_count(),
+            'rating_distribution': product.get_rating_distribution()
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Erreur: {str(e)}'
+        })
+
+
 # ======================== VUES AUTHENTIFICATION ========================
 
 def login_register_view(request):
@@ -442,7 +564,7 @@ def ajax_login(request):
                     return JsonResponse({
                         'success': True,
                         'message': 'Connexion réussie!',
-                        'redirect_url': '/home/'
+                        'redirect_url': '/'
                     })
                 else:
                     return JsonResponse({
@@ -605,6 +727,18 @@ def user_orders(request):
         'page_obj': page_obj,
     }
     return render(request, 'shop/user_orders.html', context)
+
+
+@login_required
+def user_order_detail(request, order_id):
+    """Vue pour afficher les détails d'une commande pour l'utilisateur"""
+    # Vérifier que la commande appartient bien à l'utilisateur connecté
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    context = {
+        'order': order,
+    }
+    return render(request, 'shop/user_order_detail.html', context)
 
 
 @csrf_exempt

@@ -191,7 +191,7 @@
                     <div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="fas fa-search text-primary"></i> Rechercher
+                                <i class="fas fa-search text-danger"></i> Rechercher
                             </h5>
                             <form method="get" action="{% url 'shop:shop' %}">
                                 <div class="input-group">
@@ -200,7 +200,7 @@
                                            name="q"
                                            placeholder="Rechercher un produit..."
                                            value="{{ search_query }}">
-                                    <button class="btn btn-primary" type="submit">
+                                    <button class="btn btn-danger" type="submit">
                                         <i class="fas fa-search"></i>
                                     </button>
                                 </div>
@@ -212,7 +212,7 @@
                     <div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="fas fa-th text-primary"></i> Catégories
+                                <i class="fas fa-th text-danger"></i> Catégories
                             </h5>
                             <div class="category-list">
                                 <a href="{% url 'shop:shop' %}"
@@ -235,7 +235,7 @@
                     <div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="fas fa-dollar-sign text-primary"></i> Prix
+                                <i class="fas fa-dollar-sign text-danger"></i> Prix
                             </h5>
                             <form id="priceFilter">
                                 <div class="price-range-slider">
@@ -255,7 +255,7 @@
                                                    min="0">
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-sm btn-primary w-100 mt-2">
+                                    <button type="submit" class="btn btn-sm btn-danger w-100 mt-2">
                                         <i class="fas fa-filter"></i> Filtrer
                                     </button>
                                 </div>
@@ -267,7 +267,7 @@
                     <div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="fas fa-ruler text-primary"></i> Tailles
+                                <i class="fas fa-ruler text-danger"></i> Tailles
                             </h5>
                             <div class="size-filter">
                                 <button class="size-btn" data-size="XS">XS</button>
@@ -284,7 +284,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="fas fa-star text-primary"></i> Filtres spéciaux
+                                <i class="fas fa-star text-danger"></i> Filtres spéciaux
                             </h5>
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="onSale">
@@ -295,7 +295,7 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="newProducts">
                                 <label class="form-check-label" for="newProducts">
-                                    <i class="fas fa-certificate text-info"></i> Nouveautés
+                                    <i class="fas fa-certificate text-success"></i> Nouveautés
                                 </label>
                             </div>
                             <div class="form-check">
@@ -376,7 +376,7 @@
                                     <!-- Badges -->
                                     <div class="product-badges position-absolute top-0 start-0 p-2">
                                         {% if product.is_new %}
-                                        <span class="badge bg-info mb-1">Nouveau</span><br>
+                                        <span class="badge bg-success mb-1">Nouveau</span><br>
                                         {% endif %}
                                         {% if product.on_sale and product.discount_percent %}
                                         <span class="badge bg-danger">-{{ product.discount_percent }}%</span>
@@ -399,7 +399,7 @@
                                     <div class="product-actions position-absolute bottom-0 w-100 p-3 bg-white bg-opacity-90">
                                         <div class="d-grid gap-2">
                                             {% if not product.sold_out %}
-                                            <button class="btn btn-primary btn-sm add-to-cart"
+                                            <button class="btn btn-danger btn-sm add-to-cart"
                                                     data-product-id="{{ product.id }}">
                                                 <i class="fas fa-cart-plus"></i> Ajouter au panier
                                             </button>
@@ -435,20 +435,47 @@
                                         </span>
                                         <span class="h5 text-danger ms-2">{{ product.sale_price }} FCFA</span>
                                         {% else %}
-                                        <span class="h5 text-primary">{{ product.price }} FCFA</span>
+                                        <span class="h5 text-danger">{{ product.price }} FCFA</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Stock Status -->
+                                    <div class="stock-info mb-2">
+                                        {% if product.quantity > 0 %}
+                                            {% if product.quantity < 5 %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-exclamation-triangle"></i> Stock limité ({{ product.quantity }} restants)
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle"></i> En stock ({{ product.quantity }} disponibles)
+                                            </span>
+                                            {% endif %}
+                                        {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle"></i> Rupture de stock
+                                        </span>
                                         {% endif %}
                                     </div>
 
                                     <!-- Rating -->
                                     <div class="product-rating">
                                         <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <i class="fas fa-star text-warning"></i>
-                                                <i class="fas fa-star text-warning"></i>
-                                                <i class="fas fa-star text-warning"></i>
-                                                <i class="fas fa-star text-warning"></i>
-                                                <i class="far fa-star text-warning"></i>
-                                                <span class="text-muted small ms-1">(4.0)</span>
+                                            <div class="rating-display" data-product-id="{{ product.id }}">
+                                                {% with avg_rating=product.get_average_rating total_reviews=product.get_rating_count %}
+                                                <span class="stars">
+                                                    {% for i in "12345" %}
+                                                        {% if forloop.counter <= avg_rating %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                        {% elif forloop.counter|add:"-0.5" <= avg_rating %}
+                                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                                        {% else %}
+                                                        <i class="far fa-star text-warning"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </span>
+                                                <span class="text-muted small ms-1">({{ avg_rating|floatformat:1 }}) {{ total_reviews }} avis</span>
+                                                {% endwith %}
                                             </div>
                                             <button class="btn btn-sm btn-outline-danger wishlist-btn"
                                                     data-product-id="{{ product.id }}"
@@ -463,11 +490,11 @@
                     </div>
                     {% empty %}
                     <div class="col-12">
-                        <div class="alert alert-info text-center">
+                        <div class="alert alert-warning text-center">
                             <i class="fas fa-info-circle fa-3x mb-3"></i>
                             <h4>Aucun produit trouvé</h4>
                             <p>Essayez de modifier vos critères de recherche</p>
-                            <a href="{% url 'shop:shop' %}" class="btn btn-primary">
+                            <a href="{% url 'shop:shop' %}" class="btn btn-danger">
                                 <i class="fas fa-redo"></i> Réinitialiser les filtres
                             </a>
                         </div>
@@ -756,9 +783,33 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.quick-view-btn').forEach(button => {
         button.addEventListener('click', function() {
             const productId = this.dataset.productId;
-            // Load product details via AJAX and show in modal
+            const modalBody = document.querySelector('#quickViewModal .modal-body');
             const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+
+            // Show loading spinner
+            modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-danger" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
             modal.show();
+
+            // Load product details via fetch
+            fetch(`/product/${productId}/`)
+                .then(response => response.text())
+                .then(html => {
+                    // Extract product info from the full page HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const productInfo = doc.querySelector('.product-details');
+
+                    if (productInfo) {
+                        modalBody.innerHTML = productInfo.innerHTML;
+                    } else {
+                        // Fallback: redirect to product page
+                        window.location.href = `/product/${productId}/`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading product details:', error);
+                    modalBody.innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des détails du produit.</div>';
+                });
         });
     });
 

@@ -6,8 +6,18 @@ from datetime import timedelta
 
 class Size(models.Model):
     """Modèle pour les tailles disponibles"""
+    SIZE_TYPES = [
+        ('standard', 'Taille standard'),
+        ('measurement', 'Mesure'),
+    ]
+
     name = models.CharField(max_length=50, unique=True)
-    
+    size_type = models.CharField(max_length=20, choices=SIZE_TYPES, default='standard')
+    display_order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['display_order', 'name']
+
     def __str__(self):
         return self.name
 
@@ -21,12 +31,20 @@ class Category(models.Model):
         ('shoe', 'Pointures de chaussures'),
         ('none', 'Aucune option de taille'),
     ]
+
+    MEASUREMENT_UNITS = [
+        ('meter', 'Mètre'),
+        ('cm', 'Centimètre'),
+        ('yard', 'Yard'),
+        ('piece', 'Pièce'),
+    ]
     
     name = models.CharField(max_length=100, unique=True, default='Sans nom')  # Ajout d'une valeur par défaut
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     description = models.TextField(blank=True, null=True)
     icon = models.CharField(max_length=50, default='📦')
     category_type = models.CharField(max_length=20, choices=CATEGORY_TYPES, default='none')
+    measurement_unit = models.CharField(max_length=20, choices=MEASUREMENT_UNITS, default='meter', blank=True, null=True)
     available_sizes = models.ManyToManyField(Size, blank=True, related_name='categories')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -42,6 +60,17 @@ class Category(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def get_size_label(self):
+        """Retourne le label approprié pour les tailles/mesures"""
+        if self.category_type == 'fabric':
+            return f"Longueur ({self.get_measurement_unit_display()})"
+        elif self.category_type == 'clothing':
+            return "Taille"
+        elif self.category_type == 'shoe':
+            return "Pointure"
+        else:
+            return "Option"
 
 class Product(models.Model):
     """Modèle pour les produits"""
@@ -116,6 +145,23 @@ class Product(models.Model):
         """Retourne l'URL du produit utilisant le slug"""
         from django.urls import reverse
         return reverse('shop:product_detail', kwargs={'slug': self.slug})
+
+    def get_average_rating(self):
+        """Calcule la note moyenne du produit"""
+        from django.db.models import Avg
+        result = self.reviews.aggregate(average=Avg('rating'))
+        return result['average'] or 0
+
+    def get_rating_count(self):
+        """Retourne le nombre total d'avis"""
+        return self.reviews.count()
+
+    def get_rating_distribution(self):
+        """Retourne la distribution des notes"""
+        distribution = {}
+        for i in range(1, 6):
+            distribution[i] = self.reviews.filter(rating=i).count()
+        return distribution
 
 class ProductImage(models.Model):
     """Modèle pour les images de produits"""
@@ -230,9 +276,25 @@ class Contact(models.Model):
     message = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    
+
     class Meta:
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
+
+class ProductReview(models.Model):
+    """Modèle pour les avis et notations des produits"""
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ('product', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name} ({self.rating}★)"

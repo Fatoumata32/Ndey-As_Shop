@@ -287,10 +287,11 @@
         color: var(--black);
         padding: 1rem 1.5rem;
         border-radius: 10px;
-        z-index: 1001;
+        z-index: 10000;
         animation: slideInNotification 0.4s ease;
         border-left: 4px solid var(--primary);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        max-width: 90%;
     }
 
     @keyframes slideInNotification {
@@ -307,6 +308,7 @@
     @media (max-width: 768px) {
         .auth-container {
             padding: 1rem;
+            margin-top: 0;
         }
 
         .login-container {
@@ -331,6 +333,22 @@
 
         .tab-buttons {
             justify-content: space-between;
+        }
+
+        .social-buttons {
+            flex-direction: column;
+        }
+
+        .social-btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification {
+            top: 60px;
+            right: 10px;
+            left: 10px;
+            max-width: calc(100% - 20px);
         }
     }
 </style>

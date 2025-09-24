@@ -355,9 +355,9 @@
                             <div class="order-total">
                                 Total: {{ order.total_amount|currency }}
                             </div>
-                            <button class="btn-view-detail" onclick="viewOrderDetails({{ order.id }})">
+                            <a href="{% url 'shop:user_order_detail' order.id %}" class="btn-view-detail">
                                 <i class="fas fa-eye"></i> Voir les Détails
-                            </button>
+                            </a>
                         </div>
                     </div>
                     {% endfor %}
@@ -425,15 +425,6 @@
 
 {% block extra_js %}
 <script>
-    function viewOrderDetails(orderId) {
-        // Pour l'instant, on affiche juste une alerte
-        // Vous pouvez implémenter une modal ou rediriger vers une page de détails
-        alert(`Détails de la commande #${orderId}\n\nCette fonctionnalité sera bientôt disponible.`);
-
-        // Ou rediriger vers une page de détails si elle existe
-        // window.location.href = `/commande/${orderId}/`;
-    }
-
     // Filter orders by status (if implemented)
     document.querySelectorAll('.filter-tab').forEach(tab => {
         tab.addEventListener('click', function(e) {

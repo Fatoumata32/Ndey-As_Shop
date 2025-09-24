@@ -252,7 +252,7 @@ document.getElementById('selectAll').addEventListener('change', function() {
 
 // Marquer comme lu/non lu
 function toggleRead(contactId) {
-    fetch(`/admin/contact/${contactId}/toggle-read/`, {
+    fetch(`/gestion/messages/${contactId}/toggle-read/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': '{{ csrf_token }}',
@@ -275,7 +275,7 @@ function deleteContact(contactId) {
         return;
     }
 
-    fetch(`/admin/contact/${contactId}/delete/`, {
+    fetch(`/gestion/messages/${contactId}/supprimer/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': '{{ csrf_token }}',

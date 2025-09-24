@@ -6,6 +6,18 @@
 
 {% block extra_css %}
 <style>
+    /* Links styling */
+    a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    a:hover {
+        color: var(--primary-dark);
+        text-decoration: none;
+    }
+
     /* Breadcrumb */
     .breadcrumb-section {
         background: white;
@@ -19,12 +31,22 @@
         background: transparent;
     }
 
-    .breadcrumb-item + .breadcrumb-item::before {
+    .breadcrumb-item a {
         color: var(--primary);
+        font-weight: 500;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: var(--gray);
     }
 
     .breadcrumb-item.active {
-        color: var(--primary);
+        color: var(--dark);
         font-weight: 600;
     }
 
@@ -437,6 +459,15 @@
         box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     }
 
+    /* Product card links */
+    a.text-decoration-none {
+        color: inherit;
+    }
+
+    a.text-decoration-none:hover {
+        color: inherit;
+    }
+
     .product-card-image {
         position: relative;
         height: 250px;
@@ -463,6 +494,84 @@
         font-size: 1.25rem;
         font-weight: 700;
         color: var(--primary);
+    }
+
+    /* Review System Styles */
+    .star-rating {
+        font-size: 1.5rem;
+    }
+
+    .rating-star {
+        cursor: pointer;
+        color: #ddd;
+        transition: color 0.2s;
+    }
+
+    .rating-star:hover,
+    .rating-star.selected {
+        color: var(--warning);
+    }
+
+    .rating-star.filled {
+        color: var(--warning);
+    }
+
+    .review-item {
+        padding: 1.5rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .review-item:hover {
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .review-author {
+        font-weight: 600;
+    }
+
+    .review-date {
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+
+    .review-rating {
+        color: var(--warning);
+    }
+
+    .review-comment {
+        color: var(--dark);
+        line-height: 1.6;
+    }
+
+    .rating-bar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .rating-bar-fill {
+        flex: 1;
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .rating-bar-progress {
+        height: 100%;
+        background: var(--warning);
+        transition: width 0.3s;
     }
 
     /* Responsive */
@@ -562,17 +671,12 @@
 
                     <h1>{{ product.name }}</h1>
 
-                    <div class="product-rating">
-                        <div class="stars">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= 4 %}
-                                <i class="fas fa-star"></i>
-                                {% else %}
-                                <i class="far fa-star"></i>
-                                {% endif %}
-                            {% endfor %}
+                    <div class="product-rating" id="productRating">
+                        <div class="stars" id="mainStars">
+                            <!-- Will be filled by JavaScript -->
+                            <i class="fas fa-spinner fa-spin"></i>
                         </div>
-                        <span>({{ product.reviews_count|default:0 }} avis)</span>
+                        <span id="mainReviewCount">(Chargement...)</span>
                     </div>
 
                     <div class="price-section">
@@ -595,10 +699,17 @@
                     <!-- Size Selection -->
                     {% if product.sizes.exists %}
                     <div class="size-selection">
-                        <h5>Taille</h5>
+                        <h5>{{ product.category.get_size_label }}</h5>
                         <div class="size-options">
                             {% for size in product.sizes.all %}
-                            <div class="size-option" data-size="{{ size.name }}">{{ size.name }}</div>
+                            <div class="size-option" data-size="{{ size.name }}">
+                                {{ size.name }}
+                                {% if product.category.category_type == 'fabric' and product.category.measurement_unit == 'meter' %}
+                                    {% if '.' not in size.name and 'm' not in size.name %}
+                                        mètre{{ size.name|floatformat:0|pluralize }}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
@@ -606,7 +717,13 @@
 
                     <!-- Quantity Selector -->
                     <div class="quantity-selector">
-                        <h5>Quantité</h5>
+                        <h5>
+                            {% if product.category.category_type == 'fabric' %}
+                                Nombre de pièces
+                            {% else %}
+                                Quantité
+                            {% endif %}
+                        </h5>
                         <div class="quantity-controls">
                             <button class="quantity-btn" onclick="decreaseQuantity()">
                                 <i class="fas fa-minus"></i>
@@ -694,7 +811,7 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">
-                    Avis ({{ product.reviews_count|default:0 }})
+                    Avis (<span id="tabReviewCount">0</span>)
                 </button>
             </li>
         </ul>
@@ -725,7 +842,63 @@
                 </table>
             </div>
             <div class="tab-pane fade" id="reviews" role="tabpanel">
-                <p class="text-muted">Aucun avis pour le moment. Soyez le premier à donner votre avis !</p>
+                <!-- Section d'ajout d'avis -->
+                {% if user.is_authenticated %}
+                <div class="add-review-section mb-4">
+                    <h5 class="mb-3">Donner votre avis</h5>
+                    <div class="rating-input mb-3">
+                        <label class="form-label">Note</label>
+                        <div class="star-rating" id="ratingInput">
+                            {% for i in "12345" %}
+                            <i class="far fa-star rating-star" data-rating="{{ forloop.counter }}"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Commentaire (optionnel)</label>
+                        <textarea class="form-control" id="reviewComment" rows="3" placeholder="Partagez votre expérience avec ce produit..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="submitReview({{ product.id }})">
+                        <i class="fas fa-paper-plane"></i> Publier l'avis
+                    </button>
+                </div>
+                <hr>
+                {% else %}
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle"></i> Connectez-vous pour donner votre avis sur ce produit.
+                    <a href="{% url 'shop:login' %}" class="btn btn-sm btn-primary ms-2">Se connecter</a>
+                </div>
+                {% endif %}
+
+                <!-- Statistiques des avis -->
+                <div class="reviews-stats mb-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <h2 class="mb-0" id="averageRating">0</h2>
+                                <div class="stars text-warning mb-2">
+                                    <span id="averageStars"></span>
+                                </div>
+                                <p class="text-muted"><span id="totalReviews">0</span> avis</p>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div id="ratingDistribution"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Liste des avis -->
+                <div id="reviewsList">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div id="reviewsPagination" class="mt-4"></div>
             </div>
         </div>
     </div>
@@ -902,6 +1075,274 @@
             this.style.background = 'white';
             this.style.color = 'var(--primary)';
         }
+    });
+
+    // Système de notation
+    let selectedRating = 0;
+
+    // Gestion de la sélection des étoiles
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(this.dataset.rating);
+            updateStarDisplay();
+        });
+
+        star.addEventListener('mouseover', function() {
+            const rating = parseInt(this.dataset.rating);
+            document.querySelectorAll('.rating-star').forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.remove('far');
+                    s.classList.add('fas');
+                } else {
+                    s.classList.add('far');
+                    s.classList.remove('fas');
+                }
+            });
+        });
+    });
+
+    document.getElementById('ratingInput')?.addEventListener('mouseleave', updateStarDisplay);
+
+    function updateStarDisplay() {
+        document.querySelectorAll('.rating-star').forEach((star, index) => {
+            if (index < selectedRating) {
+                star.classList.remove('far');
+                star.classList.add('fas', 'selected');
+            } else {
+                star.classList.add('far');
+                star.classList.remove('fas', 'selected');
+            }
+        });
+    }
+
+    // Soumettre un avis
+    function submitReview(productId) {
+        if (selectedRating === 0) {
+            alert('Veuillez sélectionner une note');
+            return;
+        }
+
+        const comment = document.getElementById('reviewComment').value;
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi...';
+        btn.disabled = true;
+
+        fetch(`/product/${productId}/review/add/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                rating: selectedRating,
+                comment: comment
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Réinitialiser le formulaire
+                selectedRating = 0;
+                updateStarDisplay();
+                document.getElementById('reviewComment').value = '';
+
+                // Recharger les avis
+                loadReviews(productId, 1);
+
+                // Afficher le message de succès
+                alert(data.message);
+            } else {
+                alert(data.message || 'Erreur lors de l\'envoi de l\'avis');
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Une erreur est survenue');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+
+    // Charger les avis
+    function loadReviews(productId, page = 1) {
+        fetch(`/product/${productId}/reviews/?page=${page}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour les statistiques
+                    document.getElementById('averageRating').textContent = data.average_rating;
+                    document.getElementById('totalReviews').textContent = data.total_reviews;
+
+                    // Mettre à jour le nombre d'avis dans l'onglet
+                    document.getElementById('tabReviewCount').textContent = data.total_reviews;
+
+                    // Mettre à jour les étoiles principales
+                    updateMainStars(data.average_rating, data.total_reviews);
+
+                    // Afficher les étoiles moyennes
+                    const averageStars = document.getElementById('averageStars');
+                    averageStars.innerHTML = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= Math.floor(data.average_rating)) {
+                            averageStars.innerHTML += '<i class="fas fa-star"></i>';
+                        } else if (i - 0.5 <= data.average_rating) {
+                            averageStars.innerHTML += '<i class="fas fa-star-half-alt"></i>';
+                        } else {
+                            averageStars.innerHTML += '<i class="far fa-star"></i>';
+                        }
+                    }
+
+                    // Afficher la distribution des notes
+                    const distribution = document.getElementById('ratingDistribution');
+                    distribution.innerHTML = '';
+                    for (let i = 5; i >= 1; i--) {
+                        const count = data.rating_distribution[i] || 0;
+                        const percentage = data.total_reviews > 0 ? (count / data.total_reviews * 100) : 0;
+                        distribution.innerHTML += `
+                            <div class="rating-bar">
+                                <span>${i} <i class="fas fa-star text-warning"></i></span>
+                                <div class="rating-bar-fill">
+                                    <div class="rating-bar-progress" style="width: ${percentage}%"></div>
+                                </div>
+                                <span>${count}</span>
+                            </div>
+                        `;
+                    }
+
+                    // Afficher les avis
+                    const reviewsList = document.getElementById('reviewsList');
+                    if (data.reviews.length > 0) {
+                        reviewsList.innerHTML = '';
+                        data.reviews.forEach(review => {
+                            let stars = '';
+                            for (let i = 1; i <= 5; i++) {
+                                stars += i <= review.rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+                            }
+
+                            reviewsList.innerHTML += `
+                                <div class="review-item">
+                                    <div class="review-header">
+                                        <div>
+                                            <span class="review-author">${review.user}</span>
+                                            <span class="review-date ms-3">${review.date}</span>
+                                        </div>
+                                        <div class="review-rating">${stars}</div>
+                                    </div>
+                                    ${review.comment ? `<div class="review-comment">${review.comment}</div>` : ''}
+                                    ${review.is_owner ? `
+                                        <button class="btn btn-sm btn-danger mt-2" onclick="deleteReview(${productId})">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `;
+                        });
+
+                        // Pagination
+                        const pagination = document.getElementById('reviewsPagination');
+                        pagination.innerHTML = '';
+                        if (data.total_pages > 1) {
+                            pagination.innerHTML = '<nav><ul class="pagination justify-content-center">';
+
+                            if (data.has_previous) {
+                                pagination.innerHTML += `
+                                    <li class="page-item">
+                                        <a class="page-link" href="#" onclick="loadReviews(${productId}, ${data.current_page - 1}); return false;">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                `;
+                            }
+
+                            for (let i = 1; i <= data.total_pages; i++) {
+                                if (i === data.current_page) {
+                                    pagination.innerHTML += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+                                } else {
+                                    pagination.innerHTML += `
+                                        <li class="page-item">
+                                            <a class="page-link" href="#" onclick="loadReviews(${productId}, ${i}); return false;">${i}</a>
+                                        </li>
+                                    `;
+                                }
+                            }
+
+                            if (data.has_next) {
+                                pagination.innerHTML += `
+                                    <li class="page-item">
+                                        <a class="page-link" href="#" onclick="loadReviews(${productId}, ${data.current_page + 1}); return false;">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                `;
+                            }
+
+                            pagination.innerHTML += '</ul></nav>';
+                        }
+                    } else {
+                        reviewsList.innerHTML = '<p class="text-muted text-center py-4">Aucun avis pour le moment. Soyez le premier à donner votre avis !</p>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading reviews:', error);
+            });
+    }
+
+    // Supprimer un avis
+    function deleteReview(productId) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer votre avis ?')) {
+            return;
+        }
+
+        fetch(`/product/${productId}/review/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadReviews(productId, 1);
+                alert(data.message);
+            } else {
+                alert(data.message || 'Erreur lors de la suppression');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Une erreur est survenue');
+        });
+    }
+
+    // Mettre à jour les étoiles principales du produit
+    function updateMainStars(averageRating, totalReviews) {
+        const mainStars = document.getElementById('mainStars');
+        const mainReviewCount = document.getElementById('mainReviewCount');
+
+        mainStars.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            if (i <= Math.floor(averageRating)) {
+                mainStars.innerHTML += '<i class="fas fa-star"></i>';
+            } else if (i - 0.5 <= averageRating) {
+                mainStars.innerHTML += '<i class="fas fa-star-half-alt"></i>';
+            } else {
+                mainStars.innerHTML += '<i class="far fa-star"></i>';
+            }
+        }
+
+        mainReviewCount.textContent = `(${totalReviews} avis)`;
+    }
+
+    // Charger les avis au chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+        const productId = {{ product.id }};
+        loadReviews(productId, 1);
     });
 </script>
 {% endblock %}
