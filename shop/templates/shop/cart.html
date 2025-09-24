@@ -282,7 +282,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemId = this.dataset.itemId;
             const input = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
             const max = parseInt(input.max);
-            const newQuantity = Math.min(max, parseInt(input.value) + 1);
+            const currentQuantity = parseInt(input.value);
+            const newQuantity = currentQuantity + 1;
+
+            if (newQuantity > max) {
+                // Show stock limit message
+                alert(`Désolé, seulement ${max} unité(s) disponible(s) en stock pour ce produit.`);
+                return;
+            }
+
             updateQuantity(itemId, newQuantity);
         });
     });
@@ -292,9 +300,22 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('change', function() {
             const itemId = this.dataset.itemId;
             const quantity = parseInt(this.value);
-            if (quantity > 0) {
-                updateQuantity(itemId, quantity);
+            const max = parseInt(this.max);
+
+            if (quantity <= 0) {
+                alert('La quantité doit être au moins 1.');
+                this.value = 1;
+                return;
             }
+
+            if (quantity > max) {
+                alert(`Désolé, seulement ${max} unité(s) disponible(s) en stock pour ce produit.`);
+                this.value = max;
+                updateQuantity(itemId, max);
+                return;
+            }
+
+            updateQuantity(itemId, quantity);
         });
     });
 

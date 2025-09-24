@@ -71,6 +71,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.utils import timezone
 import json
 import logging
 
@@ -213,7 +214,7 @@ def add_to_cart(request):
             if product.quantity < quantity:
                 return JsonResponse({
                     'success': False,
-                    'message': f'Stock insuffisant! Seulement {product.quantity} unités disponibles.'
+                    'message': f'Désolé, seulement {product.quantity} unité(s) disponible(s) en stock pour ce produit.'
                 })
             
             # Obtenir ou créer l'article du panier avec selected_size toujours défini
@@ -227,10 +228,17 @@ def add_to_cart(request):
             if not created:
                 # Vérifier si l'ajout ne dépasse pas le stock
                 if cart_item.quantity + quantity > product.quantity:
-                    return JsonResponse({
-                        'success': False,
-                        'message': f'Stock insuffisant! Vous avez déjà {cart_item.quantity} dans votre panier.'
-                    })
+                    available = product.quantity - cart_item.quantity
+                    if available <= 0:
+                        return JsonResponse({
+                            'success': False,
+                            'message': f'Désolé, vous avez déjà atteint la limite de stock pour ce produit ({product.quantity} unité(s) dans votre panier).'
+                        })
+                    else:
+                        return JsonResponse({
+                            'success': False,
+                            'message': f'Désolé, seulement {available} unité(s) supplémentaire(s) disponible(s). Vous avez déjà {cart_item.quantity} unité(s) dans votre panier.'
+                        })
                 cart_item.quantity += quantity
                 cart_item.save()
             
@@ -256,20 +264,20 @@ def update_cart_item(request):
         data = json.loads(request.body)
         item_id = data.get('item_id')
         quantity = data.get('quantity')
-        
+
         cart_item = get_object_or_404(CartItem, id=item_id)
-        
+
         if quantity <= 0:
             cart_item.delete()
         else:
             if quantity > cart_item.product.quantity:
                 return JsonResponse({
                     'success': False,
-                    'message': 'Stock insuffisant!'
+                    'message': f'Désolé, seulement {cart_item.product.quantity} unité(s) disponible(s) en stock pour ce produit.'
                 })
             cart_item.quantity = quantity
             cart_item.save()
-        
+
         cart = get_or_create_cart(request)
         return JsonResponse({
             'success': True,
@@ -668,6 +676,61 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'Vous avez été déconnecté avec succès!')
     return redirect('shop:login')
+
+
+@ensure_csrf_cookie
+def forgot_password(request):
+    """Vue pour demander la réinitialisation du mot de passe"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+
+            if not email:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Veuillez entrer votre email!'
+                })
+
+            try:
+                user = User.objects.get(email=email)
+                # Générer un token de réinitialisation (simplifié pour la démo)
+                from django.utils.crypto import get_random_string
+                token = get_random_string(32)
+
+                # Stocker le token dans la session (pour la démo)
+                request.session[f'reset_token_{token}'] = {
+                    'user_id': user.id,
+                    'timestamp': str(timezone.now())
+                }
+
+                # Dans un cas réel, envoyer un email avec le lien
+                reset_link = f"{request.build_absolute_uri('/shop/reset-password/')}?token={token}"
+
+                # Pour la démo, on retourne juste un message de succès
+                logger.info(f"Reset link for {email}: {reset_link}")
+
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Un lien de réinitialisation a été envoyé à {email}',
+                    'demo_token': token  # Pour la démo uniquement
+                })
+
+            except User.DoesNotExist:
+                # Par sécurité, on ne révèle pas si l'email existe ou non
+                return JsonResponse({
+                    'success': True,
+                    'message': f'Si un compte existe avec {email}, un lien de réinitialisation sera envoyé.'
+                })
+
+        except Exception as e:
+            logger.error(f"Erreur forgot password: {e}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Une erreur est survenue.'
+            })
+
+    return JsonResponse({'success': False, 'message': 'Méthode non autorisée'})
 
 
 # ======================== VUES COMPTE UTILISATEUR ========================

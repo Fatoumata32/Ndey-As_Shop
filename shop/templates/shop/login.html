@@ -62,11 +62,17 @@
     }
 
     .login-form-section {
-        padding: 3rem 2.5rem;
+        padding: 2rem 2.5rem;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
         background: var(--white);
+        overflow-y: auto;
+    }
+
+    .tab-content {
+        display: flex;
+        flex-direction: column;
     }
 
     .login-image-section {
@@ -190,7 +196,7 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
     }
 
     .login-btn:hover, .register-btn:hover {
@@ -220,7 +226,7 @@
 
     .divider {
         text-align: center;
-        margin: 1.5rem 0;
+        margin: 1rem 0;
         position: relative;
         color: #9ca3af;
         font-size: 0.85rem;
@@ -387,12 +393,44 @@
                         </div>
 
                         <div class="forgot-password">
-                            <a href="#" onclick="showNotification('Lien de réinitialisation envoyé!')">Mot de passe oublié ?</a>
+                            <a href="#" onclick="showForgotPassword()">Mot de passe oublié ?</a>
                         </div>
 
                         <button type="submit" class="login-btn" id="loginBtn">
                             Se connecter
                         </button>
+                    </form>
+
+                    <div class="divider">
+                        <span>Ou continuer avec</span>
+                    </div>
+
+                    <div class="social-buttons">
+                        <a href="{% provider_login_url 'google' %}" class="social-btn google">
+                            <i class="fab fa-google"></i>
+                            Google
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Form -->
+                <div id="forgotPassword" class="tab-content" style="display: none;">
+                    <div class="login-subtitle">Entrez votre email pour réinitialiser votre mot de passe</div>
+
+                    <form id="forgotPasswordForm">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="resetEmail">Email</label>
+                            <input type="email" class="form-control" id="resetEmail" name="email" placeholder="Entrez votre email" required>
+                        </div>
+
+                        <button type="submit" class="login-btn" id="resetBtn">
+                            Envoyer le lien de réinitialisation
+                        </button>
+
+                        <div class="text-center mt-3">
+                            <a href="#" onclick="showTab('login')" class="text-primary">Retour à la connexion</a>
+                        </div>
                     </form>
                 </div>
 
@@ -421,17 +459,17 @@
                            S'inscrire
                         </button>
                     </form>
-                </div>
 
-                <div class="divider">
-                    <span>Ou continuer avec</span>
-                </div>
+                    <div class="divider">
+                        <span>Ou continuer avec</span>
+                    </div>
 
-                <div class="social-buttons">
-                    <a href="{% provider_login_url 'google' %}" class="social-btn google">
-                        <i class="fab fa-google"></i>
-                        Google
-                    </a>
+                    <div class="social-buttons">
+                        <a href="{% provider_login_url 'google' %}" class="social-btn google">
+                            <i class="fab fa-google"></i>
+                            Google
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -515,9 +553,15 @@ function showTab(tabId) {
 
     if (tabId === 'login') {
         buttons[0].classList.add('active');
-    } else {
+    } else if (tabId === 'register') {
         buttons[1].classList.add('active');
     }
+    // Pour forgotPassword, on ne change pas les boutons d'onglet
+}
+
+function showForgotPassword() {
+    showTab('forgotPassword');
+    return false;
 }
 
 document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -625,6 +669,63 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
     .catch(error => {
         registerBtn.innerHTML = originalText;
         registerBtn.disabled = false;
+        console.error('Error:', error);
+        showNotification('Une erreur est survenue', 'error');
+    });
+});
+
+// Forgot Password Form
+document.getElementById('forgotPasswordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('resetEmail').value;
+    const resetBtn = document.getElementById('resetBtn');
+    const originalText = resetBtn.innerHTML;
+
+    if (!email) {
+        showNotification('Veuillez entrer votre email!', 'error');
+        return;
+    }
+
+    resetBtn.innerHTML = '<div class="loading me-2"></div>Envoi...';
+    resetBtn.disabled = true;
+
+    fetch('{% url "shop:forgot_password" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            email: email
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        resetBtn.innerHTML = originalText;
+        resetBtn.disabled = false;
+
+        if (data.success) {
+            showNotification(data.message || 'Email envoyé avec succès!', 'success');
+
+            // Pour la démo, afficher le token
+            if (data.demo_token) {
+                setTimeout(() => {
+                    showNotification(`Token de démo: ${data.demo_token}`, 'info');
+                }, 2000);
+            }
+
+            // Revenir au formulaire de connexion après 3 secondes
+            setTimeout(() => {
+                showTab('login');
+            }, 3000);
+        } else {
+            showNotification(data.message || 'Erreur lors de l\'envoi', 'error');
+        }
+    })
+    .catch(error => {
+        resetBtn.innerHTML = originalText;
+        resetBtn.disabled = false;
         console.error('Error:', error);
         showNotification('Une erreur est survenue', 'error');
     });

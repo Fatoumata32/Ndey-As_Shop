@@ -18,6 +18,7 @@ urlpatterns = [
     path('ajax/login/', views.ajax_login, name='ajax_login'),
     path('ajax/register/', views.ajax_register, name='ajax_register'),
     path('logout/', views.logout_view, name='logout'),
+    path('ajax/forgot-password/', views.forgot_password, name='forgot_password'),
     path('reset-password/', views.reset_password, name='reset_password'),
 
     # Compte utilisateur
