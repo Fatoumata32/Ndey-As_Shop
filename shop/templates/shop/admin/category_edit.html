@@ -75,7 +75,7 @@
     }
 
     .required {
-        color: #dc3545;
+        color: #d81b60;
     }
 
     .form-control {
@@ -142,7 +142,7 @@
     }
 
     .btn-delete {
-        background: #dc3545;
+        background: #d81b60;
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
@@ -155,7 +155,7 @@
     }
 
     .btn-delete:hover {
-        background: #c82333;
+        background: #ad1457;
     }
 
     .alert-custom {
@@ -174,7 +174,7 @@
     .products-using-category h3 {
         font-size: 1.2rem;
         font-weight: 600;
-        color: #ff6f00;
+        color: #ad1457;
         margin-bottom: 1rem;
     }
 
@@ -199,7 +199,7 @@
         border-radius: 8px;
         padding: 1rem;
         margin-bottom: 1rem;
-        color: #c62828;
+        color: #ad1457;
     }
 </style>
 {% endblock %}
@@ -291,6 +291,43 @@
                 <small class="form-text">Ajoutez une description pour mieux identifier cette catégorie.</small>
             </div>
 
+            <!-- Category Type -->
+            <div class="form-group">
+                <label for="id_category_type" class="form-label">
+                    <i class="fas fa-tags"></i> Type de catégorie
+                </label>
+                <select class="form-control" id="id_category_type" name="category_type">
+                    <option value="none" {% if category.category_type == 'none' %}selected{% endif %}>Aucun (pas de tailles)</option>
+                    <option value="clothing" {% if category.category_type == 'clothing' %}selected{% endif %}>Vêtements</option>
+                    <option value="shoe" {% if category.category_type == 'shoe' %}selected{% endif %}>Chaussures</option>
+                    <option value="fabric" {% if category.category_type == 'fabric' %}selected{% endif %}>Tissus</option>
+                    <option value="bag" {% if category.category_type == 'bag' %}selected{% endif %}>Sacs</option>
+                    <option value="jewelry" {% if category.category_type == 'jewelry' %}selected{% endif %}>Bijoux</option>
+                </select>
+                <small class="form-text">Choisissez le type pour définir les tailles disponibles.</small>
+            </div>
+
+            <!-- Available Sizes -->
+            <div class="form-group" id="sizes-section" style="{% if category.category_type == 'none' %}display: none;{% endif %}">
+                <label class="form-label">
+                    <i class="fas fa-ruler"></i> Tailles disponibles
+                </label>
+                <div class="sizes-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
+                    {% for size in all_sizes %}
+                    <div class="form-check">
+                        <input class="form-check-input size-checkbox" type="checkbox"
+                               name="available_sizes" value="{{ size.id }}"
+                               id="size_{{ size.id }}"
+                               {% if size in category.available_sizes.all %}checked{% endif %}>
+                        <label class="form-check-label" for="size_{{ size.id }}">
+                            {{ size.name }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <small class="form-text">Sélectionnez les tailles qui seront disponibles pour cette catégorie.</small>
+            </div>
+
             <div class="btn-group-custom">
                 <button type="button" class="btn-delete" onclick="deleteCategory()">
                     <i class="fas fa-trash"></i> Supprimer
@@ -339,6 +376,52 @@
 // Auto-focus on name field
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('id_name').focus();
+
+    // Handle category type change
+    const categoryTypeSelect = document.getElementById('id_category_type');
+    const sizesSection = document.getElementById('sizes-section');
+    const sizeCheckboxes = document.querySelectorAll('.size-checkbox');
+
+    // Size mappings for each category type
+    const sizeMappings = {
+        'clothing': ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '3XL', '36', '38', '40', '42', '44', '46', '48', '50'],
+        'shoe': ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'],
+        'fabric': ['1m', '1.5m', '2m', '2.5m', '3m', '3.5m', '4m', '5m', '6m', '10m'],
+        'bag': ['Mini', 'Petit', 'Moyen', 'Grand', 'Extra Large'],
+        'jewelry': ['XS (14-15cm)', 'S (16-17cm)', 'M (18-19cm)', 'L (20-21cm)', 'XL (22-23cm)', 'Réglable']
+    };
+
+    categoryTypeSelect.addEventListener('change', function() {
+        const selectedType = this.value;
+
+        if (selectedType === 'none') {
+            sizesSection.style.display = 'none';
+            // Uncheck all sizes
+            sizeCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        } else {
+            sizesSection.style.display = 'block';
+
+            // Show/hide appropriate sizes
+            const appropriateSizes = sizeMappings[selectedType] || [];
+
+            sizeCheckboxes.forEach(checkbox => {
+                const label = checkbox.nextElementSibling.textContent.trim();
+                const checkboxContainer = checkbox.parentElement;
+
+                if (appropriateSizes.includes(label)) {
+                    checkboxContainer.style.display = 'block';
+                } else {
+                    checkboxContainer.style.display = 'none';
+                    checkbox.checked = false;
+                }
+            });
+        }
+    });
+
+    // Trigger change event on load to show correct sizes
+    categoryTypeSelect.dispatchEvent(new Event('change'));
 });
 
 // Form validation

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Accueil - Ndeyas Shop{% endblock %}
+{% block title %}Accueil - NDEY'AS SHOP{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -9,7 +9,7 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6" data-aos="fade-right">
-                <h1 class="display-3 text-white fw-bold mb-4">Bienvenue chez Ndeyas Shop</h1>
+                <h1 class="display-3 text-white fw-bold mb-4">Bienvenue chez NDEY'AS SHOP</h1>
                 <p class="lead text-white mb-4">Découvrez notre collection exclusive de produits de qualité à des prix imbattables.</p>
                 <div class="d-flex gap-3">
                     <a href="{% url 'shop:shop' %}" class="btn btn-light btn-lg px-4 rounded-pill">
@@ -165,7 +165,7 @@
                             <div class="product-price">
                                 {% if product.on_sale and product.sale_price %}
                                 <span class="text-muted text-decoration-line-through">{{ product.price }} FCFA</span>
-                                <span class="h5 text-danger ms-2">{{ product.sale_price }} FCFA</span>
+                                <span class="h5 text-orange ms-2">{{ product.sale_price }} FCFA</span>
                                 {% else %}
                                 <span class="h5 text-primary">{{ product.price }} FCFA</span>
                                 {% endif %}

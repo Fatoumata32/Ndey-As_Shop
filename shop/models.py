@@ -69,6 +69,10 @@ class Category(models.Model):
             return "Taille"
         elif self.category_type == 'shoe':
             return "Pointure"
+        elif self.category_type == 'bag':
+            return "Taille"
+        elif self.category_type == 'jewelry':
+            return "Taille"
         else:
             return "Option"
 
@@ -298,3 +302,17 @@ class ProductReview(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.product.name} ({self.rating}★)"
+
+
+class Favorite(models.Model):
+    """Modèle pour les produits favoris des utilisateurs"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"

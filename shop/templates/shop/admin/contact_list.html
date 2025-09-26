@@ -1,0 +1,493 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages - Admin NDEY'AS SHOP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary) 0%, #c2185b 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-header h1 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease;
+        border: none;
+        margin-bottom: 1.5rem;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+    }
+
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .message-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .message-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    .message-card.unread {
+        border-left: 4px solid var(--primary);
+        background: #fff5f5;
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 0.75rem;
+    }
+
+    .sender-info {
+        flex: 1;
+    }
+
+    .sender-name {
+        font-weight: 700;
+        color: #333;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .sender-contact {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .message-date {
+        color: #999;
+        font-size: 0.85rem;
+    }
+
+    .message-preview {
+        color: #555;
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+    }
+
+    .message-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .btn-action {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        border-radius: 5px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-view {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: #ad1457;
+        transform: translateY(-2px);
+    }
+
+    .btn-toggle-read {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .btn-toggle-read:hover {
+        background: #45a049;
+    }
+
+    .btn-delete {
+        background: #f44336;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #da190b;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .badge-new {
+        background: #ff5252;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #999;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+    }
+
+    .pagination {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .page-link {
+        color: var(--primary);
+        border-radius: 5px;
+        margin: 0 2px;
+    }
+
+    .page-link:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .page-item.active .page-link {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Admin Header -->
+<div class="admin-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="fas fa-envelope me-3"></i>Messages</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0" style="background: transparent;">
+                    <li class="breadcrumb-item"><a href="{% url 'shop:admin_dashboard' %}" style="color: white;">Dashboard</a></li>
+                    <li class="breadcrumb-item active" style="color: white;">Messages</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-envelope text-white"></i>
+                </div>
+                <h3>{{ page_obj.paginator.count|default:0 }}</h3>
+                <p class="text-muted mb-0">Total Messages</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-envelope-open-text text-white"></i>
+                </div>
+                <h3>{{ unread_count|default:0 }}</h3>
+                <p class="text-muted mb-0">Messages Non Lus</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-clock text-white"></i>
+                </div>
+                <h3>{{ today_count|default:0 }}</h3>
+                <p class="text-muted mb-0">Aujourd'hui</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <i class="fas fa-check-double text-white"></i>
+                </div>
+                <h3>{{ read_count|default:0 }}</h3>
+                <p class="text-muted mb-0">Messages Lus</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-section">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="searchMessages"
+                           placeholder="Rechercher un message..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="statusFilter">
+                    <option value="">Tous les messages</option>
+                    <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>Non lus</option>
+                    <option value="read" {% if status_filter == 'read' %}selected{% endif %}>Lus</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                {% if unread_count > 0 %}
+                <button class="btn btn-success w-100" onclick="markAllAsRead()">
+                    <i class="fas fa-check-double"></i> Marquer tout comme lu
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages List -->
+    {% if page_obj %}
+        {% for contact in page_obj %}
+        <div class="message-card {% if not contact.is_read %}unread{% endif %}"
+             data-message-id="{{ contact.id }}">
+            <div class="message-header">
+                <div class="sender-info">
+                    <div class="sender-name">
+                        {{ contact.name }}
+                        {% if not contact.is_read %}
+                        <span class="badge-new ms-2">NOUVEAU</span>
+                        {% endif %}
+                    </div>
+                    <div class="sender-contact">
+                        <i class="fas fa-phone me-2"></i>{{ contact.phone }}
+                        {% if contact.email %}
+                        <span class="ms-3"><i class="fas fa-envelope me-2"></i>{{ contact.email }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="message-date">
+                    <i class="far fa-clock me-1"></i>{{ contact.created_at|date:"d M Y, H:i" }}
+                </div>
+            </div>
+            <div class="message-preview">
+                {{ contact.message|truncatewords:30 }}
+            </div>
+            <div class="message-actions">
+                <button class="btn btn-action btn-view"
+                        onclick="window.location.href='{% url 'shop:contact_detail' contact.pk %}'">
+                    <i class="fas fa-eye"></i> Voir
+                </button>
+                <button class="btn btn-action btn-toggle-read"
+                        onclick="toggleRead({{ contact.id }})">
+                    <i class="fas fa-{% if contact.is_read %}envelope{% else %}envelope-open{% endif %}"></i>
+                    {% if contact.is_read %}Non lu{% else %}Marquer lu{% endif %}
+                </button>
+                <button class="btn btn-action btn-delete"
+                        onclick="deleteMessage({{ contact.id }})">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav>
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <i class="far fa-envelope"></i>
+        <h3>Aucun message</h3>
+        <p>Vous n'avez reçu aucun message pour le moment.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+// Search functionality
+document.getElementById('searchMessages')?.addEventListener('input', function(e) {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+        const searchValue = e.target.value;
+        const currentUrl = new URL(window.location.href);
+        if (searchValue) {
+            currentUrl.searchParams.set('q', searchValue);
+        } else {
+            currentUrl.searchParams.delete('q');
+        }
+        window.location.href = currentUrl.toString();
+    }, 500);
+});
+
+// Status filter
+document.getElementById('statusFilter')?.addEventListener('change', function() {
+    const status = this.value;
+    const currentUrl = new URL(window.location.href);
+    if (status) {
+        currentUrl.searchParams.set('status', status);
+    } else {
+        currentUrl.searchParams.delete('status');
+    }
+    window.location.href = currentUrl.toString();
+});
+
+// Toggle read status
+function toggleRead(messageId) {
+    fetch(`/gestion/messages/${messageId}/toggle-read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue');
+    });
+}
+
+// Delete message
+function deleteMessage(messageId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) {
+        fetch(`/gestion/messages/${messageId}/supprimer/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Une erreur est survenue');
+        });
+    }
+}
+
+// Mark all as read
+function markAllAsRead() {
+    if (confirm('Marquer tous les messages comme lus ?')) {
+        fetch('/gestion/messages/marquer-tout-lu/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Une erreur est survenue');
+        });
+    }
+}
+</script>
+{% endblock %}

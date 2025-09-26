@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Paiement - Ndeyas Shop{% endblock %}
+{% block title %}Paiement - NDEY'AS SHOP{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -59,7 +59,7 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="customer_name" class="form-label">Nom complet <span class="text-danger">*</span></label>
+                                <label for="customer_name" class="form-label">Nom complet <span class="text-orange">*</span></label>
                                 <input type="text"
                                        class="form-control"
                                        id="customer_name"
@@ -81,19 +81,19 @@
                                 <small class="text-muted">Pour recevoir la confirmation de commande</small>
                             </div>
                             <div class="col-md-6">
-                                <label for="customer_phone" class="form-label">Téléphone <span class="text-danger">*</span></label>
+                                <label for="customer_phone" class="form-label">Téléphone <span class="text-orange">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">+221</span>
                                     <input type="tel"
                                            class="form-control"
                                            id="customer_phone"
                                            name="customer_phone"
-                                           placeholder="77 123 45 67"
-                                           pattern="[0-9]{2} [0-9]{3} [0-9]{2} [0-9]{2}"
+                                           placeholder="77 545 74 82"
+                                           pattern="[0-9\s]*"
                                            required>
                                 </div>
                                 <div class="invalid-feedback">
-                                    Format: 77 123 45 67
+                                    Entrez votre numéro de téléphone
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -121,7 +121,7 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-12">
-                                <label for="customer_address" class="form-label">Adresse complète <span class="text-danger">*</span></label>
+                                <label for="customer_address" class="form-label">Adresse complète <span class="text-orange">*</span></label>
                                 <textarea class="form-control"
                                           id="customer_address"
                                           name="customer_address"
@@ -133,7 +133,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label for="city" class="form-label">Ville <span class="text-danger">*</span></label>
+                                <label for="city" class="form-label">Ville <span class="text-orange">*</span></label>
                                 <select class="form-select" id="city" name="city" required>
                                     <option value="">Sélectionnez une ville</option>
                                     <option value="dakar">Dakar</option>
@@ -205,9 +205,11 @@
                                     <label class="form-check-label w-100" for="orange_money">
                                         <div class="d-flex align-items-center justify-content-between">
                                             <div>
-                                                <img src="https://via.placeholder.com/50x30/ff6600/ffffff?text=OM"
+                                                <img src="{% static 'shop/img/orangemoney.png' %}"
                                                      alt="Orange Money"
-                                                     class="me-2">
+                                                     class="me-2"
+                                                     style="height: 30px; width: auto;"
+                                                     onerror="this.src='https://via.placeholder.com/50x30/ff6600/ffffff?text=OM'">
                                                 <strong>Orange Money</strong>
                                             </div>
                                             <span class="badge bg-success">Recommandé</span>
@@ -235,9 +237,11 @@
                                            value="wave">
                                     <label class="form-check-label w-100" for="wave">
                                         <div class="d-flex align-items-center">
-                                            <img src="https://via.placeholder.com/50x30/0066ff/ffffff?text=Wave"
+                                            <img src="{% static 'shop/img/wave.png' %}"
                                                  alt="Wave"
-                                                 class="me-2">
+                                                 class="me-2"
+                                                 style="height: 30px; width: auto;"
+                                                 onerror="this.src='https://via.placeholder.com/50x30/0066ff/ffffff?text=Wave'">
                                             <strong>Wave</strong>
                                         </div>
                                         <small class="text-muted d-block mt-1">
@@ -294,7 +298,7 @@
 
             <!-- Right Column - Order Summary -->
             <div class="col-lg-4">
-                <div class="sticky-lg-top" style="top: 100px;">
+                <div class="order-summary-sticky">
                     <!-- Order Summary -->
                     <div class="card shadow">
                         <div class="card-header bg-primary text-white">
@@ -346,7 +350,7 @@
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>Réduction</span>
-                                    <span class="text-danger">-0 FCFA</span>
+                                    <span class="text-orange">-0 FCFA</span>
                                 </div>
                                 <hr>
                                 <div class="d-flex justify-content-between">
@@ -389,6 +393,80 @@
 </div>
 
 <style>
+/* Sticky Order Summary */
+.order-summary-sticky {
+    position: sticky;
+    top: 80px; /* Ajusté pour la navbar */
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    z-index: 10; /* Réduit pour rester sous la navbar (1030) */
+}
+
+/* Style de scroll pour le récapitulatif */
+.order-summary-sticky::-webkit-scrollbar {
+    width: 6px;
+}
+
+.order-summary-sticky::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.order-summary-sticky::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.order-summary-sticky::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Mobile - Pas de sticky sur mobile */
+@media (max-width: 991px) {
+    .order-summary-sticky {
+        position: static !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
+}
+
+/* Desktop - Ajustement pour éviter le dépassement */
+@media (min-width: 992px) {
+    .order-summary-sticky .card {
+        max-height: calc(100vh - 200px);
+    }
+
+    .order-summary-sticky .card-body {
+        overflow-y: auto;
+        max-height: calc(100vh - 350px);
+    }
+
+    /* Cache la scrollbar si pas nécessaire */
+    .order-summary-sticky .card-body:hover {
+        overflow-y: auto;
+    }
+}
+
+/* Amélioration de l'ordre des items dans le récapitulatif */
+.order-items {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.order-items::-webkit-scrollbar {
+    width: 4px;
+}
+
+.order-items::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.order-items::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 2px;
+}
+
 /* Checkout Steps */
 .checkout-steps {
     position: relative;

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Accueil - Ndeyas Shop{% endblock %}
+{% block title %}Accueil - NDEY'AS SHOP{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -35,14 +35,9 @@
         transition: opacity 2s ease-in-out;
     }
 
+    /* Filtre enlevé pour plus de clarté */
     .hero-slide::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.4) 100%);
+        display: none;
     }
 
     .hero-slide.active {
@@ -60,16 +55,18 @@
         text-align: center;
         color: var(--white);
         padding: 2rem;
+        /* Aucun filtre - images totalement claires */
     }
 
     .hero-content h1 {
         font-size: 5rem;
         font-weight: 800;
-        margin-bottom: 1rem;
+        margin-bottom: 2rem;
         letter-spacing: 5px;
         text-transform: uppercase;
         animation: fadeInUp 1s ease;
-        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+        text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.9);
+        color: var(--white);
     }
 
     .hero-content h2 {
@@ -78,7 +75,11 @@
         color: var(--primary);
         margin-bottom: 1.5rem;
         animation: fadeInUp 1.2s ease;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 10px 20px;
+        border-radius: 10px;
+        display: inline-block;
     }
 
     .hero-content p {
@@ -86,7 +87,8 @@
         margin-bottom: 2rem;
         max-width: 700px;
         animation: fadeInUp 1.4s ease;
-        opacity: 0.95;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+        font-weight: 600;
     }
 
     .btn-hero {
@@ -224,9 +226,7 @@
     </div>
     <div class="container">
         <div class="hero-content">
-            <h1>BIENVENUE</h1>
-            <h2>NDEY'AS SHOP</h2>
-            <p>Mode africaine authentique</p>
+            <h1>NDEY'AS SHOP</h1>
             <a href="{% url 'shop:shop' %}" class="btn-hero">
                 <i class="fas fa-shopping-bag me-2"></i>Achetez Maintenant !
             </a>
@@ -241,7 +241,7 @@
             <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
                 <div class="text-center p-4 h-100 feature-card">
                     <div class="feature-icon mb-3">
-                        <i class="fas fa-truck fa-3x text-danger"></i>
+                        <i class="fas fa-truck fa-3x text-orange"></i>
                     </div>
                     <h5>Livraison Rapide</h5>
                     <p class="text-muted">Dès 10.000 FCFA</p>
@@ -250,7 +250,7 @@
             <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
                 <div class="text-center p-4 h-100 feature-card">
                     <div class="feature-icon mb-3">
-                        <i class="fas fa-shield-alt fa-3x text-danger"></i>
+                        <i class="fas fa-shield-alt fa-3x text-orange"></i>
                     </div>
                     <h5>Paiement Sécurisé</h5>
                     <p class="text-muted">100% sécurisé</p>
@@ -259,7 +259,7 @@
             <div class="col-md-3" data-aos="fade-up" data-aos-delay="300">
                 <div class="text-center p-4 h-100 feature-card">
                     <div class="feature-icon mb-3">
-                        <i class="fas fa-undo fa-3x text-danger"></i>
+                        <i class="fas fa-undo fa-3x text-orange"></i>
                     </div>
                     <h5>Retour Facile</h5>
                     <p class="text-muted">30 jours</p>
@@ -268,7 +268,7 @@
             <div class="col-md-3" data-aos="fade-up" data-aos-delay="400">
                 <div class="text-center p-4 h-100 feature-card">
                     <div class="feature-icon mb-3">
-                        <i class="fas fa-headset fa-3x text-danger"></i>
+                        <i class="fas fa-headset fa-3x text-orange"></i>
                     </div>
                     <h5>Support 24/7</h5>
                     <p class="text-muted">À votre écoute</p>
@@ -294,7 +294,7 @@
                                class="form-control"
                                placeholder="Rechercher un produit, une marque, une catégorie..."
                                aria-label="Rechercher">
-                        <button class="btn btn-danger px-4" type="submit">
+                        <button class="btn btn-orange px-4" type="submit">
                             <i class="fas fa-search me-2"></i>Rechercher
                         </button>
                     </div>
@@ -349,7 +349,7 @@
                                         <i class="fas fa-eye"></i> Voir
                                     </a>
                                     {% if not product.sold_out %}
-                                    <button class="btn btn-sm btn-danger add-to-cart" data-product-id="{{ product.id }}">
+                                    <button class="btn btn-sm btn-orange add-to-cart" data-product-id="{{ product.id }}">
                                         <i class="fas fa-cart-plus"></i> Ajouter
                                     </button>
                                     {% else %}
@@ -387,10 +387,10 @@
                             <!-- Price -->
                             <div class="d-flex align-items-center">
                                 {% if product.on_sale %}
-                                <span class="h5 mb-0 text-danger">{{ product.sale_price }} FCFA</span>
+                                <span class="h5 mb-0" style="color: #d81b60;">{{ product.sale_price }} FCFA</span>
                                 <span class="text-muted text-decoration-line-through ms-2">{{ product.price }} FCFA</span>
                                 {% else %}
-                                <span class="h5 mb-0 text-danger">{{ product.price }} FCFA</span>
+                                <span class="h5 mb-0" style="color: #d81b60;">{{ product.price }} FCFA</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -406,7 +406,7 @@
 
         <!-- View All Products Button -->
         <div class="text-center mt-5">
-            <a href="{% url 'shop:shop' %}" class="btn btn-danger btn-lg px-5 rounded-pill">
+            <a href="{% url 'shop:shop' %}" class="btn btn-orange btn-lg px-5 rounded-pill">
                 Voir Tous les Produits <i class="fas fa-arrow-right ms-2"></i>
             </a>
         </div>
@@ -414,7 +414,7 @@
 </section>
 
 <!-- Newsletter Section -->
-<section class="py-5 bg-danger text-white">
+<section class="py-5 text-white" style="background: linear-gradient(135deg, #d81b60 0%, #ad1457 100%);">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6" data-aos="fade-right">
@@ -482,13 +482,13 @@
 
                     // Show success
                     this.innerHTML = '<i class="fas fa-check me-2"></i>Ajouté!';
-                    this.classList.remove('btn-danger');
+                    this.classList.remove('btn-orange');
                     this.classList.add('btn-success');
 
                     setTimeout(() => {
                         this.innerHTML = originalText;
                         this.classList.remove('btn-success');
-                        this.classList.add('btn-danger');
+                        this.classList.add('btn-orange');
                         this.disabled = false;
                     }, 2000);
                 }

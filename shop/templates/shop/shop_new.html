@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Boutique - Ndeyas Shop{% endblock %}
+{% block title %}Boutique - NDEY'AS SHOP{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-5">
@@ -32,7 +32,7 @@
                                            class="form-control"
                                            name="q"
                                            placeholder="Rechercher un produit..."
-                                           value="{{ search_query }}">
+                                           value="{% if search_query %}{{ search_query }}{% endif %}">
                                     <button class="btn btn-primary" type="submit">
                                         <i class="fas fa-search"></i>
                                     </button>
@@ -122,7 +122,7 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="onSale">
                                 <label class="form-check-label" for="onSale">
-                                    <i class="fas fa-tag text-danger"></i> En promotion
+                                    <i class="fas fa-tag text-orange"></i> En promotion
                                 </label>
                             </div>
                             <div class="form-check">
@@ -266,7 +266,7 @@
                                         <span class="text-muted text-decoration-line-through small">
                                             {{ product.price }} FCFA
                                         </span>
-                                        <span class="h5 text-danger ms-2">{{ product.sale_price }} FCFA</span>
+                                        <span class="h5 text-orange ms-2">{{ product.sale_price }} FCFA</span>
                                         {% else %}
                                         <span class="h5 text-primary">{{ product.price }} FCFA</span>
                                         {% endif %}

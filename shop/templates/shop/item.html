@@ -2,7 +2,7 @@
 {% load static %}
 {% load shop_extras %}
 
-{% block title %}{{ product.name }} - Ndeyas Shop{% endblock %}
+{% block title %}{{ product.name }} - NDEY'AS SHOP{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -740,9 +740,15 @@
                         <button class="btn-add-cart" onclick="addToCart(event, {{ product.id }})">
                             <i class="fas fa-shopping-cart"></i> Ajouter au Panier
                         </button>
-                        <button class="btn-wishlist">
+                        {% if user.is_authenticated %}
+                        <button class="btn-wishlist" onclick="toggleFavorite({{ product.id }})" id="favorite-btn-{{ product.id }}">
+                            <i class="{% if is_favorited %}fas{% else %}far{% endif %} fa-heart"></i>
+                        </button>
+                        {% else %}
+                        <button class="btn-wishlist" onclick="alert('Veuillez vous connecter pour ajouter aux favoris')">
                             <i class="far fa-heart"></i>
                         </button>
+                        {% endif %}
                     </div>
                     {% else %}
                     <div class="action-buttons">
@@ -975,9 +981,18 @@
     function addToCart(event, productId) {
         event.preventDefault();
 
-        const quantity = document.getElementById('quantity').value;
+        // Check if sizes exist and if one is selected
+        const sizeOptions = document.querySelectorAll('.size-option');
         const selectedSize = document.querySelector('.size-option.active');
         const size = selectedSize ? selectedSize.dataset.size : null;
+
+        // If product has sizes but none selected, show alert
+        if (sizeOptions.length > 0 && !selectedSize) {
+            alert('Veuillez sélectionner une taille avant d\'ajouter au panier');
+            return;
+        }
+
+        const quantity = document.getElementById('quantity').value;
 
         // Get the button that was clicked
         const btn = event.currentTarget;
@@ -1235,7 +1250,7 @@
                                     </div>
                                     ${review.comment ? `<div class="review-comment">${review.comment}</div>` : ''}
                                     ${review.is_owner ? `
-                                        <button class="btn btn-sm btn-danger mt-2" onclick="deleteReview(${productId})">
+                                        <button class="btn btn-sm btn-orange mt-2" onclick="deleteReview(${productId})">
                                             <i class="fas fa-trash"></i> Supprimer
                                         </button>
                                     ` : ''}
@@ -1344,5 +1359,56 @@
         const productId = {{ product.id }};
         loadReviews(productId, 1);
     });
+
+    // Fonction pour gérer les favoris
+    function toggleFavorite(productId) {
+        fetch("{% url 'shop:toggle_favorite' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `product_id=${productId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mettre à jour l'icône du coeur
+                const btn = document.querySelector(`#favorite-btn-${productId} i`);
+                if (btn) {
+                    if (data.is_favorited) {
+                        btn.classList.remove('far');
+                        btn.classList.add('fas');
+                    } else {
+                        btn.classList.remove('fas');
+                        btn.classList.add('far');
+                    }
+                }
+
+                // Afficher une notification
+                showNotification(data.message, data.is_favorited ? 'success' : 'info');
+            } else {
+                showNotification(data.message || 'Une erreur est survenue', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showNotification('Une erreur est survenue', 'error');
+        });
+    }
+
+    function showNotification(message, type) {
+        // Créer une notification temporaire
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'error' ? 'danger' : type} position-fixed top-0 start-50 translate-middle-x mt-3`;
+        notification.style.zIndex = '9999';
+        notification.innerHTML = message;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 </script>
 {% endblock %}

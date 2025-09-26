@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Message de {{ contact.name }} - Admin NDEY'AS SHOP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary) 0%, #c2185b 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .admin-header h1 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .message-detail-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .message-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+    }
+
+    .sender-avatar {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--primary);
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .sender-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .sender-info {
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .message-body {
+        padding: 2rem;
+    }
+
+    .message-content {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        line-height: 1.8;
+        font-size: 1.05rem;
+        color: #333;
+    }
+
+    .message-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        background: #fafafa;
+        border-top: 1px solid #eee;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .meta-item i {
+        margin-right: 0.5rem;
+        color: var(--primary);
+    }
+
+    .action-buttons {
+        padding: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-reply {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-reply:hover {
+        background: #ad1457;
+        transform: translateY(-2px);
+    }
+
+    .btn-mark {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .btn-mark:hover {
+        background: #45a049;
+    }
+
+    .btn-delete {
+        background: #f44336;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #da190b;
+    }
+
+    .previous-messages {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+
+    .previous-message-item {
+        padding: 1rem;
+        border-left: 3px solid var(--primary);
+        background: #f8f9fa;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+    }
+
+    .badge-status {
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-read {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .badge-unread {
+        background: #ffebee;
+        color: #c62828;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Admin Header -->
+<div class="admin-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="fas fa-envelope-open-text me-3"></i>Détails du Message</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0" style="background: transparent;">
+                    <li class="breadcrumb-item"><a href="{% url 'shop:admin_dashboard' %}" style="color: white;">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'shop:contact_list' %}" style="color: white;">Messages</a></li>
+                    <li class="breadcrumb-item active" style="color: white;">Détails</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Main Message -->
+        <div class="col-lg-8">
+            <div class="message-detail-card">
+                <div class="message-header">
+                    <div class="sender-avatar">
+                        {{ contact.name|first|upper }}
+                    </div>
+                    <div class="sender-name">{{ contact.name }}</div>
+                    <div class="sender-info">
+                        <div><i class="fas fa-phone me-2"></i> {{ contact.phone }}</div>
+                        {% if contact.email %}
+                        <div><i class="fas fa-envelope me-2"></i> {{ contact.email }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="message-body">
+                    <h5 class="mb-3">Message</h5>
+                    <div class="message-content">
+                        {{ contact.message|linebreaks }}
+                    </div>
+                </div>
+
+                <div class="message-meta">
+                    <div class="meta-item">
+                        <i class="far fa-clock"></i>
+                        Reçu le {{ contact.created_at|date:"d M Y à H:i" }}
+                    </div>
+                    <div class="meta-item">
+                        {% if contact.is_read %}
+                        <span class="badge-status badge-read">
+                            <i class="fas fa-check-circle me-1"></i> Message lu
+                        </span>
+                        {% else %}
+                        <span class="badge-status badge-unread">
+                            <i class="fas fa-exclamation-circle me-1"></i> Non lu
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="https://wa.me/{{ contact.phone|slice:'1:' }}" target="_blank" class="btn btn-action btn-reply">
+                        <i class="fab fa-whatsapp"></i> Répondre sur WhatsApp
+                    </a>
+                    {% if contact.email %}
+                    <a href="mailto:{{ contact.email }}" class="btn btn-action btn-reply">
+                        <i class="fas fa-envelope"></i> Répondre par Email
+                    </a>
+                    {% endif %}
+                    <button class="btn btn-action btn-mark" onclick="toggleRead({{ contact.id }})">
+                        <i class="fas fa-{% if contact.is_read %}envelope{% else %}envelope-open{% endif %}"></i>
+                        Marquer comme {% if contact.is_read %}non lu{% else %}lu{% endif %}
+                    </button>
+                    <button class="btn btn-action btn-delete" onclick="deleteMessage({{ contact.id }})">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            {% if previous_messages %}
+            <div class="previous-messages">
+                <h5 class="mb-3">
+                    <i class="fas fa-history me-2"></i> Messages précédents de {{ contact.name }}
+                </h5>
+                {% for msg in previous_messages %}
+                <div class="previous-message-item">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <small class="text-muted">
+                            <i class="far fa-clock me-1"></i>
+                            {{ msg.created_at|date:"d M Y" }}
+                        </small>
+                        {% if msg.is_read %}
+                        <small class="text-success"><i class="fas fa-check"></i> Lu</small>
+                        {% else %}
+                        <small class="text-danger"><i class="fas fa-exclamation"></i> Non lu</small>
+                        {% endif %}
+                    </div>
+                    <p class="mb-0">{{ msg.message|truncatewords:20 }}</p>
+                    <a href="{% url 'shop:contact_detail' msg.pk %}" class="btn btn-sm btn-link p-0 mt-2">
+                        Voir le message complet →
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">Actions Rapides</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'shop:contact_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i> Retour aux messages
+                        </a>
+                        <a href="{% url 'shop:admin_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+// Toggle read status
+function toggleRead(messageId) {
+    fetch(`/gestion/messages/${messageId}/toggle-read/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Une erreur est survenue');
+    });
+}
+
+// Delete message
+function deleteMessage(messageId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) {
+        fetch(`/gestion/messages/${messageId}/supprimer/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '{% url "shop:contact_list" %}';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Une erreur est survenue');
+        });
+    }
+}
+</script>
+{% endblock %}

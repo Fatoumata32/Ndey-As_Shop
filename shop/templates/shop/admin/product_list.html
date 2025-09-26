@@ -59,13 +59,13 @@
     }
 
     .stat-card-icon.warning {
-        background: rgba(255, 152, 0, 0.1);
-        color: #ff9800;
+        background: rgba(216, 27, 96, 0.1);
+        color: #d81b60;
     }
 
     .stat-card-icon.danger {
-        background: rgba(244, 67, 54, 0.1);
-        color: #f44336;
+        background: rgba(216, 27, 96, 0.1);
+        color: #d81b60;
     }
 
     .stat-card h3 {
@@ -187,12 +187,12 @@
     }
 
     .btn-delete {
-        background: #ffebee;
-        color: #f44336;
+        background: #fce4ec;
+        color: #d81b60;
     }
 
     .btn-delete:hover {
-        background: #f44336;
+        background: #d81b60;
         color: white;
     }
 
@@ -421,7 +421,7 @@
                     </td>
                     <td>
                         {% if product.on_sale and product.sale_price %}
-                        <div class="text-danger fw-bold">{{ product.sale_price }} FCFA</div>
+                        <div class="text-warning fw-bold">{{ product.sale_price }} FCFA</div>
                         <div class="text-muted text-decoration-line-through small">{{ product.price }} FCFA</div>
                         {% else %}
                         <div class="fw-bold">{{ product.price }} FCFA</div>

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Panier - Ndeyas Shop{% endblock %}
+{% block title %}Panier - NDEY'AS SHOP{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -72,7 +72,7 @@
                                         <span class="text-muted text-decoration-line-through small">
                                             {{ item.product.price }} FCFA
                                         </span><br>
-                                        <span class="text-danger fw-bold">{{ item.product.sale_price }} FCFA</span>
+                                        <span class="text-orange fw-bold">{{ item.product.sale_price }} FCFA</span>
                                         {% else %}
                                         <span class="fw-bold">{{ item.product.price }} FCFA</span>
                                         {% endif %}
@@ -165,8 +165,16 @@
                     <div class="text-center">
                         <small class="text-muted">Méthodes de paiement acceptées</small>
                         <div class="payment-methods mt-2">
-                            <img src="https://via.placeholder.com/50x30/ffffff/000000?text=OM" alt="Orange Money" class="mx-1">
-                            <img src="https://via.placeholder.com/50x30/ffffff/000000?text=Wave" alt="Wave" class="mx-1">
+                            <img src="{% static 'shop/img/orangemoney.png' %}"
+                                 alt="Orange Money"
+                                 class="mx-1"
+                                 style="height: 30px; width: auto;"
+                                 onerror="this.src='https://via.placeholder.com/50x30/ffffff/000000?text=OM'">
+                            <img src="{% static 'shop/img/wave.png' %}"
+                                 alt="Wave"
+                                 class="mx-1"
+                                 style="height: 30px; width: auto;"
+                                 onerror="this.src='https://via.placeholder.com/50x30/ffffff/000000?text=Wave'">
                             <img src="https://via.placeholder.com/50x30/ffffff/000000?text=Cash" alt="Cash" class="mx-1">
                         </div>
                     </div>

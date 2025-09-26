@@ -52,7 +52,7 @@
     }
 
     .required {
-        color: #dc3545;
+        color: #d81b60;
     }
 
     .form-control {
@@ -116,6 +116,52 @@
 
     .btn-cancel:hover {
         background: #e9ecef;
+    }
+
+    /* Attributes List */
+    .attributes-list {
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 1rem;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    .attribute-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        background: white;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .attribute-checkbox:hover {
+        background: rgba(216, 27, 96, 0.05);
+    }
+
+    .attribute-checkbox input[type="checkbox"] {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+
+    .btn-select-all {
+        background: #6c757d;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-right: 0.5rem;
+    }
+
+    .btn-select-all:hover {
+        background: #5a6268;
     }
 
     .alert-custom {
@@ -213,12 +259,50 @@
             </div>
 
             <div class="form-group">
+                <label for="id_icon" class="form-label">
+                    <i class="fas fa-icons"></i> Icône de la catégorie
+                </label>
+                <input type="text" class="form-control" id="id_icon" name="icon"
+                       value="{{ form.icon.value|default:'📦' }}" placeholder="Ex: 👗, 👠, 🧵, 💎">
+                <small class="form-text">Utilisez un emoji pour représenter cette catégorie.</small>
+            </div>
+
+            <div class="form-group">
                 <label for="id_description" class="form-label">
                     Description
                 </label>
                 <textarea class="form-control" id="id_description" name="description"
                           rows="4" placeholder="Description optionnelle de la catégorie...">{{ form.description.value|default:'' }}</textarea>
                 <small class="form-text">Ajoutez une description pour mieux identifier cette catégorie.</small>
+            </div>
+
+            <!-- Category Type -->
+            <div class="form-group">
+                <label for="id_category_type" class="form-label">
+                    <i class="fas fa-tags"></i> Type de catégorie <span class="required">*</span>
+                </label>
+                <select class="form-control" id="id_category_type" name="category_type" required>
+                    <option value="">Sélectionnez le type</option>
+                    <option value="clothing">Tailles de vêtements</option>
+                    <option value="fabric">Longueurs de tissu</option>
+                    <option value="bag">Tailles des sacs</option>
+                    <option value="jewelry">Tailles de bijoux</option>
+                    <option value="shoe">Pointures de chaussures</option>
+                    <option value="none">Aucune option de taille</option>
+                </select>
+                <small class="form-text">Le type détermine les options de taille disponibles.</small>
+            </div>
+
+            <!-- Custom Attributes -->
+            <div class="form-group" id="customAttributesDiv" style="display: none;">
+                <label class="form-label">
+                    <i class="fas fa-ruler"></i> Options disponibles
+                </label>
+                <div id="attributesList" class="attributes-list"></div>
+                <div class="text-center mt-2">
+                    <button type="button" class="btn-select-all" id="selectAllAttributes">Tout sélectionner</button>
+                    <button type="button" class="btn-select-all" id="clearAllAttributes">Tout effacer</button>
+                </div>
             </div>
 
             <div class="btn-group-custom">
@@ -251,14 +335,67 @@
 </div>
 
 <script>
+// Attribute options for each category type
+const attributeOptions = {
+    clothing: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '36', '38', '40', '42', '44', '46', '48', '50'],
+    fabric: ['1m', '1.5m', '2m', '2.5m', '3m', '3.5m', '4m', '5m', '6m', '10m'],
+    bag: ['Mini', 'Petit', 'Moyen', 'Grand', 'Extra Large'],
+    jewelry: ['XS (14-15cm)', 'S (16-17cm)', 'M (18-19cm)', 'L (20-21cm)', 'XL (22-23cm)', 'Réglable'],
+    shoe: ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'],
+    none: []
+};
+
 // Auto-focus on name field
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('id_name').focus();
+
+    // Handle category type change
+    const categoryTypeSelect = document.getElementById('id_category_type');
+    const customAttributesDiv = document.getElementById('customAttributesDiv');
+    const attributesList = document.getElementById('attributesList');
+
+    categoryTypeSelect.addEventListener('change', function() {
+        const selectedType = this.value;
+
+        if (selectedType && selectedType !== 'none' && attributeOptions[selectedType]) {
+            const attributes = attributeOptions[selectedType];
+            attributesList.innerHTML = '';
+
+            attributes.forEach(attr => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'attribute-checkbox';
+                const attrId = `attr_${attr.replace(/[\s\(\)\/\-]/g, '_')}`;
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="${attrId}" name="available_sizes" value="${attr}" checked>
+                    <label for="${attrId}">${attr}</label>
+                `;
+                attributesList.appendChild(checkboxDiv);
+            });
+
+            customAttributesDiv.style.display = 'block';
+        } else {
+            customAttributesDiv.style.display = 'none';
+            attributesList.innerHTML = '';
+        }
+    });
+
+    // Select All button
+    document.getElementById('selectAllAttributes').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('#attributesList input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = true);
+    });
+
+    // Clear All button
+    document.getElementById('clearAllAttributes').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('#attributesList input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+    });
 });
 
 // Form validation
 document.querySelector('form').addEventListener('submit', function(e) {
     const name = document.getElementById('id_name').value.trim();
+    const categoryType = document.getElementById('id_category_type').value;
 
     if (!name) {
         e.preventDefault();
@@ -266,13 +403,10 @@ document.querySelector('form').addEventListener('submit', function(e) {
         return false;
     }
 
-    // Check for special characters
-    const specialChars = /[!@#$%^&*(),.?":{}|<>]/g;
-    if (specialChars.test(name)) {
-        if (!confirm('Le nom contient des caractères spéciaux. Voulez-vous continuer?')) {
-            e.preventDefault();
-            return false;
-        }
+    if (!categoryType) {
+        e.preventDefault();
+        alert('Le type de catégorie est obligatoire!');
+        return false;
     }
 });
 </script>

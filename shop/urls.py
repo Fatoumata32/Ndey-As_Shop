@@ -25,13 +25,17 @@ urlpatterns = [
     path('mon-profil/', views.user_profile, name='user_profile'),
     path('mes-commandes/', views.user_orders, name='user_orders'),
     path('mes-commandes/<int:order_id>/', views.user_order_detail, name='user_order_detail'),
+    path('favoris/', views.favorites, name='favorites'),
+    path('ajax/toggle-favorite/', views.toggle_favorite, name='toggle_favorite'),
     
     # Panier (AJAX)
     path('ajax/add-to-cart/', views.add_to_cart, name='add_to_cart'),
     path('ajax/update-cart/', views.update_cart_item, name='update_cart_item'),
     path('ajax/remove-from-cart/', views.remove_from_cart, name='remove_from_cart'),
     path('ajax/get-cart-count/', views.get_cart_count, name='get_cart_count'),
-    
+    path('ajax/clear-whatsapp-session/', views.clear_whatsapp_session, name='clear_whatsapp_session'),
+    path('ajax/product-sizes/<int:product_id>/', views.get_product_sizes, name='get_product_sizes'),
+
     # Administration (Gestion de la boutique)
     path('gestion/tableau-de-bord/', views.admin_dashboard, name='admin_dashboard'),
     

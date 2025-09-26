@@ -62,7 +62,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.db.models import Q, Count, Sum, Avg
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -128,10 +128,28 @@ def shop(request):
     search_query = request.GET.get('q')
     if search_query:
         products = products.filter(
-            Q(name__icontains=search_query) | 
+            Q(name__icontains=search_query) |
             Q(description__icontains=search_query)
         )
-    
+
+    # Filtre de prix
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+
+    if min_price:
+        try:
+            min_price = float(min_price)
+            products = products.filter(price__gte=min_price)
+        except (ValueError, TypeError):
+            pass
+
+    if max_price:
+        try:
+            max_price = float(max_price)
+            products = products.filter(price__lte=max_price)
+        except (ValueError, TypeError):
+            pass
+
     # Tri
     sort = request.GET.get('sort')
     if sort == 'price_asc':
@@ -142,12 +160,32 @@ def shop(request):
         products = products.order_by('name')
     elif sort == 'newest':
         products = products.order_by('-created_at')
-    
+
+    # Pagination - 12 produits par page
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get('page')
+
+    try:
+        page_obj = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    # Récupérer les favoris de l'utilisateur si connecté
+    user_favorites = []
+    if request.user.is_authenticated:
+        from shop.models import Favorite
+        user_favorites = list(Favorite.objects.filter(user=request.user).values_list('product_id', flat=True))
+
     context = {
-        'products': products,
+        'products': page_obj,
+        'page_obj': page_obj,
         'categories': categories,
         'current_category': category_filter,
         'search_query': search_query,
+        'current_sort': sort,
+        'user_favorites': user_favorites,
     }
     return render(request, 'shop/shop.html', context)
 
@@ -168,10 +206,17 @@ def product_detail(request, product_id):
             category=product.category,
             sold_out=False
         ).exclude(id=product.id)[:4]
-        
+
+        # Vérifier si le produit est dans les favoris de l'utilisateur
+        is_favorited = False
+        if request.user.is_authenticated:
+            from shop.models import Favorite
+            is_favorited = Favorite.objects.filter(user=request.user, product=product).exists()
+
         context = {
             'product': product,
             'related_products': related_products,
+            'is_favorited': is_favorited,
         }
         return render(request, 'shop/item.html', context)
         
@@ -209,7 +254,14 @@ def add_to_cart(request):
             
             product = get_object_or_404(Product, id=product_id)
             cart = get_or_create_cart(request)
-            
+
+            # Vérifier si le produit a des tailles et qu'une taille est sélectionnée
+            if product.sizes.exists() and not selected_size:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Veuillez sélectionner une taille pour ce produit.'
+                })
+
             # Vérifier le stock
             if product.quantity < quantity:
                 return JsonResponse({
@@ -314,6 +366,15 @@ def get_cart_count(request):
     })
 
 
+def clear_whatsapp_session(request):
+    """Nettoyer les données WhatsApp de la session"""
+    if 'whatsapp_url' in request.session:
+        del request.session['whatsapp_url']
+    if 'order_id' in request.session:
+        del request.session['order_id']
+    return JsonResponse({'success': True})
+
+
 def checkout(request):
     """Page de commande améliorée"""
     cart = get_or_create_cart(request)
@@ -332,6 +393,9 @@ def checkout(request):
                 customer_phone = request.POST.get('customer_phone', '')
                 customer_address = request.POST.get('customer_address', '')
                 payment_method = request.POST.get('payment_method', 'cash')
+                delivery_option = request.POST.get('delivery_option', 'standard')
+                city = request.POST.get('city', 'Dakar')
+                notes = request.POST.get('notes', '')
 
                 # Utiliser les infos de l'utilisateur connecté si disponibles
                 if request.user.is_authenticated:
@@ -393,8 +457,82 @@ def checkout(request):
                     except Exception as e:
                         logger.error(f"Erreur envoi email: {e}")
 
+                # Préparer le message WhatsApp avec formatage amélioré
+                from datetime import datetime
+                current_date = datetime.now().strftime("%d/%m/%Y")
+                current_time = datetime.now().strftime("%H:%M")
+
+                # Déterminer le mode de paiement avec emoji
+                if payment_method == 'cash':
+                    payment_display = '💵 Paiement à la livraison'
+                elif payment_method == 'wave':
+                    payment_display = '📱 Wave'
+                else:
+                    payment_display = '📱 Orange Money'
+
+                # Déterminer le type de livraison
+                delivery_type = '📦 Standard (2-3 jours)'  # Par défaut standard car option express supprimée
+
+                whatsapp_message = f"""🛍️ *NOUVELLE COMMANDE - NDEY'AS SHOP*
+══════════════════════════════
+
+📅 *Date:* {current_date}
+⏰ *Heure:* {current_time}
+🔢 *Commande N°:* {order.id}
+
+👤 *INFORMATIONS CLIENT*
+───────────────────────
+• *Nom:* {customer_name}
+• *Téléphone:* +221 {customer_phone}
+• *Email:* {customer_email if customer_email else 'Non fourni'}
+
+🚚 *LIVRAISON*
+───────────────────────
+• *Adresse:* {customer_address}
+• *Ville:* {city}
+• *Type:* {delivery_type}
+
+🛒 *ARTICLES COMMANDÉS*
+───────────────────────"""
+
+                for item in order.items.all():
+                    whatsapp_message += f"\n• *{item.product.name}*"
+                    whatsapp_message += f"\n  └ Quantité: {item.quantity}"
+                    if item.selected_size:
+                        whatsapp_message += f" | Taille: {item.selected_size}"
+                    whatsapp_message += f"\n  └ Prix: {item.get_subtotal()} FCFA"
+
+                whatsapp_message += f"""
+
+══════════════════════════════
+💰 *TOTAL: {order.total_amount} FCFA*
+══════════════════════════════
+
+💳 *MODE DE PAIEMENT:* {payment_display}"""
+
+                if notes:
+                    whatsapp_message += f"\n📝 *Notes:* {notes}"
+
+                whatsapp_message += "\n\n✨ Merci pour votre commande!"
+
+                # Générer le lien WhatsApp avec l'API correcte
+                import urllib.parse
+                whatsapp_number = "221775457482"  # Numéro WhatsApp NDEY'AS SHOP
+                # Utiliser l'API WhatsApp directe pour ouvrir l'app
+                encoded_message = urllib.parse.quote(whatsapp_message)
+                whatsapp_url = f"https://api.whatsapp.com/send/?phone={whatsapp_number}&text={encoded_message}&type=phone_number&app_absent=0"
+
+                # Stocker le lien dans la session pour l'afficher après redirection
+                request.session['whatsapp_url'] = whatsapp_url
+                request.session['order_id'] = order.id
+
                 messages.success(request, f'Commande #{order.id} passée avec succès!')
-                return redirect('shop:index')
+
+                # Créer une page de confirmation avec le lien WhatsApp
+                return render(request, 'shop/order_success.html', {
+                    'order': order,
+                    'whatsapp_url': whatsapp_url
+                })
 
         except ValueError as e:
             messages.error(request, str(e))
@@ -792,6 +930,58 @@ def user_orders(request):
     return render(request, 'shop/user_orders.html', context)
 
 
+def favorites(request):
+    """Vue pour afficher les produits favoris"""
+    # Récupérer les favoris depuis la session
+    favorites_list = request.session.get('favorites', [])
+    products = Product.objects.filter(id__in=favorites_list)
+
+    context = {
+        'products': products,
+        'favorites_list': favorites_list,
+    }
+    return render(request, 'shop/favorites.html', context)
+
+
+@require_POST
+def toggle_favorite(request):
+    """AJAX: Ajouter ou retirer un produit des favoris"""
+    try:
+        data = json.loads(request.body)
+        product_id = data.get('product_id')
+
+        if not product_id:
+            return JsonResponse({'success': False, 'message': 'ID produit requis'})
+
+        # Récupérer les favoris de la session
+        favorites = request.session.get('favorites', [])
+
+        if product_id in favorites:
+            # Retirer des favoris
+            favorites.remove(product_id)
+            is_favorite = False
+            message = 'Retiré des favoris'
+        else:
+            # Ajouter aux favoris
+            favorites.append(product_id)
+            is_favorite = True
+            message = 'Ajouté aux favoris'
+
+        # Sauvegarder dans la session
+        request.session['favorites'] = favorites
+        request.session.modified = True
+
+        return JsonResponse({
+            'success': True,
+            'is_favorite': is_favorite,
+            'message': message,
+            'favorites_count': len(favorites)
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
 @login_required
 def user_order_detail(request, order_id):
     """Vue pour afficher les détails d'une commande pour l'utilisateur"""
@@ -1082,16 +1272,38 @@ def category_add(request):
     """Ajouter une nouvelle catégorie"""
     if request.method == 'POST':
         form = CategoryForm(request.POST)
-        
+
         if form.is_valid():
-            category = form.save()
+            category = form.save(commit=False)
+
+            # Handle icon
+            icon = request.POST.get('icon', '📦')
+            category.icon = icon
+
+            # Handle category_type
+            category_type = request.POST.get('category_type', 'none')
+            category.category_type = category_type
+
+            category.save()
+
+            # Handle available_sizes
+            if category_type != 'none':
+                selected_sizes = request.POST.getlist('available_sizes')
+                if selected_sizes:
+                    from shop.models import Size
+                    # Create sizes if they don't exist and associate them
+                    for size_name in selected_sizes:
+                        size, created = Size.objects.get_or_create(name=size_name)
+                        category.available_sizes.add(size)
+
             messages.success(request, f'Catégorie "{category.name}" ajoutée avec succès!')
-            
+
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
                     'category_id': category.id,
-                    'category_name': category.name
+                    'category_name': category.name,
+                    'category_icon': category.icon
                 })
             else:
                 return redirect('shop:category_list')
@@ -1101,7 +1313,7 @@ def category_add(request):
                 for field, field_errors in form.errors.items():
                     for error in field_errors:
                         errors.append(f'{field}: {error}')
-                
+
                 return JsonResponse({
                     'success': False,
                     'message': 'Erreurs de validation: ' + '; '.join(errors)
@@ -1110,9 +1322,10 @@ def category_add(request):
                 messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
     else:
         form = CategoryForm()
-    
+
     context = {
         'form': form,
+        'categories': Category.objects.all().order_by('-created_at')[:5],
     }
     
     return render(request, 'shop/admin/category_add.html', context)
@@ -1123,24 +1336,48 @@ def category_add(request):
 def category_edit(request, pk):
     """Modifier une catégorie"""
     category = get_object_or_404(Category, pk=pk)
-    
+
     if request.method == 'POST':
         form = CategoryForm(request.POST, instance=category)
-        
+
         if form.is_valid():
-            category = form.save()
+            category = form.save(commit=False)
+
+            # Handle category_type
+            category_type = request.POST.get('category_type', 'none')
+            category.category_type = category_type
+
+            category.save()
+
+            # Handle available_sizes
+            if category_type != 'none':
+                selected_sizes = request.POST.getlist('available_sizes')
+                if selected_sizes:
+                    from shop.models import Size
+                    sizes = Size.objects.filter(id__in=selected_sizes)
+                    category.available_sizes.set(sizes)
+                else:
+                    category.available_sizes.clear()
+            else:
+                category.available_sizes.clear()
+
             messages.success(request, f'Catégorie "{category.name}" modifiée avec succès!')
             return redirect('shop:category_list')
         else:
             messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
     else:
         form = CategoryForm(instance=category)
-    
+
+    # Get all sizes for the template
+    from shop.models import Size
+    all_sizes = Size.objects.all().order_by('name')
+
     context = {
         'form': form,
         'category': category,
+        'all_sizes': all_sizes,
     }
-    
+
     return render(request, 'shop/admin/category_edit.html', context)
 
 
@@ -1328,9 +1565,13 @@ def contact_list(request):
         )
 
     # Statistiques
+    from datetime import datetime
+    today = datetime.now().date()
+
     total_contacts = Contact.objects.count()
     unread_count = Contact.objects.filter(is_read=False).count()
     read_count = Contact.objects.filter(is_read=True).count()
+    today_count = Contact.objects.filter(created_at__date=today).count()
 
     # Pagination
     paginator = Paginator(contacts, 20)
@@ -1343,7 +1584,8 @@ def contact_list(request):
         'total_contacts': total_contacts,
         'unread_count': unread_count,
         'read_count': read_count,
-        'current_status': status_filter,
+        'today_count': today_count,
+        'status_filter': status_filter,
         'search_query': search_query,
     }
 
@@ -1455,6 +1697,81 @@ def contact_mark_all_read(request):
         else:
             messages.error(request, f'Erreur: {str(e)}')
             return redirect('shop:contact_list')
-    
 
+
+def get_product_sizes(request, product_id):
+    """AJAX endpoint pour récupérer les tailles d'un produit"""
+    try:
+        product = get_object_or_404(Product, pk=product_id)
+        sizes = []
+
+        # Récupérer les tailles disponibles pour ce produit
+        if product.sizes.exists():
+            sizes = list(product.sizes.values_list('name', flat=True))
+
+        return JsonResponse({
+            'success': True,
+            'sizes': sizes,
+            'product_name': product.name,
+            'category_type': product.category.category_type if product.category else 'none'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })
+
+
+@login_required
+def favorites(request):
+    """Afficher les produits favoris de l'utilisateur"""
+    from shop.models import Favorite
+    favorites = Favorite.objects.filter(user=request.user)
+    return render(request, 'shop/favorites.html', {
+        'favorites': favorites,
+        'title': 'Mes Favoris'
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_favorite(request):
+    """Ajouter ou retirer un produit des favoris"""
+    from shop.models import Favorite
+    try:
+        product_id = request.POST.get('product_id')
+        if not product_id:
+            return JsonResponse({'success': False, 'message': 'ID du produit manquant'})
+
+        product = get_object_or_404(Product, pk=product_id)
+        favorite, created = Favorite.objects.get_or_create(
+            user=request.user,
+            product=product
+        )
+
+        if not created:
+            # Si le favori existe déjà, on le supprime
+            favorite.delete()
+            is_favorited = False
+            message = 'Produit retiré des favoris'
+        else:
+            # Sinon on l'a créé
+            is_favorited = True
+            message = 'Produit ajouté aux favoris'
+
+        # Compter le nombre total de favoris pour ce produit
+        favorites_count = Favorite.objects.filter(product=product).count()
+
+        return JsonResponse({
+            'success': True,
+            'is_favorited': is_favorited,
+            'favorites_count': favorites_count,
+            'message': message
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })
 

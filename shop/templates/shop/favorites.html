@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes Favoris - NDEY'AS SHOP{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-0">
+                <i class="fas fa-heart text-danger"></i> Mes Favoris
+            </h2>
+            <p class="text-muted">Retrouvez tous vos produits favoris</p>
+        </div>
+    </div>
+
+    {% if favorites %}
+    <div class="row">
+        {% for favorite in favorites %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% if favorite.product.primary_image %}
+                <img src="{{ favorite.product.primary_image.image.url }}"
+                     class="card-img-top"
+                     alt="{{ favorite.product.name }}"
+                     style="height: 250px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                     style="height: 250px;">
+                    <i class="fas fa-image fa-3x text-muted"></i>
+                </div>
+                {% endif %}
+
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ favorite.product.icon }} {{ favorite.product.name }}
+                    </h5>
+
+                    <p class="card-text">
+                        <small class="text-muted">{{ favorite.product.category.name }}</small>
+                    </p>
+
+                    <p class="card-text">
+                        {% if favorite.product.on_sale and favorite.product.sale_price %}
+                        <span class="text-muted text-decoration-line-through">
+                            {{ favorite.product.price }} FCFA
+                        </span>
+                        <span class="text-danger fw-bold">
+                            {{ favorite.product.sale_price }} FCFA
+                        </span>
+                        <span class="badge bg-danger ms-2">
+                            -{{ favorite.product.discount_percent }}%
+                        </span>
+                        {% else %}
+                        <span class="fw-bold">{{ favorite.product.price }} FCFA</span>
+                        {% endif %}
+                    </p>
+
+                    {% if favorite.product.sold_out %}
+                    <p class="text-danger mb-2">
+                        <i class="fas fa-times-circle"></i> Rupture de stock
+                    </p>
+                    {% elif favorite.product.quantity < 5 %}
+                    <p class="text-warning mb-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Stock limité ({{ favorite.product.quantity }} restants)
+                    </p>
+                    {% else %}
+                    <p class="text-success mb-2">
+                        <i class="fas fa-check-circle"></i> En stock
+                    </p>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'shop:product_detail' favorite.product.id %}"
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i> Voir
+                        </a>
+
+                        <button onclick="toggleFavorite({{ favorite.product.id }})"
+                                class="btn btn-danger btn-sm"
+                                id="favorite-btn-{{ favorite.product.id }}">
+                            <i class="fas fa-heart"></i> Retirer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-footer text-muted">
+                    <small>
+                        <i class="far fa-clock"></i>
+                        Ajouté le {{ favorite.created_at|date:"d/m/Y" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info text-center py-5">
+                <i class="far fa-heart fa-3x mb-3"></i>
+                <h4>Aucun favori pour le moment</h4>
+                <p class="mb-4">
+                    Explorez notre boutique et ajoutez vos produits préférés à vos favoris
+                    pour les retrouver facilement plus tard !
+                </p>
+                <a href="{% url 'shop:shop' %}" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag"></i> Découvrir nos produits
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleFavorite(productId) {
+    const btn = document.getElementById(`favorite-btn-${productId}`);
+
+    fetch("{% url 'shop:toggle_favorite' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `product_id=${productId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Recharger la page pour mettre à jour la liste
+            location.reload();
+        } else {
+            alert(data.message || 'Une erreur est survenue');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue');
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}

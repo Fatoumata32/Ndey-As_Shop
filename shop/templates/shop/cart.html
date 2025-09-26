@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Panier - Ndeyas Shop{% endblock %}
+{% block title %}Panier - NDEY'AS SHOP{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -16,7 +16,7 @@
             </nav>
 
             <h1 class="mb-4">
-                <i class="fas fa-shopping-cart text-danger"></i> Mon Panier
+                <i class="fas fa-shopping-cart text-orange"></i> Mon Panier
             </h1>
         </div>
     </div>
@@ -72,7 +72,7 @@
                                         <span class="text-muted text-decoration-line-through small">
                                             {{ item.product.price }} FCFA
                                         </span><br>
-                                        <span class="text-danger fw-bold">{{ item.product.sale_price }} FCFA</span>
+                                        <span class="fw-bold" style="color: #d81b60;">{{ item.product.sale_price }} FCFA</span>
                                         {% else %}
                                         <span class="fw-bold">{{ item.product.price }} FCFA</span>
                                         {% endif %}
@@ -146,10 +146,10 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-4">
                         <strong class="h5">Total</strong>
-                        <strong class="h5 text-danger" id="total">{{ cart.get_total }} FCFA</strong>
+                        <strong class="h5" id="total" style="color: #d81b60;">{{ cart.get_total }} FCFA</strong>
                     </div>
 
-                    <a href="{% url 'shop:checkout' %}" class="btn btn-danger btn-lg w-100 mb-3">
+                    <a href="{% url 'shop:checkout' %}" class="btn btn-orange btn-lg w-100 mb-3">
                         <i class="fas fa-lock"></i> Procéder au paiement
                     </a>
 
@@ -157,11 +157,17 @@
                     <div class="text-center">
                         <small class="text-muted">Méthodes de paiement acceptées</small>
                         <div class="payment-methods mt-2 d-flex justify-content-center align-items-center">
-                            <div class="payment-logo mx-2" style="width: 60px; height: 35px; background: #ff6600; border-radius: 5px; display: flex; align-items: center; justify-content: center;">
-                                <span style="color: white; font-weight: bold; font-size: 10px;">Orange<br>Money</span>
+                            <div class="payment-logo mx-2">
+                                <img src="{% static 'shop/img/orangemoney.png' %}"
+                                     alt="Orange Money"
+                                     style="height: 35px; width: auto;"
+                                     onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 60px; height: 35px; background: #ff6600; border-radius: 5px; display: flex; align-items: center; justify-content: center;\'><span style=\'color: white; font-weight: bold; font-size: 10px;\'>Orange<br>Money</span></div>';">
                             </div>
-                            <div class="payment-logo mx-2" style="width: 60px; height: 35px; background: #0066cc; border-radius: 5px; display: flex; align-items: center; justify-content: center;">
-                                <span style="color: white; font-weight: bold; font-size: 12px;">Wave</span>
+                            <div class="payment-logo mx-2">
+                                <img src="{% static 'shop/img/wave.png' %}"
+                                     alt="Wave"
+                                     style="height: 35px; width: auto;"
+                                     onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width: 60px; height: 35px; background: #0066cc; border-radius: 5px; display: flex; align-items: center; justify-content: center;\'><span style=\'color: white; font-weight: bold; font-size: 12px;\'>Wave</span></div>';">
                             </div>
                             <div class="payment-logo mx-2" style="width: 60px; height: 35px; background: #28a745; border-radius: 5px; display: flex; align-items: center; justify-content: center;">
                                 <span style="color: white; font-weight: bold; font-size: 12px;">Cash</span>
@@ -181,7 +187,7 @@
             <div class="card mt-3">
                 <div class="card-body">
                     <h6 class="card-title">
-                        <i class="fas fa-truck text-danger"></i> Informations de livraison
+                        <i class="fas fa-truck text-orange"></i> Informations de livraison
                     </h6>
                     <ul class="list-unstyled small">
                         <li><i class="fas fa-check text-success"></i> Livraison calculée à la commande</li>
@@ -202,7 +208,7 @@
                     <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
                     <h3>Votre panier est vide</h3>
                     <p class="text-muted mb-4">Vous n'avez pas encore ajouté de produits à votre panier.</p>
-                    <a href="{% url 'shop:shop' %}" class="btn btn-danger btn-lg">
+                    <a href="{% url 'shop:shop' %}" class="btn btn-orange btn-lg">
                         <i class="fas fa-shopping-bag"></i> Commencer vos achats
                     </a>
                 </div>
