@@ -7,40 +7,50 @@
 
 .bg-primary {
     background-color: #e91e63 !important;
+    color: white !important;
+}
+
+.bg-primary * {
+    color: white !important;
 }
 
 .btn-primary {
     background-color: #e91e63 !important;
     border-color: #e91e63 !important;
+    color: white !important;
 }
 
 .btn-primary:hover {
     background-color: #d81b60 !important;
     border-color: #d81b60 !important;
+    color: white !important;
 }
 
 .btn-primary:focus, .btn-primary:active {
     background-color: #c2185b !important;
     border-color: #c2185b !important;
     box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.5) !important;
+    color: white !important;
 }
 
 .btn-outline-primary {
     color: #e91e63 !important;
     border-color: #e91e63 !important;
+    background-color: transparent !important;
 }
 
 .btn-outline-primary:hover {
     background-color: #e91e63 !important;
     border-color: #e91e63 !important;
+    color: white !important;
 }
 
-/* Links */
-a {
+/* Links - Only for non-button links */
+a:not(.btn):not(.nav-link):not(.dropdown-item) {
     color: #e91e63 !important;
 }
 
-a:hover {
+a:not(.btn):not(.nav-link):not(.dropdown-item):hover {
     color: #d81b60 !important;
 }
 
@@ -51,6 +61,7 @@ a:hover {
 /* Badges */
 .badge-primary {
     background-color: #e91e63 !important;
+    color: white !important;
 }
 
 /* Alerts */
@@ -170,16 +181,23 @@ a:hover {
 
 .bg-info {
     background-color: #e91e63 !important;
+    color: white !important;
+}
+
+.bg-info * {
+    color: white !important;
 }
 
 .btn-info {
     background-color: #e91e63 !important;
     border-color: #e91e63 !important;
+    color: white !important;
 }
 
 .btn-info:hover {
     background-color: #d81b60 !important;
     border-color: #d81b60 !important;
+    color: white !important;
 }
 
 /* Override any blue color in custom classes */
@@ -244,4 +262,77 @@ textarea::selection {
 
 .navbar-light .navbar-nav .active > .nav-link {
     color: #e91e63 !important;
+}
+
+/* Fix contrast issues */
+.bg-primary .text-white,
+.bg-info .text-white,
+.btn-primary .text-white,
+.btn-info .text-white {
+    color: white !important;
+}
+
+/* Ensure text on pink backgrounds is always white */
+[style*="background-color: #e91e63"] {
+    color: white !important;
+}
+
+[style*="background-color: #e91e63"] * {
+    color: white !important;
+}
+
+/* Fix card and component text visibility */
+.card-primary .card-body,
+.card-primary .card-header,
+.card-primary .card-footer {
+    color: white !important;
+}
+
+.card-primary .card-body *,
+.card-primary .card-header *,
+.card-primary .card-footer * {
+    color: white !important;
+}
+
+/* Navigation items with pink background */
+.nav-pills .nav-link.active {
+    background-color: #e91e63 !important;
+    color: white !important;
+}
+
+/* Ensure dropdown items are visible */
+.dropdown-item:active {
+    background-color: #e91e63 !important;
+    color: white !important;
+}
+
+/* Page item active state */
+.page-item.active .page-link {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+    color: white !important;
+}
+
+/* Make sure pink text on white background is visible */
+.bg-white .text-primary,
+.bg-light .text-primary,
+.card .text-primary {
+    color: #e91e63 !important;
+}
+
+/* Ensure form elements are visible */
+.form-control:focus {
+    border-color: #e91e63 !important;
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25) !important;
+    color: #495057 !important;
+    background-color: white !important;
+}
+
+/* Keep nav links readable */
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: white !important;
 }
