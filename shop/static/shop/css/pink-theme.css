@@ -1,0 +1,247 @@
+/* Pink Theme Override - Remplace toutes les couleurs bleues par du rose */
+
+/* Override Bootstrap primary colors */
+.text-primary {
+    color: #e91e63 !important;
+}
+
+.bg-primary {
+    background-color: #e91e63 !important;
+}
+
+.btn-primary {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+}
+
+.btn-primary:hover {
+    background-color: #d81b60 !important;
+    border-color: #d81b60 !important;
+}
+
+.btn-primary:focus, .btn-primary:active {
+    background-color: #c2185b !important;
+    border-color: #c2185b !important;
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.5) !important;
+}
+
+.btn-outline-primary {
+    color: #e91e63 !important;
+    border-color: #e91e63 !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+}
+
+/* Links */
+a {
+    color: #e91e63 !important;
+}
+
+a:hover {
+    color: #d81b60 !important;
+}
+
+.link-primary {
+    color: #e91e63 !important;
+}
+
+/* Badges */
+.badge-primary {
+    background-color: #e91e63 !important;
+}
+
+/* Alerts */
+.alert-primary {
+    color: #880e4f;
+    background-color: #fce4ec;
+    border-color: #f8bbd0;
+}
+
+/* Forms */
+.form-control:focus {
+    border-color: #e91e63 !important;
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25) !important;
+}
+
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+}
+
+/* Progress bars */
+.progress-bar {
+    background-color: #e91e63 !important;
+}
+
+/* Pagination */
+.page-link {
+    color: #e91e63 !important;
+}
+
+.page-link:hover {
+    color: #d81b60 !important;
+}
+
+.page-item.active .page-link {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+}
+
+/* Tables */
+.table-primary {
+    background-color: #fce4ec !important;
+}
+
+/* List groups */
+.list-group-item-primary {
+    color: #880e4f;
+    background-color: #fce4ec;
+}
+
+/* Borders */
+.border-primary {
+    border-color: #e91e63 !important;
+}
+
+/* Text selection */
+::selection {
+    background-color: #e91e63;
+    color: white;
+}
+
+::-moz-selection {
+    background-color: #e91e63;
+    color: white;
+}
+
+/* Spinners */
+.spinner-border-primary {
+    border-color: #e91e63 !important;
+}
+
+.spinner-grow-primary {
+    background-color: #e91e63 !important;
+}
+
+/* Dropdowns */
+.dropdown-item:active {
+    background-color: #e91e63 !important;
+}
+
+/* Cards */
+.card-primary {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+}
+
+/* Nav pills */
+.nav-pills .nav-link.active {
+    background-color: #e91e63 !important;
+}
+
+/* Tooltips */
+.tooltip-inner {
+    background-color: #e91e63 !important;
+}
+
+.bs-tooltip-top .arrow::before {
+    border-top-color: #e91e63 !important;
+}
+
+.bs-tooltip-right .arrow::before {
+    border-right-color: #e91e63 !important;
+}
+
+.bs-tooltip-bottom .arrow::before {
+    border-bottom-color: #e91e63 !important;
+}
+
+.bs-tooltip-left .arrow::before {
+    border-left-color: #e91e63 !important;
+}
+
+/* Custom classes that might use blue */
+.text-info {
+    color: #e91e63 !important;
+}
+
+.bg-info {
+    background-color: #e91e63 !important;
+}
+
+.btn-info {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+}
+
+.btn-info:hover {
+    background-color: #d81b60 !important;
+    border-color: #d81b60 !important;
+}
+
+/* Override any blue color in custom classes */
+[style*="color: blue"],
+[style*="color:#0000ff"],
+[style*="color: #007bff"],
+[style*="color:#007bff"] {
+    color: #e91e63 !important;
+}
+
+[style*="background: blue"],
+[style*="background:#0000ff"],
+[style*="background-color: blue"],
+[style*="background-color:#0000ff"],
+[style*="background-color: #007bff"],
+[style*="background-color:#007bff"] {
+    background-color: #e91e63 !important;
+}
+
+/* Icons with primary color */
+.fa-primary,
+.fas.text-primary,
+.far.text-primary,
+.fab.text-primary {
+    color: #e91e63 !important;
+}
+
+/* Active states */
+.active {
+    color: #e91e63 !important;
+}
+
+/* Breadcrumb */
+.breadcrumb-item.active {
+    color: #e91e63 !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar-thumb:hover {
+    background: #e91e63;
+}
+
+/* Selection in inputs */
+input::selection,
+textarea::selection {
+    background-color: #e91e63;
+    color: white;
+}
+
+/* Navbar brand and links that might be blue */
+.navbar-light .navbar-brand {
+    color: #e91e63 !important;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: rgba(233, 30, 99, 0.7) !important;
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+    color: #e91e63 !important;
+}
+
+.navbar-light .navbar-nav .active > .nav-link {
+    color: #e91e63 !important;
+}
