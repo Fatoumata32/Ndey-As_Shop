@@ -1,80 +1,54 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load shop_extras %}
 
 {% block title %}Commande #{{ order.id }} - NDEY'AS SHOP{% endblock %}
 
 {% block extra_css %}
 <style>
-    .order-detail-header {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        color: white;
+    .order-detail-container {
         padding: 2rem 0;
+        min-height: calc(100vh - 200px);
+    }
+
+    .order-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
         margin-bottom: 2rem;
     }
 
-    .order-detail-header h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
+    .order-status {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(255,255,255,0.2);
+        border-radius: 25px;
+        font-weight: 600;
+        margin-top: 0.5rem;
     }
 
-    .detail-card {
+    .order-card {
         background: white;
         border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         margin-bottom: 2rem;
     }
 
-    .detail-section-title {
+    .section-title {
         font-size: 1.2rem;
         font-weight: 700;
         color: var(--primary);
         margin-bottom: 1.5rem;
         padding-bottom: 0.5rem;
-        border-bottom: 2px solid var(--light);
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 0.5rem 1.5rem;
-        border-radius: 50px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-transform: capitalize;
-    }
-
-    .status-badge.pending {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .status-badge.processing {
-        background: #e7e8ea;
-        color: #383d41;
-    }
-
-    .status-badge.shipped {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-
-    .status-badge.delivered {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .status-badge.cancelled {
-        background: #f8d7da;
-        color: #721c24;
+        border-bottom: 2px solid #f0f0f0;
     }
 
     .info-row {
         display: flex;
         justify-content: space-between;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #f0f0f0;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f8f8f8;
     }
 
     .info-row:last-child {
@@ -82,35 +56,67 @@
     }
 
     .info-label {
-        font-weight: 600;
         color: #6c757d;
+        font-weight: 500;
     }
 
     .info-value {
+        font-weight: 600;
         color: #333;
-        font-weight: 500;
+    }
+
+    .btn-cancel {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+        padding: 0.8rem 2rem;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .btn-modify {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: #333;
+        padding: 0.8rem 2rem;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .btn-cancel:hover, .btn-modify:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn-back {
+        background: #f8f9fa;
+        color: #333;
+        padding: 0.8rem 2rem;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-back:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
     }
 
     .product-item {
         display: flex;
         align-items: center;
-        padding: 1rem;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        margin-bottom: 1rem;
-        transition: all 0.3s ease;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f0f0;
     }
 
-    .product-item:hover {
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .product-image {
-        width: 100px;
-        height: 100px;
-        border-radius: 8px;
-        object-fit: cover;
-        margin-right: 1.5rem;
+    .product-item:last-child {
+        border-bottom: none;
     }
 
     .product-details {
@@ -118,337 +124,312 @@
     }
 
     .product-name {
-        font-size: 1.1rem;
         font-weight: 600;
         color: #333;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
     }
 
     .product-meta {
         color: #6c757d;
         font-size: 0.9rem;
-        margin-bottom: 0.25rem;
     }
 
     .product-price {
+        text-align: right;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .total-row {
         display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        justify-content: center;
-    }
-
-    .price-label {
-        font-size: 0.85rem;
-        color: #6c757d;
-    }
-
-    .price-value {
+        justify-content: space-between;
+        padding: 1rem 0;
         font-size: 1.2rem;
         font-weight: 700;
         color: var(--primary);
-    }
-
-    .summary-card {
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        border-radius: 12px;
-        padding: 1.5rem;
+        border-top: 2px solid #f0f0f0;
         margin-top: 1rem;
-    }
-
-    .summary-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem 0;
-    }
-
-    .summary-row.total {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 2px solid var(--primary);
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--primary);
-    }
-
-    .timeline {
-        position: relative;
-        padding: 0;
-        list-style: none;
-    }
-
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 20px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e0e0e0;
-    }
-
-    .timeline-item {
-        position: relative;
-        padding-left: 60px;
-        margin-bottom: 2rem;
-    }
-
-    .timeline-icon {
-        position: absolute;
-        left: 10px;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: white;
-        border: 3px solid var(--primary);
-    }
-
-    .timeline-item.completed .timeline-icon {
-        background: var(--success);
-        border-color: var(--success);
-    }
-
-    .timeline-content {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-    }
-
-    .timeline-title {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 0.25rem;
-    }
-
-    .timeline-date {
-        font-size: 0.85rem;
-        color: #6c757d;
-    }
-
-    .btn-back {
-        background: white;
-        color: var(--primary);
-        border: 2px solid var(--primary);
-        padding: 0.5rem 1.5rem;
-        border-radius: 50px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-back:hover {
-        background: var(--primary);
-        color: white;
-        transform: translateX(-5px);
-    }
-
-    @media (max-width: 768px) {
-        .product-item {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .product-image {
-            margin-right: 0;
-            margin-bottom: 1rem;
-        }
-
-        .product-price {
-            align-items: center;
-            margin-top: 1rem;
-        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Order Detail Header -->
-<div class="order-detail-header">
-    <div class="container">
-        <a href="{% url 'shop:user_orders' %}" class="btn-back mb-3">
-            <i class="fas fa-arrow-left"></i> Retour aux commandes
-        </a>
+<div class="container order-detail-container">
+    <!-- En-tête de la commande -->
+    <div class="order-header">
         <h1>Commande #{{ order.id }}</h1>
-        <p class="mb-0">Passée le {{ order.created_at|date:"d F Y à H:i" }}</p>
+        <p class="mb-0">Passée le {{ order.created_at|date:"d/m/Y à H:i" }}</p>
+        <span class="order-status">
+            {% if order.status == 'pending' %}
+                <i class="fas fa-clock"></i> En attente
+            {% elif order.status == 'confirmed' %}
+                <i class="fas fa-check-circle"></i> Confirmée
+            {% elif order.status == 'processing' %}
+                <i class="fas fa-cog"></i> En traitement
+            {% elif order.status == 'shipped' %}
+                <i class="fas fa-truck"></i> Expédiée
+            {% elif order.status == 'delivered' %}
+                <i class="fas fa-check-double"></i> Livrée
+            {% elif order.status == 'cancelled' %}
+                <i class="fas fa-times-circle"></i> Annulée
+            {% endif %}
+        </span>
     </div>
-</div>
 
-<div class="container">
     <div class="row">
         <div class="col-lg-8">
-            <!-- Order Status -->
-            <div class="detail-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="detail-section-title mb-0">Statut de la commande</h5>
-                    <span class="status-badge {{ order.status }}">
-                        {{ order.get_status_display }}
-                    </span>
-                </div>
-
-                <!-- Status Timeline -->
-                <ul class="timeline mt-4">
-                    <li class="timeline-item {% if order.status != 'cancelled' %}completed{% endif %}">
-                        <div class="timeline-icon"></div>
-                        <div class="timeline-content">
-                            <div class="timeline-title">Commande reçue</div>
-                            <div class="timeline-date">{{ order.created_at|date:"d/m/Y H:i" }}</div>
-                        </div>
-                    </li>
-
-                    {% if order.status != 'cancelled' and order.status != 'pending' %}
-                    <li class="timeline-item completed">
-                        <div class="timeline-icon"></div>
-                        <div class="timeline-content">
-                            <div class="timeline-title">En traitement</div>
-                            <div class="timeline-date">Votre commande est en cours de préparation</div>
-                        </div>
-                    </li>
-                    {% endif %}
-
-                    {% if order.status == 'shipped' or order.status == 'delivered' %}
-                    <li class="timeline-item completed">
-                        <div class="timeline-icon"></div>
-                        <div class="timeline-content">
-                            <div class="timeline-title">Expédiée</div>
-                            <div class="timeline-date">Votre commande a été expédiée</div>
-                        </div>
-                    </li>
-                    {% endif %}
-
-                    {% if order.status == 'delivered' %}
-                    <li class="timeline-item completed">
-                        <div class="timeline-icon"></div>
-                        <div class="timeline-content">
-                            <div class="timeline-title">Livrée</div>
-                            <div class="timeline-date">Commande livrée avec succès</div>
-                        </div>
-                    </li>
-                    {% endif %}
-
-                    {% if order.status == 'cancelled' %}
-                    <li class="timeline-item completed">
-                        <div class="timeline-icon" style="background: var(--danger); border-color: var(--danger);"></div>
-                        <div class="timeline-content">
-                            <div class="timeline-title">Annulée</div>
-                            <div class="timeline-date">Cette commande a été annulée</div>
-                        </div>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-
-            <!-- Products List -->
-            <div class="detail-card">
-                <h5 class="detail-section-title">Articles commandés</h5>
+            <!-- Articles de la commande -->
+            <div class="order-card">
+                <h3 class="section-title">Articles commandés</h3>
 
                 {% for item in order.items.all %}
                 <div class="product-item">
-                    {% if item.product and item.product.primary_image %}
-                    <img src="{{ item.product.primary_image.image.url }}" alt="{{ item.product.name }}" class="product-image">
-                    {% else %}
-                    <div class="product-image bg-secondary d-flex align-items-center justify-content-center">
-                        <i class="fas fa-box text-white fa-2x"></i>
-                    </div>
-                    {% endif %}
-
                     <div class="product-details">
-                        <div class="product-name">
-                            {% if item.product %}
-                                {{ item.product.name }}
-                            {% else %}
-                                Produit supprimé
+                        <div class="product-name">{{ item.product.name }}</div>
+                        <div class="product-meta">
+                            Quantité: {{ item.quantity }}
+                            {% if item.selected_size %}
+                            | Taille: {{ item.selected_size }}
                             {% endif %}
                         </div>
-                        <div class="product-meta">Quantité: {{ item.quantity }}</div>
-                        {% if item.selected_size %}
-                        <div class="product-meta">Taille: {{ item.selected_size }}</div>
-                        {% endif %}
-                        <div class="product-meta">Prix unitaire: {{ item.price|currency }}</div>
                     </div>
-
                     <div class="product-price">
-                        <span class="price-label">Sous-total</span>
-                        <span class="price-value">{{ item.get_subtotal|currency }}</span>
+                        {{ item.get_subtotal }} FCFA
                     </div>
                 </div>
                 {% endfor %}
 
-                <!-- Order Summary -->
-                <div class="summary-card">
-                    <div class="summary-row">
-                        <span>Sous-total</span>
-                        <span>{{ order.total_amount|currency }}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Livraison</span>
-                        <span>Inclus</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>Total</span>
-                        <span>{{ order.total_amount|currency }}</span>
-                    </div>
+                <div class="total-row">
+                    <span>Total</span>
+                    <span>{{ order.total_amount }} FCFA</span>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-4">
-            <!-- Delivery Information -->
-            <div class="detail-card">
-                <h5 class="detail-section-title">Informations de livraison</h5>
+            <!-- Informations de livraison -->
+            <div class="order-card">
+                <h3 class="section-title">Informations de livraison</h3>
 
                 <div class="info-row">
                     <span class="info-label">Nom</span>
-                    <span class="info-value">{{ order.customer_name|default:order.user.get_full_name|default:order.user.username }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Email</span>
-                    <span class="info-value">{{ order.customer_email|default:order.user.email }}</span>
+                    <span class="info-value">{{ order.customer_name|default:"Non renseigné" }}</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Téléphone</span>
                     <span class="info-value">{{ order.customer_phone }}</span>
                 </div>
                 <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">{{ order.customer_email|default:"Non renseigné" }}</span>
+                </div>
+                <div class="info-row">
                     <span class="info-label">Adresse</span>
                     <span class="info-value">{{ order.customer_address }}</span>
                 </div>
-            </div>
-
-            <!-- Payment Information -->
-            <div class="detail-card">
-                <h5 class="detail-section-title">Informations de paiement</h5>
-
                 <div class="info-row">
-                    <span class="info-label">Méthode</span>
+                    <span class="info-label">Mode de paiement</span>
                     <span class="info-value">{{ order.get_payment_method_display }}</span>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Statut</span>
-                    <span class="info-value">
-                        {% if order.status == 'delivered' %}
-                            <span class="badge bg-success">Payé</span>
-                        {% elif order.status == 'cancelled' %}
-                            <span class="badge bg-danger">Annulé</span>
-                        {% else %}
-                            <span class="badge bg-warning">En attente</span>
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Montant</span>
-                    <span class="info-value">{{ order.total_amount|currency }}</span>
-                </div>
             </div>
+        </div>
 
-            <!-- Help Card -->
-            <div class="detail-card">
-                <h5 class="detail-section-title">Besoin d'aide ?</h5>
-                <p class="mb-3">Si vous avez des questions concernant votre commande, n'hésitez pas à nous contacter.</p>
-                <a href="{% url 'shop:contact' %}" class="btn btn-primary w-100">
-                    <i class="fas fa-headset"></i> Contactez-nous
+        <div class="col-lg-4">
+            <!-- Actions -->
+            <div class="order-card">
+                <h3 class="section-title">Actions</h3>
+
+                {% if order.status == 'pending' or order.status == 'confirmed' %}
+                <button class="btn btn-cancel w-100 mb-2" onclick="cancelOrder({{ order.id }})">
+                    <i class="fas fa-times-circle"></i> Annuler la Commande
+                </button>
+                {% endif %}
+
+                {% if order.status == 'pending' %}
+                <button class="btn btn-modify w-100 mb-2" onclick="showModifyModal({{ order.id }})">
+                    <i class="fas fa-edit"></i> Modifier la Commande
+                </button>
+                {% endif %}
+
+                <a href="{% url 'shop:user_orders' %}" class="btn-back w-100 text-center d-block">
+                    <i class="fas fa-arrow-left"></i> Retour aux Commandes
                 </a>
+
+                {% if order.notes %}
+                <div class="alert alert-info mt-3">
+                    <strong>Notes:</strong><br>
+                    {{ order.notes|linebreaks }}
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal de modification -->
+<div class="modal fade" id="modifyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier la Commande</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Veuillez décrire les modifications que vous souhaitez apporter à votre commande:</p>
+                <textarea id="modificationReason" class="form-control" placeholder="Ex: Je voudrais changer la taille du produit X de M à L..." rows="4"></textarea>
+                <div class="alert alert-info mt-3">
+                    <small><i class="fas fa-info-circle"></i> Notre équipe vous contactera pour confirmer les modifications.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="submitModification({{ order.id }})">
+                    <i class="fas fa-paper-plane"></i> Envoyer la Demande
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Get CSRF token utility function
+function getCSRFToken() {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    return getCookie('csrftoken');
+}
+
+// Fonction pour annuler une commande
+function cancelOrder(orderId) {
+    if (confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
+        const url = `/mes-commandes/${orderId}/annuler/`;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (response.redirected) {
+                // Si redirection vers login, l'utilisateur n'est pas connecté
+                window.location.href = response.url;
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data) {
+                if (data.success) {
+                    // Ouvrir WhatsApp si URL fournie
+                    if (data.whatsapp_url) {
+                        window.open(data.whatsapp_url, '_blank');
+                    }
+
+                    alert('Votre commande a été annulée avec succès.');
+
+                    // Recharger la page
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    alert(data.message || 'Erreur lors de l\'annulation');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de l\'annulation');
+        });
+    }
+}
+
+// Fonction pour afficher le modal de modification
+function showModifyModal(orderId) {
+    try {
+        const modalElement = document.getElementById('modifyModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else {
+            alert('Impossible d\'ouvrir le formulaire de modification');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'ouverture du formulaire');
+    }
+}
+
+// Fonction pour soumettre la modification
+function submitModification(orderId) {
+    const reason = document.getElementById('modificationReason').value.trim();
+
+    if (!reason) {
+        alert('Veuillez décrire les modifications souhaitées');
+        return;
+    }
+
+    const url = `/mes-commandes/${orderId}/modifier/`;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            reason: reason
+        }),
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data) {
+            if (data.success) {
+                // Fermer le modal
+                bootstrap.Modal.getInstance(document.getElementById('modifyModal')).hide();
+
+                // Ouvrir WhatsApp si URL fournie
+                if (data.whatsapp_url) {
+                    window.open(data.whatsapp_url, '_blank');
+                }
+
+                alert('Votre demande de modification a été envoyée.');
+
+                // Recharger la page
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                alert(data.message || 'Erreur lors de la modification');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue lors de la modification');
+    });
+}
+</script>
 {% endblock %}

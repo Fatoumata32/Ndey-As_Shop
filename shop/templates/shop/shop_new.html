@@ -200,7 +200,7 @@
                                              class="card-img-top"
                                              alt="{{ product.name }}">
                                         {% else %}
-                                        <img src="https://via.placeholder.com/400x300/f8f9fa/6c757d?text={{ product.name|truncatechars:20 }}"
+                                        <img src="{% static 'shop/img/placeholder.jpg' %}"
                                              class="card-img-top"
                                              alt="{{ product.name }}">
                                         {% endif %}

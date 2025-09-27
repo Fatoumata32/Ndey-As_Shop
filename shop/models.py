@@ -42,7 +42,6 @@ class Category(models.Model):
     name = models.CharField(max_length=100, unique=True, default='Sans nom')  # Ajout d'une valeur par défaut
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     description = models.TextField(blank=True, null=True)
-    icon = models.CharField(max_length=50, default='📦')
     category_type = models.CharField(max_length=20, choices=CATEGORY_TYPES, default='none')
     measurement_unit = models.CharField(max_length=20, choices=MEASUREMENT_UNITS, default='meter', blank=True, null=True)
     available_sizes = models.ManyToManyField(Size, blank=True, related_name='categories')
@@ -54,7 +53,7 @@ class Category(models.Model):
         ordering = ['name']
     
     def __str__(self):
-        return f"{self.icon} {self.name}"
+        return self.name
     
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -228,19 +227,20 @@ class CartItem(models.Model):
 class Order(models.Model):
     """Modèle pour les commandes"""
     PAYMENT_METHODS = [
-        ('orange-money', 'Orange Money'),
+        ('orange_money', 'Orange Money'),
         ('wave', 'Wave'),
         ('cash', 'Paiement à la livraison'),
     ]
-    
+
     STATUS_CHOICES = [
         ('pending', 'En attente'),
+        ('confirmed', 'Confirmée'),
         ('processing', 'En traitement'),
         ('shipped', 'Expédié'),
         ('delivered', 'Livré'),
         ('cancelled', 'Annulé'),
     ]
-    
+
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     customer_name = models.CharField(max_length=200,null=True, blank=True)
     customer_email = models.EmailField(null=True, blank=True)
@@ -249,12 +249,31 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    notes = models.TextField(blank=True, null=True)  # Pour les notes de modification
+    shipping_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
+    # Propriétés pour la compatibilité avec les templates
+    @property
+    def name(self):
+        return self.customer_name
+
+    @property
+    def email(self):
+        return self.customer_email
+
+    @property
+    def phone(self):
+        return self.customer_phone
+
+    @property
+    def address(self):
+        return self.customer_address
+
     class Meta:
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return f"Order #{self.id} - {self.customer_name}"
 
@@ -265,12 +284,16 @@ class OrderItem(models.Model):
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     selected_size = models.CharField(max_length=50, blank=True)
-    
+
     def __str__(self):
         return f"{self.quantity} x {self.product.name if self.product else 'Deleted Product'}"
-    
+
     def get_subtotal(self):
         return self.quantity * self.price
+
+    def get_total(self):
+        """Alias pour get_subtotal pour compatibilité avec le template"""
+        return self.get_subtotal()
 
 class Contact(models.Model):
     """Modèle pour les messages de contact"""

@@ -497,12 +497,12 @@
                             <div>
                                 <label for="id_price" class="form-label">Prix Normal (FCFA) *</label>
                                 <input type="number" class="form-control" id="id_price" name="price"
-                                       value="{{ product.price }}" required min="0" step="100">
+                                       value="{{ product.price|floatformat:0 }}" required min="0" step="100">
                             </div>
                             <div>
                                 <label for="id_sale_price" class="form-label">Prix Promo (FCFA)</label>
                                 <input type="number" class="form-control" id="id_sale_price" name="sale_price"
-                                       value="{{ product.sale_price|default:'' }}" min="0" step="100">
+                                       value="{% if product.sale_price %}{{ product.sale_price|floatformat:0 }}{% endif %}" min="0" step="100">
                                 <small class="text-muted">Laissez vide si pas de promotion</small>
                             </div>
                         </div>
@@ -629,9 +629,6 @@
                     <a href="{% url 'shop:product_detail' product.id %}" target="_blank" class="btn btn-outline-primary">
                         <i class="fas fa-eye"></i> Voir le Produit
                     </a>
-                    <button type="button" class="btn btn-outline-warning" onclick="duplicateProduct()">
-                        <i class="fas fa-copy"></i> Dupliquer
-                    </button>
                 </div>
             </div>
 
@@ -825,11 +822,6 @@
                 loadingOverlay.classList.remove('show');
             });
         }
-    }
-
-    // Duplicate product (placeholder function)
-    function duplicateProduct() {
-        alert('Fonctionnalité en cours de développement');
     }
 </script>
 {% endblock %}

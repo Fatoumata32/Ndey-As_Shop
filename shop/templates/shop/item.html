@@ -646,7 +646,7 @@
                         {% if product.primary_image %}
                         <img src="{{ product.primary_image.image.url }}" alt="{{ product.name }}" class="main-image" id="mainImage">
                         {% else %}
-                        <img src="https://via.placeholder.com/600x600/f8f9fa/6c757d?text={{ product.name|truncatechars:20 }}" alt="{{ product.name }}" class="main-image" id="mainImage">
+                        <img src="{% static 'shop/img/placeholder.jpg' %}" alt="{{ product.name }}" class="main-image" id="mainImage">
                         {% endif %}
                     </div>
 
@@ -784,7 +784,7 @@
                             </div>
                             <div class="feature-text">
                                 <h6>Retour Facile</h6>
-                                <p>Sous 30 jours</p>
+                                <p>Satisfaction garantie</p>
                             </div>
                         </div>
                         <div class="feature-item">
@@ -922,7 +922,7 @@
                             {% if related.primary_image %}
                             <img src="{{ related.primary_image.image.url }}" alt="{{ related.name }}">
                             {% else %}
-                            <img src="https://via.placeholder.com/300x300/f8f9fa/6c757d?text={{ related.name|truncatechars:20 }}" alt="{{ related.name }}">
+                            <img src="{% static 'shop/img/placeholder.jpg' %}" alt="{{ related.name }}">
                             {% endif %}
                         </div>
                         <div class="product-card-body">

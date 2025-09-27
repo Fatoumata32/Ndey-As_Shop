@@ -200,7 +200,7 @@
                                            class="form-control"
                                            name="q"
                                            placeholder="Rechercher un produit..."
-                                           value="{% if search_query %}{{ search_query }}{% endif %}">
+                                           value="{{ search_query|default:'' }}">
                                     <button class="btn btn-orange" type="submit">
                                         <i class="fas fa-search"></i>
                                     </button>
@@ -213,7 +213,7 @@
                     <div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="fas fa-th" style="color: #d81b60;"></i> Catégories
+                                Catégories
                             </h5>
                             <div class="category-list">
                                 <a href="{% url 'shop:shop' %}"
@@ -224,7 +224,7 @@
                                 {% for category in categories %}
                                 <a href="?category={{ category.id }}{% if search_query %}&q={{ search_query }}{% endif %}"
                                    class="category-item {% if current_category == category.id|stringformat:'s' %}active{% endif %}">
-                                    <span>{{ category.icon }} {{ category.name }}</span>
+                                    <span>{{ category.name }}</span>
                                     <span class="badge bg-secondary">{{ category.product_count|default:0 }}</span>
                                 </a>
                                 {% endfor %}
@@ -258,7 +258,7 @@
                                                id="min_price"
                                                name="min_price"
                                                placeholder="0"
-                                               value="{{ request.GET.min_price }}"
+                                               value="{{ request.GET.min_price|default:'' }}"
                                                min="0">
                                     </div>
                                     <div class="mb-3">
@@ -268,7 +268,7 @@
                                                id="max_price"
                                                name="max_price"
                                                placeholder="1000000"
-                                               value="{{ request.GET.max_price }}"
+                                               value="{{ request.GET.max_price|default:'' }}"
                                                min="0">
                                     </div>
 
@@ -385,7 +385,7 @@
                                              class="card-img-top"
                                              alt="{{ product.name }}">
                                         {% else %}
-                                        <img src="https://via.placeholder.com/400x300/f8f9fa/6c757d?text={{ product.name|truncatechars:20 }}"
+                                        <img src="{% static 'shop/img/placeholder.jpg' %}"
                                              class="card-img-top"
                                              alt="{{ product.name }}">
                                         {% endif %}

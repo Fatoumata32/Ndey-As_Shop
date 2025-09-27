@@ -21,7 +21,7 @@
                 </div>
             </div>
             <div class="col-lg-6" data-aos="fade-left">
-                <img src="https://via.placeholder.com/600x400/667eea/ffffff?text=Ndeyas+Shop" alt="Hero" class="img-fluid rounded-3 shadow-lg">
+                <img src="{% static 'shop/img/placeholder.jpg' %}" alt="Hero" class="img-fluid rounded-3 shadow-lg">
             </div>
         </div>
     </div>
@@ -55,7 +55,7 @@
                         <i class="fas fa-undo fa-3x text-primary"></i>
                     </div>
                     <h5>Retour Facile</h5>
-                    <p class="text-muted">Retour sous 30 jours</p>
+                    <p class="text-muted">Satisfaction garantie</p>
                 </div>
             </div>
             <div class="col-md-3" data-aos="fade-up" data-aos-delay="400">
@@ -117,7 +117,7 @@
                             {% if product.primary_image %}
                             <img src="{{ product.primary_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
                             {% else %}
-                            <img src="https://via.placeholder.com/400x300/f8f9fa/6c757d?text={{ product.name|truncatechars:20 }}" class="card-img-top" alt="{{ product.name }}">
+                            <img src="{% static 'shop/img/placeholder.jpg' %}" class="card-img-top" alt="{{ product.name }}">
                             {% endif %}
 
                             <!-- Badges -->

@@ -287,7 +287,7 @@
 
     .notification {
         position: fixed;
-        top: 20px;
+        top: 80px;
         right: 20px;
         background: var(--white);
         color: var(--black);
@@ -297,7 +297,22 @@
         animation: slideInNotification 0.4s ease;
         border-left: 4px solid var(--primary);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        max-width: 90%;
+        max-width: 400px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .notification.success {
+        border-left-color: #28a745;
+    }
+
+    .notification.error {
+        border-left-color: #dc3545;
+    }
+
+    .notification.info {
+        border-left-color: #17a2b8;
     }
 
     @keyframes slideInNotification {
@@ -446,18 +461,37 @@
                     <form id="registerForm">
                         {% csrf_token %}
                         <div class="form-group">
+                            <label for="regUsername">Nom d'utilisateur</label>
+                            <input type="text" class="form-control" id="regUsername" name="username" placeholder="Entrez votre nom d'utilisateur" required>
+                            <small class="text-muted" style="font-size: 0.75rem;">Minimum 3 caractères</small>
+                        </div>
+
+                        <div class="form-group">
                             <label for="regEmail">Email</label>
                             <input type="email" class="form-control" id="regEmail" name="email" placeholder="Entrez votre email" required>
+                            <small class="text-muted" style="font-size: 0.75rem;">Nous ne partagerons jamais votre email</small>
                         </div>
 
                         <div class="form-group">
                             <label for="regPassword">Mot de Passe</label>
-                            <input type="password" class="form-control" id="regPassword" name="password1" placeholder="••••••••" required>
+                            <div class="password-field">
+                                <input type="password" class="form-control" id="regPassword" name="password1" placeholder="••••••••" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('regPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Minimum 8 caractères</small>
                         </div>
 
                         <div class="form-group">
                             <label for="regConfirmPassword">Confirmer Le Mot de Passe</label>
-                            <input type="password" class="form-control" id="regConfirmPassword" name="password2" placeholder="••••••••" required>
+                            <div class="password-field">
+                                <input type="password" class="form-control" id="regConfirmPassword" name="password2" placeholder="••••••••" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('regConfirmPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.75rem;">Doit correspondre au mot de passe</small>
                         </div>
 
                         <button type="submit" class="register-btn" id="registerBtn">
@@ -525,13 +559,20 @@ function showNotification(message, type = 'info') {
     existingNotifications.forEach(notif => notif.remove());
 
     const notification = document.createElement('div');
-    notification.className = 'notification';
+    notification.className = `notification ${type}`;
 
     let icon = 'fa-info-circle';
-    if (type === 'success') icon = 'fa-check-circle';
-    if (type === 'error') icon = 'fa-times-circle';
+    let color = '#17a2b8';
+    if (type === 'success') {
+        icon = 'fa-check-circle';
+        color = '#28a745';
+    }
+    if (type === 'error') {
+        icon = 'fa-times-circle';
+        color = '#dc3545';
+    }
 
-    notification.innerHTML = `<i class="fas ${icon} me-2"></i>${message}`;
+    notification.innerHTML = `<i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i><span>${message}</span>`;
     document.body.appendChild(notification);
 
     setTimeout(() => {
@@ -541,7 +582,7 @@ function showNotification(message, type = 'info') {
                 document.body.removeChild(notification);
             }
         }, 400);
-    }, 3000);
+    }, 5000);
 }
 
 function showTab(tabId) {
@@ -621,14 +662,20 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
 document.getElementById('registerForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
+    const username = document.getElementById('regUsername').value;
     const email = document.getElementById('regEmail').value;
     const password = document.getElementById('regPassword').value;
     const confirmPassword = document.getElementById('regConfirmPassword').value;
     const registerBtn = document.getElementById('registerBtn');
     const originalText = registerBtn.innerHTML;
 
-    if (!email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
         showNotification('Veuillez remplir tous les champs!', 'error');
+        return;
+    }
+
+    if (username.length < 3) {
+        showNotification('Le nom d\'utilisateur doit contenir au moins 3 caractères!', 'error');
         return;
     }
 
@@ -638,7 +685,14 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
     }
 
     if (password.length < 8) {
-        showNotification('Le mot de passe doit contenir au moins 8 caractères', 'error');
+        showNotification('Le mot de passe doit contenir au moins 8 caractères!', 'error');
+        return;
+    }
+
+    // Validation de l'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showNotification('Veuillez entrer un email valide!', 'error');
         return;
     }
 
@@ -652,6 +706,7 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
             'X-CSRFToken': csrftoken
         },
         body: JSON.stringify({
+            username: username,
             email: email,
             password: password,
             confirm_password: confirmPassword
@@ -734,6 +789,58 @@ document.getElementById('forgotPasswordForm').addEventListener('submit', functio
         console.error('Error:', error);
         showNotification('Une erreur est survenue', 'error');
     });
+});
+
+// Validation en temps réel pour le formulaire d'inscription
+document.getElementById('regPassword').addEventListener('input', function() {
+    const password = this.value;
+    const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+    if (password.length > 0 && password.length < 8) {
+        this.style.borderColor = '#dc3545';
+    } else if (password.length >= 8) {
+        this.style.borderColor = '#28a745';
+    } else {
+        this.style.borderColor = '#e5e7eb';
+    }
+
+    // Vérifier aussi la correspondance si le champ de confirmation a une valeur
+    if (confirmPassword) {
+        const confirmField = document.getElementById('regConfirmPassword');
+        if (password === confirmPassword) {
+            confirmField.style.borderColor = '#28a745';
+        } else {
+            confirmField.style.borderColor = '#dc3545';
+        }
+    }
+});
+
+document.getElementById('regConfirmPassword').addEventListener('input', function() {
+    const confirmPassword = this.value;
+    const password = document.getElementById('regPassword').value;
+
+    if (confirmPassword && password) {
+        if (password === confirmPassword) {
+            this.style.borderColor = '#28a745';
+        } else {
+            this.style.borderColor = '#dc3545';
+        }
+    } else {
+        this.style.borderColor = '#e5e7eb';
+    }
+});
+
+// Validation du nom d'utilisateur
+document.getElementById('regUsername').addEventListener('input', function() {
+    const username = this.value;
+
+    if (username.length > 0 && username.length < 3) {
+        this.style.borderColor = '#dc3545';
+    } else if (username.length >= 3) {
+        this.style.borderColor = '#28a745';
+    } else {
+        this.style.borderColor = '#e5e7eb';
+    }
 });
 
 // Show demo hint after page load

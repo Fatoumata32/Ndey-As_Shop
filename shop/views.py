@@ -74,6 +74,7 @@ from django.utils.html import strip_tags
 from django.utils import timezone
 import json
 import logging
+import urllib.parse
 
 from .models import Product, Category, Cart, CartItem, Order, OrderItem, Contact, ProductImage, Size, ProductReview
 from .forms import ProductForm, CategoryForm, ProductImageForm
@@ -743,67 +744,80 @@ def ajax_register(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            username = data.get('username')
             email = data.get('email')
             password = data.get('password')
             confirm_password = data.get('confirm_password')
 
-            if not email or not password:
+            # Validation des champs requis
+            if not username or not email or not password:
                 return JsonResponse({
                     'success': False,
-                    'message': 'Email et mot de passe requis!'
+                    'message': 'Nom d\'utilisateur, email et mot de passe sont requis!'
                 })
 
+            # Vérification de la correspondance des mots de passe
             if password != confirm_password:
                 return JsonResponse({
                     'success': False,
                     'message': 'Les mots de passe ne correspondent pas!'
                 })
 
+            # Validation de la longueur du mot de passe
             if len(password) < 8:
                 return JsonResponse({
                     'success': False,
                     'message': 'Le mot de passe doit contenir au moins 8 caractères!'
                 })
 
+            # Vérifier si l'email existe déjà
             if User.objects.filter(email=email).exists():
                 return JsonResponse({
                     'success': False,
                     'message': 'Un compte existe déjà avec cet email!'
                 })
 
-            # Créer un username unique basé sur l'email
-            username = email.split('@')[0]
-            base_username = username
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
+            # Vérifier si le nom d'utilisateur existe déjà
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Ce nom d\'utilisateur est déjà pris!'
+                })
 
+            # Créer l'utilisateur
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password
             )
 
-            # Connecter automatiquement l'utilisateur après inscription
-            login(request, user)
+            # Connecter automatiquement l'utilisateur après inscription avec le backend Django
+            from django.contrib.auth import authenticate
+            user = authenticate(username=username, password=password)
+            if user:
+                login(request, user)
 
             return JsonResponse({
                 'success': True,
                 'message': 'Inscription réussie!',
-                'redirect_url': '/home/'
+                'redirect_url': '/'
             })
 
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            logger.error(f"JSONDecodeError lors de l'inscription: {e}")
+            logger.error(f"Body reçu: {request.body}")
             return JsonResponse({
                 'success': False,
-                'message': 'Données invalides!'
+                'message': 'Données invalides! Veuillez réessayer.'
             })
         except Exception as e:
             logger.error(f"Erreur inscription: {e}")
+            logger.error(f"Type d'erreur: {type(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return JsonResponse({
                 'success': False,
-                'message': 'Une erreur est survenue lors de l\'inscription.'
+                'message': f'Une erreur est survenue: {str(e)}'
             })
 
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée'})
@@ -918,6 +932,11 @@ def user_orders(request):
     """Vue pour afficher les commandes de l'utilisateur"""
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
 
+    # Filtrage par statut si spécifié
+    status_filter = request.GET.get('status')
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+
     # Pagination
     paginator = Paginator(orders, 10)
     page_number = request.GET.get('page')
@@ -988,10 +1007,209 @@ def user_order_detail(request, order_id):
     # Vérifier que la commande appartient bien à l'utilisateur connecté
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
+    # Vérifier si la commande peut être annulée ou modifiée
+    can_cancel = order.status in ['pending', 'confirmed']
+    can_modify = order.status in ['pending']
+
     context = {
         'order': order,
+        'can_cancel': can_cancel,
+        'can_modify': can_modify,
     }
     return render(request, 'shop/user_order_detail.html', context)
+
+
+@login_required
+@require_POST
+def cancel_order(request, order_id):
+    """Annuler une commande avec notification WhatsApp"""
+    try:
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+
+        # Vérifier si la commande peut être annulée
+        if order.status not in ['pending', 'confirmed']:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cette commande ne peut plus être annulée.'
+            })
+
+        # Mettre à jour le statut de la commande
+        order.status = 'cancelled'
+        order.save()
+
+        # Préparer le message WhatsApp
+        message = f"""🚫 *ANNULATION DE COMMANDE*
+
+Commande #{order.id} a été annulée
+
+*Client:* {order.name}
+*Téléphone:* {order.phone}
+*Date:* {order.created_at.strftime('%d/%m/%Y à %H:%M')}
+*Montant:* {order.total_amount} FCFA
+
+*Raison:* Annulation par le client
+
+---
+NDEY'AS SHOP"""
+
+        # Envoyer notification WhatsApp au vendeur
+        whatsapp_url = f"https://api.whatsapp.com/send?phone=221775457482&text={urllib.parse.quote(message)}"
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Votre commande a été annulée avec succès.',
+            'whatsapp_url': whatsapp_url
+        })
+
+    except Exception as e:
+        logger.error(f"Erreur lors de l'annulation de la commande: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Une erreur est survenue lors de l\'annulation.'
+        })
+
+
+@login_required
+@require_POST
+def modify_order(request, order_id):
+    """Renvoyer/Modifier une commande avec notification WhatsApp"""
+    try:
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+
+        # Vérifier si la commande peut être modifiée
+        if order.status != 'pending':
+            return JsonResponse({
+                'success': False,
+                'message': 'Cette commande ne peut plus être modifiée.'
+            })
+
+        # Récupérer les modifications
+        data = json.loads(request.body)
+        modification_reason = data.get('reason', 'Modification demandée par le client')
+
+        # Préparer le message WhatsApp avec les détails de modification
+        items_detail = "\n".join([
+            f"- {item.product.name} (Qté: {item.quantity}, Taille: {item.selected_size or 'N/A'})"
+            for item in order.items.all()
+        ])
+
+        message = f"""✏️ *DEMANDE DE MODIFICATION*
+
+Commande #{order.id}
+
+*Client:* {order.name}
+*Téléphone:* {order.phone}
+*Email:* {order.email or 'Non fourni'}
+*Date commande:* {order.created_at.strftime('%d/%m/%Y à %H:%M')}
+
+*Articles actuels:*
+{items_detail}
+
+*Montant:* {order.total_amount} FCFA
+
+*Raison de modification:*
+{modification_reason}
+
+*Action requise:* Veuillez contacter le client pour finaliser les modifications.
+
+---
+NDEY'AS SHOP"""
+
+        # Envoyer notification WhatsApp au vendeur
+        whatsapp_url = f"https://api.whatsapp.com/send?phone=221775457482&text={urllib.parse.quote(message)}"
+
+        # Marquer la commande comme en cours de modification
+        order.notes = f"Modification demandée le {timezone.now().strftime('%d/%m/%Y à %H:%M')}: {modification_reason}\n{order.notes or ''}"
+        order.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Votre demande de modification a été envoyée. Nous vous contacterons bientôt.',
+            'whatsapp_url': whatsapp_url
+        })
+
+    except Exception as e:
+        logger.error(f"Erreur lors de la modification de la commande: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Une erreur est survenue lors de la modification.'
+        })
+
+
+@login_required
+@require_POST
+def reorder(request, order_id):
+    """Commander à nouveau les articles d'une ancienne commande"""
+    try:
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+
+        # Récupérer ou créer le panier de l'utilisateur
+        if request.user.is_authenticated:
+            cart, created = Cart.objects.get_or_create(user=request.user)
+        else:
+            session_key = request.session.session_key
+            if not session_key:
+                request.session.create()
+                session_key = request.session.session_key
+            cart, created = Cart.objects.get_or_create(session_key=session_key)
+
+        # Ajouter les articles de la commande au panier
+        items_added = []
+        for order_item in order.items.all():
+            if order_item.product and order_item.product.is_in_stock():
+                cart_item, created = CartItem.objects.get_or_create(
+                    cart=cart,
+                    product=order_item.product,
+                    selected_size=order_item.selected_size,
+                    defaults={'quantity': order_item.quantity}
+                )
+                if not created:
+                    cart_item.quantity += order_item.quantity
+                    cart_item.save()
+                items_added.append(order_item.product.name)
+
+        if items_added:
+            return JsonResponse({
+                'success': True,
+                'message': f'{len(items_added)} article(s) ajouté(s) au panier',
+                'redirect_url': '/cart/'
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'Aucun article disponible pour une nouvelle commande'
+            })
+
+    except Exception as e:
+        logger.error(f"Erreur lors de la nouvelle commande: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Une erreur est survenue'
+        })
+
+
+@login_required
+def track_order(request, order_id):
+    """Suivre une commande en livraison"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # Pour l'instant, on redirige vers la page de détail
+    # Plus tard, on pourra intégrer un vrai système de tracking
+    return redirect('shop:user_order_detail', order_id=order_id)
+
+
+@login_required
+def review_order(request, order_id):
+    """Page pour évaluer les produits d'une commande livrée"""
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.status != 'delivered':
+        messages.error(request, "Vous ne pouvez évaluer que les commandes livrées.")
+        return redirect('shop:user_orders')
+
+    # Pour l'instant, on redirige vers la page de détail
+    # où l'utilisateur peut voir les produits et les évaluer
+    return redirect('shop:user_order_detail', order_id=order_id)
 
 
 @csrf_exempt

@@ -25,6 +25,11 @@ urlpatterns = [
     path('mon-profil/', views.user_profile, name='user_profile'),
     path('mes-commandes/', views.user_orders, name='user_orders'),
     path('mes-commandes/<int:order_id>/', views.user_order_detail, name='user_order_detail'),
+    path('mes-commandes/<int:order_id>/annuler/', views.cancel_order, name='cancel_order'),
+    path('mes-commandes/<int:order_id>/modifier/', views.modify_order, name='modify_order'),
+    path('mes-commandes/<int:order_id>/commander-nouveau/', views.reorder, name='reorder'),
+    path('mes-commandes/<int:order_id>/suivre/', views.track_order, name='track_order'),
+    path('mes-commandes/<int:order_id>/evaluer/', views.review_order, name='review_order'),
     path('favoris/', views.favorites, name='favorites'),
     path('ajax/toggle-favorite/', views.toggle_favorite, name='toggle_favorite'),
     

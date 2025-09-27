@@ -18,16 +18,15 @@ class ProductImageInline(admin.TabularInline):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'icon', 'category_type', 'created_at']
+    list_display = ['name', 'category_type', 'created_at']
     list_filter = ['category_type', 'created_at']
     search_fields = ['name']
     ordering = ['name']
     fields = [
-        'name', 
-        'slug', 
-        'description', 
-        'icon', 
-        'category_type', 
+        'name',
+        'slug',
+        'description',
+        'category_type',
         'available_sizes'
     ]
     filter_horizontal = ['available_sizes'] 
