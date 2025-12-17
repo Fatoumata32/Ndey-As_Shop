@@ -1336,43 +1336,130 @@ def product_add(request):
 
             # Validation basique
             if not name or not category_id or not price:
-                messages.error(request, 'Veuillez remplir tous les champs obligatoires.')
-                return redirect('shop:product_add')
+                messages.error(request, 'Veuillez remplir tous les champs obligatoires (nom, catégorie, prix).')
+                categories = Category.objects.all()
+                recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
+                context = {
+                    'categories': categories,
+                    'recent_products': recent_products,
+                }
+                return render(request, 'shop/admin/product_add.html', context)
+
+            # Validation du prix
+            try:
+                price_float = float(price)
+                if price_float <= 0:
+                    raise ValueError("Le prix doit être supérieur à 0")
+            except ValueError as e:
+                messages.error(request, f'Prix invalide: {str(e)}')
+                categories = Category.objects.all()
+                recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
+                context = {
+                    'categories': categories,
+                    'recent_products': recent_products,
+                }
+                return render(request, 'shop/admin/product_add.html', context)
+
+            # Validation du prix de vente
+            sale_price_float = None
+            if sale_price:
+                try:
+                    sale_price_float = float(sale_price)
+                    if sale_price_float <= 0:
+                        raise ValueError("Le prix de vente doit être supérieur à 0")
+                    if sale_price_float >= price_float:
+                        raise ValueError("Le prix de vente doit être inférieur au prix normal")
+                except ValueError as e:
+                    messages.error(request, f'Prix de vente invalide: {str(e)}')
+                    categories = Category.objects.all()
+                    recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
+                    context = {
+                        'categories': categories,
+                        'recent_products': recent_products,
+                    }
+                    return render(request, 'shop/admin/product_add.html', context)
+
+            # Validation de la quantité
+            try:
+                quantity_int = int(quantity)
+                if quantity_int < 0:
+                    raise ValueError("La quantité ne peut pas être négative")
+            except ValueError as e:
+                messages.error(request, f'Quantité invalide: {str(e)}')
+                categories = Category.objects.all()
+                recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
+                context = {
+                    'categories': categories,
+                    'recent_products': recent_products,
+                }
+                return render(request, 'shop/admin/product_add.html', context)
+
+            # Vérifier que la catégorie existe
+            try:
+                category = Category.objects.get(id=category_id)
+            except Category.DoesNotExist:
+                messages.error(request, 'La catégorie sélectionnée n\'existe pas.')
+                categories = Category.objects.all()
+                recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
+                context = {
+                    'categories': categories,
+                    'recent_products': recent_products,
+                }
+                return render(request, 'shop/admin/product_add.html', context)
 
             # Créer le produit
             with transaction.atomic():
                 product = Product.objects.create(
                     name=name,
                     description=description or '',
-                    category_id=category_id,
-                    price=float(price),
-                    sale_price=float(sale_price) if sale_price else None,
-                    quantity=int(quantity),
+                    category=category,
+                    price=price_float,
+                    sale_price=sale_price_float,
+                    quantity=quantity_int,
                     on_sale=on_sale,
                     sold_out=sold_out
                 )
 
                 # Gestion des tailles
-                sizes = request.POST.getlist('sizes')
-                for size_name in sizes:
-                    size, created = Size.objects.get_or_create(name=size_name)
-                    product.sizes.add(size)
+                size_ids = request.POST.getlist('sizes')
+                if size_ids:
+                    for size_id in size_ids:
+                        try:
+                            size = Size.objects.get(id=size_id)
+                            product.sizes.add(size)
+                        except Size.DoesNotExist:
+                            logger.warning(f"Taille {size_id} non trouvée")
+                            pass
 
                 # Gestion des images multiples
                 images = request.FILES.getlist('images')
-                for i, image in enumerate(images):
-                    ProductImage.objects.create(
-                        product=product,
-                        image=image,
-                        is_primary=(i == 0)
-                    )
+                if images:
+                    for i, image in enumerate(images):
+                        try:
+                            ProductImage.objects.create(
+                                product=product,
+                                image=image,
+                                is_primary=(i == 0)
+                            )
+                        except Exception as e:
+                            logger.error(f"Erreur lors de l'ajout de l'image {i}: {str(e)}")
+                            # Continue avec les autres images même si une échoue
 
                 messages.success(request, f'Produit "{product.name}" ajouté avec succès!')
                 return redirect('shop:product_list')
 
         except Exception as e:
+            logger.error(f"Erreur lors de l'ajout du produit: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
             messages.error(request, f'Erreur lors de l\'ajout du produit: {str(e)}')
-            return redirect('shop:product_add')
+            categories = Category.objects.all()
+            recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
+            context = {
+                'categories': categories,
+                'recent_products': recent_products,
+            }
+            return render(request, 'shop/admin/product_add.html', context)
 
     # GET request
     categories = Category.objects.all()
@@ -1391,41 +1478,151 @@ def product_add(request):
 def product_edit(request, pk):
     """Modifier un produit"""
     product = get_object_or_404(Product, pk=pk)
-    
+
     if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES, instance=product)
-        
-        if form.is_valid():
+        try:
+            # Récupération manuelle des données
+            name = request.POST.get('name')
+            description = request.POST.get('description')
+            category_id = request.POST.get('category')
+            price = request.POST.get('price')
+            sale_price = request.POST.get('sale_price')
+            quantity = request.POST.get('quantity', 0)
+            on_sale = request.POST.get('on_sale') == 'on'
+            sold_out = request.POST.get('sold_out') == 'on'
+
+            # Validation basique
+            if not name or not category_id or not price:
+                messages.error(request, 'Veuillez remplir tous les champs obligatoires (nom, catégorie, prix).')
+                context = {
+                    'form': ProductForm(instance=product),
+                    'product': product,
+                    'existing_images': product.images.all(),
+                }
+                return render(request, 'shop/admin/product_edit.html', context)
+
+            # Validation du prix
             try:
-                with transaction.atomic():
-                    product = form.save()
-                    
-                    # Gestion des nouvelles images
-                    new_images = request.FILES.getlist('images')
-                    if new_images:
-                        for i, image in enumerate(new_images):
+                price_float = float(price)
+                if price_float <= 0:
+                    raise ValueError("Le prix doit être supérieur à 0")
+            except ValueError as e:
+                messages.error(request, f'Prix invalide: {str(e)}')
+                context = {
+                    'form': ProductForm(instance=product),
+                    'product': product,
+                    'existing_images': product.images.all(),
+                }
+                return render(request, 'shop/admin/product_edit.html', context)
+
+            # Validation du prix de vente
+            sale_price_float = None
+            if sale_price:
+                try:
+                    sale_price_float = float(sale_price)
+                    if sale_price_float <= 0:
+                        raise ValueError("Le prix de vente doit être supérieur à 0")
+                    if sale_price_float >= price_float:
+                        raise ValueError("Le prix de vente doit être inférieur au prix normal")
+                except ValueError as e:
+                    messages.error(request, f'Prix de vente invalide: {str(e)}')
+                    context = {
+                        'form': ProductForm(instance=product),
+                        'product': product,
+                        'existing_images': product.images.all(),
+                    }
+                    return render(request, 'shop/admin/product_edit.html', context)
+
+            # Validation de la quantité
+            try:
+                quantity_int = int(quantity)
+                if quantity_int < 0:
+                    raise ValueError("La quantité ne peut pas être négative")
+            except ValueError as e:
+                messages.error(request, f'Quantité invalide: {str(e)}')
+                context = {
+                    'form': ProductForm(instance=product),
+                    'product': product,
+                    'existing_images': product.images.all(),
+                }
+                return render(request, 'shop/admin/product_edit.html', context)
+
+            # Vérifier que la catégorie existe
+            try:
+                category = Category.objects.get(id=category_id)
+            except Category.DoesNotExist:
+                messages.error(request, 'La catégorie sélectionnée n\'existe pas.')
+                context = {
+                    'form': ProductForm(instance=product),
+                    'product': product,
+                    'existing_images': product.images.all(),
+                }
+                return render(request, 'shop/admin/product_edit.html', context)
+
+            # Modifier le produit
+            with transaction.atomic():
+                product.name = name
+                product.description = description or ''
+                product.category = category
+                product.price = price_float
+                product.sale_price = sale_price_float
+                product.quantity = quantity_int
+                product.on_sale = on_sale
+                product.sold_out = sold_out
+                product.save()
+
+                # Gestion des tailles
+                product.sizes.clear()  # Effacer les anciennes tailles
+                size_ids = request.POST.getlist('sizes')
+                if size_ids:
+                    for size_id in size_ids:
+                        try:
+                            size = Size.objects.get(id=size_id)
+                            product.sizes.add(size)
+                        except Size.DoesNotExist:
+                            logger.warning(f"Taille {size_id} non trouvée")
+                            pass
+
+                # Gestion des nouvelles images
+                new_images = request.FILES.getlist('images')
+                if new_images:
+                    for i, image in enumerate(new_images):
+                        try:
+                            # Si c'est la première image et qu'il n'y a pas d'images existantes
+                            is_primary = (product.images.count() == 0 and i == 0)
                             ProductImage.objects.create(
                                 product=product,
                                 image=image,
-                                is_primary=(product.images.count() == 0 and i == 0)
+                                is_primary=is_primary
                             )
-                    
-                    messages.success(request, f'Produit "{product.name}" modifié avec succès!')
-                    return redirect('shop:product_list')
-                    
-            except Exception as e:
-                messages.error(request, f'Erreur lors de la modification: {str(e)}')
-        else:
-            messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
-    else:
-        form = ProductForm(instance=product)
-    
+                        except Exception as e:
+                            logger.error(f"Erreur lors de l'ajout de l'image {i}: {str(e)}")
+                            # Continue avec les autres images même si une échoue
+
+                messages.success(request, f'Produit "{product.name}" modifié avec succès!')
+                return redirect('shop:product_list')
+
+        except Exception as e:
+            logger.error(f"Erreur lors de la modification du produit: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
+            messages.error(request, f'Erreur lors de la modification: {str(e)}')
+            context = {
+                'form': ProductForm(instance=product),
+                'product': product,
+                'existing_images': product.images.all(),
+            }
+            return render(request, 'shop/admin/product_edit.html', context)
+
+    # GET request
+    form = ProductForm(instance=product)
+
     context = {
         'form': form,
         'product': product,
         'existing_images': product.images.all(),
     }
-    
+
     return render(request, 'shop/admin/product_edit.html', context)
 
 
@@ -1684,17 +1881,47 @@ def order_list(request):
 
 @login_required
 @user_passes_test(is_staff)
+def delete_order_history(request):
+    """Supprimer l'historique des commandes terminées (livrées, annulées, en attente et en traitement)"""
+    if request.method == 'POST':
+        try:
+            # Supprimer les commandes livrées, annulées, en attente et en traitement
+            deleted_orders = Order.objects.filter(
+                status__in=['pending', 'processing', 'delivered', 'cancelled']
+            )
+            deleted_count = deleted_orders.count()
+            deleted_orders.delete()
+
+            return JsonResponse({
+                'success': True,
+                'deleted_count': deleted_count,
+                'message': f'{deleted_count} commande(s) supprimée(s) avec succès'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=400)
+
+    return JsonResponse({
+        'success': False,
+        'message': 'Méthode non autorisée'
+    }, status=405)
+
+
+@login_required
+@user_passes_test(is_staff)
 def order_detail(request, pk):
     """Détail d'une commande"""
     order = get_object_or_404(Order, pk=pk)
-    
+
     if request.method == 'POST':
         new_status = request.POST.get('status')
         if new_status in dict(Order.STATUS_CHOICES):
             order.status = new_status
             order.save()
             messages.success(request, 'Statut de la commande mis à jour!')
-    
+
     context = {
         'order': order,
         'status_choices': Order.STATUS_CHOICES,
@@ -1938,6 +2165,36 @@ def get_product_sizes(request, product_id):
             'success': False,
             'message': str(e)
         })
+
+
+def get_category_sizes(request, category_id):
+    """AJAX endpoint pour récupérer les tailles disponibles d'une catégorie"""
+    try:
+        category = get_object_or_404(Category, pk=category_id)
+        sizes_data = []
+
+        # Récupérer les tailles disponibles pour cette catégorie
+        if category.available_sizes.exists():
+            for size in category.available_sizes.all():
+                sizes_data.append({
+                    'id': size.id,
+                    'name': size.name,
+                    'size_type': size.size_type,
+                    'display_order': size.display_order
+                })
+
+        return JsonResponse({
+            'success': True,
+            'sizes': sizes_data,
+            'category_name': category.name,
+            'category_type': category.category_type,
+            'size_label': category.get_size_label()
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
 
 
 @login_required

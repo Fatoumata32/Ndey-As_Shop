@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python manage.py:*)"
+      "Bash(python manage.py:*)",
+      "Bash(pip install:*)",
+      "Bash(if not exist \"C:\\Users\\PC\\Documents\\project\\ndeyeASshop2.0\\Ndey-As_Shop\\media\" mkdir \"C:\\Users\\PC\\Documents\\project\\ndeyeASshop2.0\\Ndey-As_Shop\\media\")",
+      "Bash(if not exist \"C:\\Users\\PC\\Documents\\project\\ndeyeASshop2.0\\Ndey-As_Shop\\media\\products\" mkdir \"C:\\Users\\PC\\Documents\\project\\ndeyeASshop2.0\\Ndey-As_Shop\\media\\products\")",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

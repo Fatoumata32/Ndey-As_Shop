@@ -208,8 +208,8 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <h1><i class="fas fa-folder-plus"></i> Ajouter une Nouvelle Catégorie</h1>
-                <a href="{% url 'shop:category_list' %}" class="btn btn-light">
-                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                <a href="{% url 'shop:category_list' %}" class="btn btn-light" style="background: white !important; color: #212529 !important; border: 2px solid white !important; font-weight: 700 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; text-decoration: none !important;">
+                    <i class="fas fa-arrow-left" style="color: #212529 !important;"></i> Retour à la liste
                 </a>
             </div>
         </div>
@@ -258,14 +258,6 @@
                 <small class="form-text">Le nom de la catégorie doit être unique et descriptif.</small>
             </div>
 
-            <div class="form-group">
-                <label for="id_icon" class="form-label">
-                    <i class="fas fa-icons"></i> Icône de la catégorie
-                </label>
-                <input type="text" class="form-control" id="id_icon" name="icon"
-                       value="{{ form.icon.value|default:'📦' }}" placeholder="Ex: 👗, 👠, 🧵, 💎">
-                <small class="form-text">Utilisez un emoji pour représenter cette catégorie.</small>
-            </div>
 
             <div class="form-group">
                 <label for="id_description" class="form-label">

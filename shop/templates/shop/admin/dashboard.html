@@ -147,28 +147,45 @@
 
     .action-btn {
         background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        color: white;
+        color: #ffffff !important;
         border: none;
-        padding: 1rem;
+        padding: 1.2rem 1rem;
         border-radius: 10px;
         text-align: center;
-        text-decoration: none;
+        text-decoration: none !important;
         transition: all 0.3s ease;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.5rem;
-        font-weight: 500;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(216, 27, 96, 0.2);
+        font-size: 1rem;
     }
 
     .action-btn:hover {
         transform: translateY(-3px);
-        box-shadow: 0 5px 20px rgba(216, 27, 96, 0.3);
-        color: white;
+        box-shadow: 0 8px 25px rgba(216, 27, 96, 0.4);
+        color: #ffffff !important;
+        background: linear-gradient(135deg, #ff1744 0%, #d81b60 100%);
+        text-decoration: none !important;
+    }
+
+    .action-btn:active,
+    .action-btn:focus,
+    .action-btn:visited {
+        color: #ffffff !important;
+        text-decoration: none !important;
     }
 
     .action-btn i {
         font-size: 2rem;
+        color: #ffffff !important;
+    }
+
+    .action-btn span,
+    .action-btn * {
+        color: #ffffff !important;
     }
 
     /* Tables */
@@ -360,25 +377,25 @@
     <div class="quick-actions">
         <h2><i class="fas fa-bolt"></i> Actions Rapides</h2>
         <div class="action-buttons">
-            <a href="{% url 'shop:product_add' %}" class="action-btn">
-                <i class="fas fa-plus-circle"></i>
-                Ajouter Produit
+            <a href="{% url 'shop:product_add' %}" class="action-btn" style="color: #ffffff !important;">
+                <i class="fas fa-plus-circle" style="color: #ffffff !important;"></i>
+                <span style="color: #ffffff !important;">Ajouter Produit</span>
             </a>
-            <a href="{% url 'shop:category_add' %}" class="action-btn">
-                <i class="fas fa-folder-plus"></i>
-                Ajouter Catégorie
+            <a href="{% url 'shop:category_add' %}" class="action-btn" style="color: #ffffff !important;">
+                <i class="fas fa-folder-plus" style="color: #ffffff !important;"></i>
+                <span style="color: #ffffff !important;">Ajouter Catégorie</span>
             </a>
-            <a href="{% url 'shop:product_list' %}" class="action-btn">
-                <i class="fas fa-boxes"></i>
-                Gérer Produits
+            <a href="{% url 'shop:product_list' %}" class="action-btn" style="color: #ffffff !important;">
+                <i class="fas fa-boxes" style="color: #ffffff !important;"></i>
+                <span style="color: #ffffff !important;">Gérer Produits</span>
             </a>
-            <a href="{% url 'shop:order_list' %}" class="action-btn">
-                <i class="fas fa-clipboard-list"></i>
-                Voir Commandes
+            <a href="{% url 'shop:order_list' %}" class="action-btn" style="color: #ffffff !important;">
+                <i class="fas fa-clipboard-list" style="color: #ffffff !important;"></i>
+                <span style="color: #ffffff !important;">Voir Commandes</span>
             </a>
-            <a href="{% url 'shop:contact_list' %}" class="action-btn">
-                <i class="fas fa-envelope-open-text"></i>
-                Messages Reçus
+            <a href="{% url 'shop:contact_list' %}" class="action-btn" style="color: #ffffff !important;">
+                <i class="fas fa-envelope-open-text" style="color: #ffffff !important;"></i>
+                <span style="color: #ffffff !important;">Messages Reçus</span>
             </a>
         </div>
     </div>

@@ -243,7 +243,7 @@
                                 {% if current_category %}
                                 <input type="hidden" name="category" value="{{ current_category }}">
                                 {% endif %}
-                                {% if search_query %}
+                                {% if search_query and search_query != 'None' %}
                                 <input type="hidden" name="q" value="{{ search_query }}">
                                 {% endif %}
                                 {% if current_sort %}

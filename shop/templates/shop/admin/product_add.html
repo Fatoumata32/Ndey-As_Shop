@@ -328,8 +328,8 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
             <h1><i class="fas fa-plus-circle"></i> Ajouter un Nouveau Produit</h1>
-            <a href="{% url 'shop:product_list' %}" class="btn btn-light">
-                <i class="fas fa-arrow-left"></i> Retour à la liste
+            <a href="{% url 'shop:product_list' %}" class="btn btn-light" style="background: white !important; color: #212529 !important; border: 2px solid white !important; font-weight: 700 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; text-decoration: none !important;">
+                <i class="fas fa-arrow-left" style="color: #212529 !important;"></i> Retour à la liste
             </a>
         </div>
     </div>
@@ -355,13 +355,27 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="id_category" class="form-label">Catégorie *</label>
-                            <select class="form-select" id="id_category" name="category" required>
+                            <label for="id_category" class="form-label d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-folder-open me-2" style="color: var(--primary);"></i>Catégorie *</span>
+                                <span id="category-suggestion" class="badge bg-info" style="display: none; cursor: pointer; font-size: 0.75rem;">
+                                    <i class="fas fa-magic"></i> Suggestion
+                                </span>
+                            </label>
+                            <select class="form-select" id="id_category" name="category" required style="font-size: 1rem; padding: 0.75rem;">
                                 <option value="">-- Sélectionner une catégorie --</option>
                                 {% for category in categories %}
-                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                <option value="{{ category.id }}" data-type="{{ category.category_type }}" data-name="{{ category.name|lower }}">
+                                    {{ category.name }}
+                                    {% if category.category_type != 'none' %}
+                                        ({{ category.get_category_type_display }})
+                                    {% endif %}
+                                </option>
                                 {% endfor %}
                             </select>
+                            <small class="form-text text-muted" id="category-helper">
+                                <i class="fas fa-info-circle me-1"></i>
+                                <span id="category-helper-text">La catégorie détermine les tailles disponibles</span>
+                            </small>
                         </div>
 
                         <div class="mb-3">
@@ -415,31 +429,31 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="id_sizes" class="form-label">Tailles Disponibles</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="size_xs" name="sizes" value="XS">
-                                <label class="form-check-label" for="size_xs">XS</label>
+                            <label for="id_sizes" class="form-label d-flex justify-content-between align-items-center">
+                                <span id="size-label-text" style="font-weight: 600;">
+                                    <i class="fas fa-ruler-combined me-2" style="color: var(--primary);"></i>Tailles Disponibles
+                                </span>
+                                <button type="button" id="select-all-sizes" class="btn btn-sm btn-outline-primary" style="display: none;" onclick="toggleAllSizes()">
+                                    <i class="fas fa-check-double"></i> Tout sélectionner
+                                </button>
+                            </label>
+                            <div id="sizes-container" class="p-3" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: 12px; border: 2px dashed #dee2e6; min-height: 80px; transition: all 0.3s ease;">
+                                <p class="text-muted mb-0 text-center" id="no-category-message" style="padding: 20px;">
+                                    <i class="fas fa-info-circle fa-2x mb-3 d-block" style="color: #6c757d; opacity: 0.5;"></i>
+                                    <span style="font-size: 0.95rem;">Sélectionnez d'abord une catégorie pour voir les tailles disponibles</span>
+                                </p>
+                                <div id="sizes-loading" style="display: none; text-align: center; padding: 20px;">
+                                    <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;">
+                                        <span class="visually-hidden">Chargement...</span>
+                                    </div>
+                                    <p class="mt-2 mb-0 text-muted">Chargement des tailles...</p>
+                                </div>
+                                <div id="sizes-checkboxes" style="display: none;"></div>
                             </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="size_s" name="sizes" value="S">
-                                <label class="form-check-label" for="size_s">S</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="size_m" name="sizes" value="M">
-                                <label class="form-check-label" for="size_m">M</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="size_l" name="sizes" value="L">
-                                <label class="form-check-label" for="size_l">L</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="size_xl" name="sizes" value="XL">
-                                <label class="form-check-label" for="size_xl">XL</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="size_xxl" name="sizes" value="XXL">
-                                <label class="form-check-label" for="size_xxl">XXL</label>
-                            </div>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-lightbulb me-1" style="color: #ffc107;"></i>
+                                <span id="sizes-helper-text">Les tailles affichées correspondent à la catégorie sélectionnée</span>
+                            </small>
                         </div>
                     </div>
 
@@ -629,11 +643,14 @@
     }
 
     // Form validation
+    let isSubmitting = false;
     document.getElementById('productForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+        // Éviter la double soumission
+        if (isSubmitting) {
+            return true;
+        }
 
-        // Show loading
-        loadingOverlay.classList.add('show');
+        e.preventDefault();
 
         // Validate sale price
         const price = parseFloat(document.getElementById('id_price').value);
@@ -641,11 +658,14 @@
 
         if (salePrice && salePrice >= price) {
             alert('Le prix promo doit être inférieur au prix normal');
-            loadingOverlay.classList.remove('show');
-            return;
+            return false;
         }
 
-        // Submit form
+        // Show loading
+        loadingOverlay.classList.add('show');
+
+        // Mark as submitting and submit form
+        isSubmitting = true;
         this.submit();
     });
 
@@ -660,6 +680,422 @@
             salePriceField.value = '';
         }
     });
+
+    // ========== SMART CATEGORY SUGGESTION SYSTEM ==========
+
+    const productNameInput = document.getElementById('id_name');
+    const categorySelect = document.getElementById('id_category');
+    const categorySuggestion = document.getElementById('category-suggestion');
+    const categoryHelperText = document.getElementById('category-helper-text');
+
+    let suggestedCategoryId = null;
+
+    // Keywords for smart category detection
+    const categoryKeywords = {
+        'clothing': ['robe', 'chemise', 'pantalon', 'jupe', 'vêtement', 'habit', 't-shirt', 'pull', 'manteau', 'veste', 'blouson'],
+        'fabric': ['tissu', 'wax', 'bazin', 'coton', 'soie', 'metre', 'mètre', 'yard', 'tissu'],
+        'shoe': ['chaussure', 'basket', 'sandale', 'botte', 'escarpin', 'talon', 'sneaker'],
+        'bag': ['sac', 'sacoche', 'pochette', 'cartable', 'besace', 'cabas'],
+        'jewelry': ['bijou', 'collier', 'bracelet', 'boucle', 'bague', 'pendentif', 'chaîne']
+    };
+
+    // Detect category from product name
+    function detectCategoryFromName(productName) {
+        if (!productName || productName.length < 3) return null;
+
+        const nameLower = productName.toLowerCase();
+
+        for (const [categoryType, keywords] of Object.entries(categoryKeywords)) {
+            for (const keyword of keywords) {
+                if (nameLower.includes(keyword)) {
+                    // Find matching category in select options
+                    const options = categorySelect.querySelectorAll('option');
+                    for (const option of options) {
+                        const optionType = option.getAttribute('data-type');
+                        const optionName = option.getAttribute('data-name');
+
+                        if (optionType === categoryType || (optionName && optionName.includes(keyword))) {
+                            return {
+                                id: option.value,
+                                name: option.textContent.trim(),
+                                type: categoryType,
+                                keyword: keyword
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // Show category suggestion
+    function showCategorySuggestion(suggestion) {
+        if (!suggestion) {
+            categorySuggestion.style.display = 'none';
+            return;
+        }
+
+        suggestedCategoryId = suggestion.id;
+        categorySuggestion.textContent = `✨ Suggéré: ${suggestion.name}`;
+        categorySuggestion.style.display = 'inline-block';
+        categorySuggestion.style.animation = 'fadeInRight 0.3s ease';
+
+        categoryHelperText.innerHTML = `💡 D'après le nom du produit, nous suggérons la catégorie "<strong>${suggestion.name}</strong>". Cliquez sur le badge pour l'appliquer.`;
+        categoryHelperText.style.color = '#0dcaf0';
+    }
+
+    // Apply suggested category
+    categorySuggestion.addEventListener('click', function() {
+        if (suggestedCategoryId) {
+            categorySelect.value = suggestedCategoryId;
+            categorySelect.dispatchEvent(new Event('change'));
+
+            // Show success feedback
+            this.innerHTML = '<i class="fas fa-check"></i> Appliqué !';
+            this.className = 'badge bg-success';
+
+            setTimeout(() => {
+                this.style.display = 'none';
+                categoryHelperText.innerHTML = '<i class="fas fa-info-circle me-1"></i>La catégorie détermine les tailles disponibles';
+                categoryHelperText.style.color = '';
+            }, 2000);
+        }
+    });
+
+    // Listen to product name changes with debounce
+    let nameInputTimeout;
+    productNameInput.addEventListener('input', function() {
+        clearTimeout(nameInputTimeout);
+
+        nameInputTimeout = setTimeout(() => {
+            const productName = this.value;
+
+            if (!categorySelect.value) { // Only suggest if no category selected
+                const suggestion = detectCategoryFromName(productName);
+                showCategorySuggestion(suggestion);
+            }
+        }, 500); // Wait 500ms after user stops typing
+    });
+
+    // Hide suggestion when category manually selected
+    categorySelect.addEventListener('change', function() {
+        if (this.value) {
+            categorySuggestion.style.display = 'none';
+            categoryHelperText.innerHTML = '<i class="fas fa-info-circle me-1"></i>La catégorie détermine les tailles disponibles';
+            categoryHelperText.style.color = '';
+        }
+    });
+
+    // Add CSS for suggestion animation
+    const suggestionStyle = document.createElement('style');
+    suggestionStyle.textContent = `
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        #category-suggestion:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(13, 202, 240, 0.4);
+        }
+
+        #id_category option:hover {
+            background-color: rgba(216, 27, 96, 0.1);
+        }
+    `;
+    document.head.appendChild(suggestionStyle);
+
+    // ========== SMART SIZE MANAGEMENT SYSTEM ==========
+
+    // Cache for category sizes to avoid repeated API calls
+    const categorySizesCache = new Map();
+
+    // Utiliser la variable categorySelect déjà déclarée plus haut
+    const sizesContainer = document.getElementById('sizes-checkboxes');
+    const sizesContainerWrapper = document.getElementById('sizes-container');
+    const noCategoryMessage = document.getElementById('no-category-message');
+    const sizesLoading = document.getElementById('sizes-loading');
+    const sizeLabelText = document.getElementById('size-label-text');
+    const selectAllBtn = document.getElementById('select-all-sizes');
+    const sizesHelperText = document.getElementById('sizes-helper-text');
+
+    let allSizesSelected = false;
+
+    // Toggle all sizes selection
+    window.toggleAllSizes = function() {
+        const checkboxes = sizesContainer.querySelectorAll('input[type="checkbox"]');
+        allSizesSelected = !allSizesSelected;
+
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = allSizesSelected;
+            // Add animation
+            checkbox.parentElement.style.animation = 'pulse 0.3s ease';
+        });
+
+        updateSelectAllButton();
+        updateSizesCount();
+    }
+
+    // Update "Select All" button text
+    function updateSelectAllButton() {
+        if (!selectAllBtn) return;
+
+        const checkedCount = sizesContainer.querySelectorAll('input[type="checkbox"]:checked').length;
+        const totalCount = sizesContainer.querySelectorAll('input[type="checkbox"]').length;
+
+        if (checkedCount === totalCount && totalCount > 0) {
+            selectAllBtn.innerHTML = '<i class="fas fa-times"></i> Tout désélectionner';
+            selectAllBtn.className = 'btn btn-sm btn-outline-danger';
+            allSizesSelected = true;
+        } else {
+            selectAllBtn.innerHTML = '<i class="fas fa-check-double"></i> Tout sélectionner';
+            selectAllBtn.className = 'btn btn-sm btn-outline-primary';
+            allSizesSelected = false;
+        }
+    }
+
+    // Update sizes count helper
+    function updateSizesCount() {
+        const checkedCount = sizesContainer.querySelectorAll('input[type="checkbox"]:checked').length;
+        const totalCount = sizesContainer.querySelectorAll('input[type="checkbox"]').length;
+
+        if (checkedCount > 0) {
+            sizesHelperText.innerHTML = `<strong style="color: var(--primary);">${checkedCount}</strong> taille(s) sélectionnée(s) sur ${totalCount}`;
+        } else {
+            sizesHelperText.textContent = 'Sélectionnez les tailles disponibles pour ce produit';
+        }
+    }
+
+    // Load sizes with smart caching
+    async function loadCategorySizes(categoryId, forceRefresh = false) {
+        // Check cache first
+        if (!forceRefresh && categorySizesCache.has(categoryId)) {
+            const cachedData = categorySizesCache.get(categoryId);
+            displaySizes(cachedData);
+            return;
+        }
+
+        // Show loading state
+        showLoadingState();
+
+        try {
+            const response = await fetch(`/ajax/category-sizes/${categoryId}/`);
+            const data = await response.json();
+
+            if (data.success) {
+                // Cache the data
+                categorySizesCache.set(categoryId, data);
+                displaySizes(data);
+            } else {
+                showErrorState('Cette catégorie n\'a pas de tailles configurées');
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des tailles:', error);
+            showErrorState('Erreur lors du chargement des tailles. Veuillez réessayer.');
+        }
+    }
+
+    // Show loading state
+    function showLoadingState() {
+        noCategoryMessage.style.display = 'none';
+        sizesContainer.style.display = 'none';
+        sizesLoading.style.display = 'block';
+        selectAllBtn.style.display = 'none';
+        sizesContainerWrapper.style.borderColor = 'var(--primary)';
+        sizesContainerWrapper.style.borderStyle = 'solid';
+    }
+
+    // Show error state
+    function showErrorState(message) {
+        sizesLoading.style.display = 'none';
+        sizesContainer.style.display = 'none';
+        noCategoryMessage.style.display = 'block';
+        selectAllBtn.style.display = 'none';
+        sizesContainerWrapper.style.borderColor = '#dc3545';
+        sizesContainerWrapper.style.borderStyle = 'solid';
+
+        noCategoryMessage.innerHTML = `
+            <i class="fas fa-exclamation-circle fa-2x mb-3 d-block" style="color: #dc3545;"></i>
+            <span style="color: #dc3545;">${message}</span>
+        `;
+    }
+
+    // Display sizes with animation
+    function displaySizes(data) {
+        if (!data.sizes || data.sizes.length === 0) {
+            showErrorState('Cette catégorie n\'a pas de tailles configurées');
+            return;
+        }
+
+        // Update label with icon
+        const icon = getCategoryIcon(data.category_type);
+        sizeLabelText.innerHTML = `<i class="${icon} me-2" style="color: var(--primary);"></i>${data.size_label}`;
+
+        // Clear and populate sizes
+        sizesContainer.innerHTML = '';
+
+        data.sizes.forEach((size, index) => {
+            const checkboxDiv = document.createElement('div');
+            checkboxDiv.className = 'form-check form-check-inline mb-2';
+            checkboxDiv.style.animation = `fadeInUp 0.3s ease ${index * 0.05}s backwards`;
+
+            const checkbox = document.createElement('input');
+            checkbox.className = 'form-check-input';
+            checkbox.type = 'checkbox';
+            checkbox.id = `size_${size.id}`;
+            checkbox.name = 'sizes';
+            checkbox.value = size.id;
+
+            // Smart pre-selection for common sizes
+            if (shouldPreSelectSize(size.name, data.category_type)) {
+                checkbox.checked = true;
+            }
+
+            // Add change listener for real-time updates
+            checkbox.addEventListener('change', () => {
+                updateSelectAllButton();
+                updateSizesCount();
+            });
+
+            const label = document.createElement('label');
+            label.className = 'form-check-label';
+            label.htmlFor = `size_${size.id}`;
+            label.textContent = size.name;
+            label.style.cursor = 'pointer';
+            label.style.padding = '5px 10px';
+            label.style.borderRadius = '5px';
+            label.style.transition = 'all 0.2s ease';
+
+            // Hover effect
+            label.addEventListener('mouseenter', () => {
+                label.style.background = 'rgba(216, 27, 96, 0.1)';
+            });
+            label.addEventListener('mouseleave', () => {
+                label.style.background = 'transparent';
+            });
+
+            checkboxDiv.appendChild(checkbox);
+            checkboxDiv.appendChild(label);
+            sizesContainer.appendChild(checkboxDiv);
+        });
+
+        // Show sizes with animation
+        sizesLoading.style.display = 'none';
+        noCategoryMessage.style.display = 'none';
+        sizesContainer.style.display = 'block';
+        selectAllBtn.style.display = 'inline-block';
+        sizesContainerWrapper.style.borderColor = '#28a745';
+        sizesContainerWrapper.style.borderStyle = 'solid';
+
+        // Reset border after animation
+        setTimeout(() => {
+            sizesContainerWrapper.style.borderColor = '#dee2e6';
+            sizesContainerWrapper.style.borderStyle = 'dashed';
+        }, 1000);
+
+        updateSelectAllButton();
+        updateSizesCount();
+
+        // Show smart suggestion
+        showSmartSuggestion(data.category_type);
+    }
+
+    // Get icon for category type
+    function getCategoryIcon(categoryType) {
+        const icons = {
+            'clothing': 'fas fa-tshirt',
+            'fabric': 'fas fa-ruler-horizontal',
+            'shoe': 'fas fa-shoe-prints',
+            'bag': 'fas fa-shopping-bag',
+            'jewelry': 'fas fa-gem',
+            'none': 'fas fa-ruler-combined'
+        };
+        return icons[categoryType] || icons['none'];
+    }
+
+    // Smart pre-selection logic
+    function shouldPreSelectSize(sizeName, categoryType) {
+        const commonSizes = {
+            'clothing': ['M', 'L', 'XL'],
+            'shoe': ['38', '39', '40', '41', '42'],
+            'fabric': ['1 mètre', '2 mètres'],
+        };
+
+        const preSelect = commonSizes[categoryType] || [];
+        return preSelect.includes(sizeName);
+    }
+
+    // Show smart suggestions
+    function showSmartSuggestion(categoryType) {
+        const suggestions = {
+            'clothing': '💡 Astuce : Les tailles M, L, XL sont pré-sélectionnées car elles sont les plus populaires',
+            'fabric': '💡 Astuce : Vous pouvez proposer plusieurs longueurs pour plus de flexibilité',
+            'shoe': '💡 Astuce : Pensez à ajouter plusieurs pointures pour toucher plus de clients',
+            'jewelry': '💡 Astuce : La taille ajustable est très appréciée par les clients',
+            'bag': '💡 Astuce : Variez les tailles pour différents usages',
+        };
+
+        if (suggestions[categoryType]) {
+            setTimeout(() => {
+                sizesHelperText.innerHTML = `<i class="fas fa-lightbulb me-1" style="color: #ffc107;"></i>${suggestions[categoryType]}`;
+            }, 500);
+        }
+    }
+
+    // Category change handler
+    categorySelect.addEventListener('change', function() {
+        const categoryId = this.value;
+
+        if (!categoryId) {
+            // Reset to initial state
+            sizesContainer.style.display = 'none';
+            sizesLoading.style.display = 'none';
+            noCategoryMessage.style.display = 'block';
+            selectAllBtn.style.display = 'none';
+            sizeLabelText.innerHTML = '<i class="fas fa-ruler-combined me-2" style="color: var(--primary);"></i>Tailles Disponibles';
+            sizesContainerWrapper.style.borderColor = '#dee2e6';
+            sizesContainerWrapper.style.borderStyle = 'dashed';
+            sizesHelperText.textContent = 'Les tailles affichées correspondent à la catégorie sélectionnée';
+            return;
+        }
+
+        // Load sizes with animation
+        loadCategorySizes(categoryId);
+    });
+
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .form-check-input:checked + .form-check-label {
+            font-weight: 600;
+            color: var(--primary);
+        }
+    `;
+    document.head.appendChild(style);
 
     // Auto-calculate discount percentage
     function calculateDiscount() {

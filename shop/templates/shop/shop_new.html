@@ -32,7 +32,7 @@
                                            class="form-control"
                                            name="q"
                                            placeholder="Rechercher un produit..."
-                                           value="{% if search_query %}{{ search_query }}{% endif %}">
+                                           value="{{ search_query|default:'' }}">
                                     <button class="btn btn-primary" type="submit">
                                         <i class="fas fa-search"></i>
                                     </button>

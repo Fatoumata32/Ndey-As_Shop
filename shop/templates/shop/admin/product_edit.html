@@ -514,15 +514,25 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="id_sizes" class="form-label">Tailles Disponibles</label>
-                            {% for size in form.fields.sizes.queryset %}
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="size_{{ size.id }}"
-                                       name="sizes" value="{{ size.id }}"
-                                       {% if size in product.sizes.all %}checked{% endif %}>
-                                <label class="form-check-label" for="size_{{ size.id }}">{{ size.name }}</label>
+                            <label for="id_sizes" class="form-label">
+                                <span id="size-label-text">{{ product.category.get_size_label|default:"Tailles Disponibles" }}</span>
+                            </label>
+                            <div id="sizes-container" class="p-3" style="background: #f8f9fa; border-radius: 8px; min-height: 60px;">
+                                <p class="text-muted mb-0" id="no-category-message" style="display: none;">
+                                    <i class="fas fa-info-circle"></i> Sélectionnez une catégorie pour voir les tailles disponibles
+                                </p>
+                                <div id="sizes-checkboxes">
+                                    {% for size in product.category.available_sizes.all %}
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="size_{{ size.id }}"
+                                               name="sizes" value="{{ size.id }}"
+                                               {% if size in product.sizes.all %}checked{% endif %}>
+                                        <label class="form-check-label" for="size_{{ size.id }}">{{ size.name }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
-                            {% endfor %}
+                            <small class="form-text text-muted">Les tailles affichées correspondent à la catégorie sélectionnée</small>
                         </div>
                     </div>
 
@@ -793,6 +803,88 @@
         if (this.checked && !salePriceField.value) {
             salePriceField.focus();
         }
+    });
+
+    // Load sizes dynamically based on category selection
+    const categorySelect = document.getElementById('id_category');
+    const sizesContainer = document.getElementById('sizes-checkboxes');
+    const noCategoryMessage = document.getElementById('no-category-message');
+    const sizeLabelText = document.getElementById('size-label-text');
+    let currentSelectedSizes = [];
+
+    // Store currently selected sizes
+    function storeSelectedSizes() {
+        currentSelectedSizes = [];
+        document.querySelectorAll('#sizes-checkboxes input[type="checkbox"]:checked').forEach(checkbox => {
+            currentSelectedSizes.push(parseInt(checkbox.value));
+        });
+    }
+
+    categorySelect.addEventListener('change', function() {
+        const categoryId = this.value;
+
+        // Store currently selected sizes before changing
+        storeSelectedSizes();
+
+        if (!categoryId) {
+            sizesContainer.style.display = 'none';
+            noCategoryMessage.style.display = 'block';
+            sizeLabelText.textContent = 'Tailles Disponibles';
+            return;
+        }
+
+        // Fetch sizes for selected category
+        fetch(`/ajax/category-sizes/${categoryId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.sizes.length > 0) {
+                    // Update label
+                    sizeLabelText.textContent = data.size_label;
+
+                    // Clear and populate sizes
+                    sizesContainer.innerHTML = '';
+
+                    data.sizes.forEach(size => {
+                        const checkboxDiv = document.createElement('div');
+                        checkboxDiv.className = 'form-check form-check-inline';
+
+                        const checkbox = document.createElement('input');
+                        checkbox.className = 'form-check-input';
+                        checkbox.type = 'checkbox';
+                        checkbox.id = `size_${size.id}`;
+                        checkbox.name = 'sizes';
+                        checkbox.value = size.id;
+
+                        // Re-check if this size was previously selected
+                        if (currentSelectedSizes.includes(size.id)) {
+                            checkbox.checked = true;
+                        }
+
+                        const label = document.createElement('label');
+                        label.className = 'form-check-label';
+                        label.htmlFor = `size_${size.id}`;
+                        label.textContent = size.name;
+
+                        checkboxDiv.appendChild(checkbox);
+                        checkboxDiv.appendChild(label);
+                        sizesContainer.appendChild(checkboxDiv);
+                    });
+
+                    // Show sizes, hide message
+                    sizesContainer.style.display = 'block';
+                    noCategoryMessage.style.display = 'none';
+                } else {
+                    sizesContainer.style.display = 'none';
+                    noCategoryMessage.innerHTML = '<i class="fas fa-info-circle"></i> Cette catégorie n\'a pas de tailles configurées';
+                    noCategoryMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des tailles:', error);
+                sizesContainer.style.display = 'none';
+                noCategoryMessage.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Erreur lors du chargement des tailles';
+                noCategoryMessage.style.display = 'block';
+            });
     });
 
     // Delete confirmation

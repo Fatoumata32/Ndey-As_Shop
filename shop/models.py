@@ -169,27 +169,72 @@ class Product(models.Model):
 class ProductImage(models.Model):
     """Modèle pour les images de produits"""
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='products/')
+    image = models.ImageField(upload_to='products/images/')
     alt_text = models.CharField(max_length=200, blank=True)
     is_primary = models.BooleanField(default=False)
     order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         ordering = ['order', 'created_at']
-        # Retirer la contrainte unique_together qui peut causer des problèmes
-    
+        verbose_name = "Image de produit"
+        verbose_name_plural = "Images de produits"
+
     def __str__(self):
         return f"Image for {self.product.name}"
-    
+
     def save(self, *args, **kwargs):
         # S'assurer qu'une seule image primaire par produit
         if self.is_primary:
             ProductImage.objects.filter(
-                product=self.product, 
+                product=self.product,
                 is_primary=True
             ).exclude(pk=self.pk).update(is_primary=False)
         super().save(*args, **kwargs)
+
+class ProductVideo(models.Model):
+    """Modèle pour les vidéos de produits"""
+    VIDEO_TYPES = [
+        ('upload', 'Fichier uploadé'),
+        ('youtube', 'Lien YouTube'),
+        ('vimeo', 'Lien Vimeo'),
+        ('url', 'URL externe'),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='videos')
+    video_type = models.CharField(max_length=20, choices=VIDEO_TYPES, default='upload')
+    video_file = models.FileField(upload_to='products/videos/', blank=True, null=True, help_text="Fichier vidéo (MP4, WebM, etc.)")
+    video_url = models.URLField(blank=True, null=True, help_text="URL YouTube, Vimeo ou autre")
+    title = models.CharField(max_length=200, blank=True, help_text="Titre de la vidéo")
+    description = models.TextField(blank=True, help_text="Description de la vidéo")
+    thumbnail = models.ImageField(upload_to='products/video_thumbnails/', blank=True, null=True, help_text="Miniature de la vidéo")
+    order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+        verbose_name = "Vidéo de produit"
+        verbose_name_plural = "Vidéos de produits"
+
+    def __str__(self):
+        return f"Video for {self.product.name} - {self.get_video_type_display()}"
+
+    def get_embed_url(self):
+        """Retourne l'URL d'embed pour YouTube/Vimeo"""
+        if self.video_type == 'youtube' and self.video_url:
+            # Extraire l'ID YouTube
+            if 'youtu.be/' in self.video_url:
+                video_id = self.video_url.split('youtu.be/')[-1].split('?')[0]
+            elif 'youtube.com/watch?v=' in self.video_url:
+                video_id = self.video_url.split('watch?v=')[-1].split('&')[0]
+            else:
+                return self.video_url
+            return f"https://www.youtube.com/embed/{video_id}"
+        elif self.video_type == 'vimeo' and self.video_url:
+            # Extraire l'ID Vimeo
+            video_id = self.video_url.split('vimeo.com/')[-1].split('?')[0]
+            return f"https://player.vimeo.com/video/{video_id}"
+        return self.video_url
 
 class Cart(models.Model):
     """Modèle pour le panier"""

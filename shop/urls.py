@@ -40,6 +40,7 @@ urlpatterns = [
     path('ajax/get-cart-count/', views.get_cart_count, name='get_cart_count'),
     path('ajax/clear-whatsapp-session/', views.clear_whatsapp_session, name='clear_whatsapp_session'),
     path('ajax/product-sizes/<int:product_id>/', views.get_product_sizes, name='get_product_sizes'),
+    path('ajax/category-sizes/<int:category_id>/', views.get_category_sizes, name='get_category_sizes'),
 
     # Administration (Gestion de la boutique)
     path('gestion/tableau-de-bord/', views.admin_dashboard, name='admin_dashboard'),
@@ -61,6 +62,7 @@ urlpatterns = [
     # Commandes
     path('gestion/commandes/', views.order_list, name='order_list'),
     path('gestion/commandes/<int:pk>/', views.order_detail, name='order_detail'),
+    path('gestion/commandes/supprimer-historique/', views.delete_order_history, name='delete_order_history'),
 
     # Messages de contact
     path('gestion/messages/', views.contact_list, name='contact_list'),

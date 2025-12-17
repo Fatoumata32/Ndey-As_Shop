@@ -152,14 +152,17 @@ body {
 }
 
 .btn-hero.btn-outline {
-    background: transparent;
+    background: var(--white);
     color: var(--primary);
-    border: 2px solid var(--primary);
+    border: 3px solid var(--primary);
+    box-shadow: 0 4px 15px rgba(216, 27, 96, 0.2);
 }
 
 .btn-hero.btn-outline:hover {
     background: var(--primary);
     color: var(--white);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(216, 27, 96, 0.4);
 }
 
 .btn-hero.btn-danger {
