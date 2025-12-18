@@ -768,13 +768,6 @@ document.getElementById('forgotPasswordForm').addEventListener('submit', functio
         if (data.success) {
             showNotification(data.message || 'Email envoyé avec succès!', 'success');
 
-            // Pour la démo, afficher le token
-            if (data.demo_token) {
-                setTimeout(() => {
-                    showNotification(`Token de démo: ${data.demo_token}`, 'info');
-                }, 2000);
-            }
-
             // Revenir au formulaire de connexion après 3 secondes
             setTimeout(() => {
                 showTab('login');
@@ -841,13 +834,6 @@ document.getElementById('regUsername').addEventListener('input', function() {
     } else {
         this.style.borderColor = '#e5e7eb';
     }
-});
-
-// Show demo hint after page load
-window.addEventListener('load', function() {
-    setTimeout(() => {
-        showNotification('Demo: utilisez admin@ndeyas.com / password123');
-    }, 2000);
 });
 </script>
 {% endblock %}
