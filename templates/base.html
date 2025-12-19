@@ -560,6 +560,39 @@
     </div>
     {% endif %}
 
+    <script>
+    // Auto-dismiss success alerts after a short delay while preserving manual close
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select only success alerts rendered via Django messages
+        const successAlerts = document.querySelectorAll('.alert-success.alert-custom');
+        successAlerts.forEach(alert => {
+            // Give users a moment to see the message (1 second)
+            const timeout = 1000;
+            const timer = setTimeout(() => {
+                try {
+                    // Use Bootstrap's Alert API when available
+                    if (window.bootstrap && bootstrap.Alert) {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        bsAlert.close();
+                    } else {
+                        // Fallback: remove the element
+                        alert.classList.remove('show');
+                        alert.remove();
+                    }
+                } catch (e) {
+                    alert.remove();
+                }
+            }, timeout);
+
+            // If the user manually closes the alert, cancel the timer to avoid errors
+            const closeBtn = alert.querySelector('[data-bs-dismiss="alert"]');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => clearTimeout(timer));
+            }
+        });
+    });
+    </script>
+
     <!-- Main Content -->
     <main class="min-vh-100">
         {% block content %}{% endblock %}

@@ -196,6 +196,7 @@ from django.contrib import messages
 def product_detail(request, product_id):
     """Détail d'un produit"""
     try:
+        # Fetch product by ID (ensure it exists)
         product = get_object_or_404(Product, id=product_id)
         
         # Vérifier si le produit est épuisé
@@ -221,8 +222,13 @@ def product_detail(request, product_id):
         }
         return render(request, 'shop/item.html', context)
         
-    except:
+    except Product.DoesNotExist:
+        logger.warning(f"Product with ID {product_id} does not exist")
         messages.error(request, "Le produit demandé n'existe pas.")
+        return redirect('shop:shop')
+    except Exception as e:
+        logger.error(f"Error loading product {product_id}: {type(e).__name__}: {str(e)}", exc_info=True)
+        messages.error(request, "Une erreur est survenue lors du chargement du produit.")
         return redirect('shop:shop')
 
 def cart_view(request):
@@ -392,10 +398,9 @@ def checkout(request):
                 customer_name = request.POST.get('customer_name', '')
                 customer_email = request.POST.get('customer_email', '')
                 customer_phone = request.POST.get('customer_phone', '')
-                customer_address = request.POST.get('customer_address', '')
+                customer_address = request.POST.get('customer_address', '').strip()  # Strip whitespace and allow empty
                 payment_method = request.POST.get('payment_method', 'cash')
                 delivery_option = request.POST.get('delivery_option', 'standard')
-                city = request.POST.get('city', 'Dakar')
                 notes = request.POST.get('notes', '')
 
                 # Utiliser les infos de l'utilisateur connecté si disponibles
@@ -405,10 +410,19 @@ def checkout(request):
                     if not customer_email:
                         customer_email = request.user.email
 
-                # Validation des données
-                if not customer_name or not customer_phone or not customer_address:
+                # Validation des données (ONLY name + phone are required, address is optional)
+                if not customer_name or not customer_phone:
                     messages.error(request, 'Veuillez remplir tous les champs obligatoires.')
-                    return render(request, 'shop/checkout.html', {'cart': cart})
+                    # CRITICAL: Preserve cart data on validation error
+                    context = {
+                        'cart': cart,
+                        'cart_items': cart.items.all(),
+                        'total': cart.get_total(),
+                    }
+                    return render(request, 'shop/checkout.html', context)
+
+                # Normalize payment_method (replace hyphens with underscores for database storage)
+                payment_method_normalized = payment_method.replace('-', '_')
 
                 # Créer la commande
                 order = Order.objects.create(
@@ -417,7 +431,7 @@ def checkout(request):
                     customer_email=customer_email,
                     customer_phone=customer_phone,
                     customer_address=customer_address,
-                    payment_method=payment_method,
+                    payment_method=payment_method_normalized,
                     total_amount=cart.get_total(),
                     status='pending'
                 )
@@ -463,16 +477,19 @@ def checkout(request):
                 current_date = datetime.now().strftime("%d/%m/%Y")
                 current_time = datetime.now().strftime("%H:%M")
 
-                # Déterminer le mode de paiement avec emoji
-                if payment_method == 'cash':
+                # Déterminer le mode de paiement avec emoji (using normalized method)
+                if payment_method_normalized == 'cash':
                     payment_display = '💵 Paiement à la livraison'
-                elif payment_method == 'wave':
+                elif payment_method_normalized == 'wave':
                     payment_display = '📱 Wave'
-                else:
+                else:  # orange_money
                     payment_display = '📱 Orange Money'
 
                 # Déterminer le type de livraison
                 delivery_type = '📦 Standard (2-3 jours)'  # Par défaut standard car option express supprimée
+
+                # Build address section: only include if address is not empty
+                address_section = f"• *Adresse:* {customer_address}" if customer_address else "• *Adresse:* Non fournie"
 
                 whatsapp_message = f"""🛍️ *NOUVELLE COMMANDE - NDEY'AS SHOP*
 ══════════════════════════════
@@ -489,8 +506,7 @@ def checkout(request):
 
 🚚 *LIVRAISON*
 ───────────────────────
-• *Adresse:* {customer_address}
-• *Ville:* {city}
+{address_section}
 • *Type:* {delivery_type}
 
 🛒 *ARTICLES COMMANDÉS*
@@ -1569,6 +1585,7 @@ def product_edit(request, pk):
                 product.quantity = quantity_int
                 product.on_sale = on_sale
                 product.sold_out = sold_out
+                # The save() method will auto-generate/update the slug
                 product.save()
 
                 # Gestion des tailles

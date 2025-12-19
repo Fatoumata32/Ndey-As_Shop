@@ -139,6 +139,52 @@
             font-size: 0.85rem;
         }
     }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 991px) {
+        /* Hide sidebar on mobile, show it in modal/dropdown */
+        .filter-sidebar {
+            display: none;
+        }
+        
+        /* Mobile category selector */
+        .mobile-category-selector {
+            display: block !important;
+            margin-bottom: 1.5rem;
+        }
+        
+        .category-dropdown-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .category-dropdown-select:focus {
+            outline: none;
+            border-color: #d81b60;
+            box-shadow: 0 0 0 3px rgba(216, 27, 96, 0.1);
+        }
+
+        /* Ensure products take full width on mobile */
+        .products-wrapper {
+            width: 100%;
+        }
+    }
+
+    @media (min-width: 992px) {
+        /* Hide mobile category selector on desktop */
+        .mobile-category-selector {
+            display: none !important;
+        }
+
+        /* Show sidebar on desktop */
+        .filter-sidebar {
+            display: block !important;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -184,10 +230,28 @@
     </div>
 
     <div class="container">
+        <!-- Mobile Category Selector -->
+        <div class="mobile-category-selector">
+            <label for="mobileCategorySelect" class="form-label fw-bold mb-2">
+                <i class="fas fa-filter"></i> Catégories
+            </label>
+            <select id="mobileCategorySelect" class="category-dropdown-select">
+                <option value="{% url 'shop:shop' %}">Toutes les catégories ({{ products.count }})</option>
+                {% for category in categories %}
+                <option value="?category={{ category.id }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                    {{ category.name }} ({{ category.product_count|default:0 }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
         <div class="row">
-            <!-- Sidebar Filters -->
+            <!-- Sidebar Filters (Desktop only) -->
             <div class="col-lg-3 mb-4">
-                <div class="filter-sidebar sticky-lg-top" style="top: 100px;">
+                <!-- Mobile Close Button -->
+                <button class="btn-close mobile-filter-close d-lg-none" id="mobileFilterClose" aria-label="Fermer les filtres"></button>
+                
+                <div class="filter-sidebar sticky-lg-top" id="filterSidebar" style="top: 100px;">
                     <!-- Search -->
                     <div class="card mb-3">
                         <div class="card-body">
@@ -232,104 +296,13 @@
                         </div>
                     </div>
 
-                    <!-- Filtre de Prix -->
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fas fa-filter" style="color: #ff6f00;"></i> Filtre de Prix
-                            </h5>
-                            <form method="get" id="price-filter-form">
-                                <!-- Préserver les paramètres existants -->
-                                {% if current_category %}
-                                <input type="hidden" name="category" value="{{ current_category }}">
-                                {% endif %}
-                                {% if search_query and search_query != 'None' %}
-                                <input type="hidden" name="q" value="{{ search_query }}">
-                                {% endif %}
-                                {% if current_sort %}
-                                <input type="hidden" name="sort" value="{{ current_sort }}">
-                                {% endif %}
-
-                                <div class="price-filter-inputs">
-                                    <div class="mb-3">
-                                        <label for="min_price" class="form-label small">Prix minimum (FCFA)</label>
-                                        <input type="number"
-                                               class="form-control"
-                                               id="min_price"
-                                               name="min_price"
-                                               placeholder="0"
-                                               value="{{ request.GET.min_price|default:'' }}"
-                                               min="0">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="max_price" class="form-label small">Prix maximum (FCFA)</label>
-                                        <input type="number"
-                                               class="form-control"
-                                               id="max_price"
-                                               name="max_price"
-                                               placeholder="1000000"
-                                               value="{{ request.GET.max_price|default:'' }}"
-                                               min="0">
-                                    </div>
-
-                                    <!-- Affichage de la plage de prix -->
-                                    <div class="price-range-display text-center mb-3">
-                                        <small class="text-muted">
-                                            <span id="price-range-text">
-                                                {% if request.GET.min_price or request.GET.max_price %}
-                                                    {{ request.GET.min_price|default:"0" }} - {{ request.GET.max_price|default:"∞" }} FCFA
-                                                {% else %}
-                                                    Tous les prix
-                                                {% endif %}
-                                            </span>
-                                        </small>
-                                    </div>
-
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-orange btn-sm">
-                                            <i class="fas fa-search"></i> Appliquer le filtre
-                                        </button>
-                                        {% if request.GET.min_price or request.GET.max_price %}
-                                        <a href="?{% if current_category %}category={{ current_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
-                                           class="btn btn-outline-secondary btn-sm">
-                                            <i class="fas fa-times"></i> Réinitialiser
-                                        </a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <!-- Suggestions de prix rapides -->
-                                <div class="price-suggestions mt-3">
-                                    <small class="text-muted d-block mb-2">Suggestions rapides:</small>
-                                    <div class="d-flex flex-wrap gap-1">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm price-quick-filter"
-                                                data-min="0" data-max="5000">
-                                            < 5,000
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm price-quick-filter"
-                                                data-min="5000" data-max="10000">
-                                            5k - 10k
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm price-quick-filter"
-                                                data-min="10000" data-max="25000">
-                                            10k - 25k
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm price-quick-filter"
-                                                data-min="25000" data-max="">
-                                            > 25k
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
+                </div>
                 </div>
             </div>
 
             <!-- Products Grid -->
             <div class="col-lg-9">
-                <!-- Top Bar -->
+                <div class="products-wrapper">
                 <div class="shop-top-bar mb-4">
                     <div class="row align-items-center">
                         <div class="col-md-6">
@@ -374,7 +347,7 @@
                 <!-- Products -->
                 <div class="row g-4" id="productsContainer">
                     {% for product in products %}
-                    <div class="col-lg-4 col-md-6 product-item" data-aos="fade-up">
+                    <div class="col-lg-4 col-md-6 col-6 product-item" data-aos="fade-up">
                         <div class="product-card h-100">
                             <div class="card border-0 shadow-sm h-100">
                                 <!-- Product Image -->
@@ -574,6 +547,7 @@
                     </ul>
                 </nav>
                 {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -909,47 +883,15 @@ if (shopSlides.length > 1) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Filtre de prix - Suggestions rapides
-    const quickFilters = document.querySelectorAll('.price-quick-filter');
-    const minPriceInput = document.getElementById('min_price');
-    const maxPriceInput = document.getElementById('max_price');
-    const priceFilterForm = document.getElementById('price-filter-form');
-
-    quickFilters.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const min = this.dataset.min;
-            const max = this.dataset.max;
-
-            minPriceInput.value = min || '';
-            maxPriceInput.value = max || '';
-
-            // Mettre à jour l'affichage de la plage
-            updatePriceRangeDisplay(min, max);
-
-            // Soumettre automatiquement le formulaire
-            priceFilterForm.submit();
+    // Mobile Category Dropdown
+    const mobileCategorySelect = document.getElementById('mobileCategorySelect');
+    if (mobileCategorySelect) {
+        mobileCategorySelect.addEventListener('change', function() {
+            if (this.value) {
+                window.location.href = this.value;
+            }
         });
-    });
-
-    // Mettre à jour l'affichage de la plage en temps réel
-    function updatePriceRangeDisplay(min, max) {
-        const rangeText = document.getElementById('price-range-text');
-        if (rangeText) {
-            const minDisplay = min || '0';
-            const maxDisplay = max || '∞';
-            rangeText.textContent = `${minDisplay} - ${maxDisplay} FCFA`;
-        }
     }
-
-    // Mise à jour lors de la saisie
-    minPriceInput.addEventListener('input', function() {
-        updatePriceRangeDisplay(this.value, maxPriceInput.value);
-    });
-
-    maxPriceInput.addEventListener('input', function() {
-        updatePriceRangeDisplay(minPriceInput.value, this.value);
-    });
 
     // Grid/List View Toggle
     const gridView = document.getElementById('gridView');

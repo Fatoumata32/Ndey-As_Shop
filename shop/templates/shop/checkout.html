@@ -58,7 +58,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-12">
                                 <label for="customer_name" class="form-label">Nom complet <span class="text-orange">*</span></label>
                                 <input type="text"
                                        class="form-control"
@@ -70,18 +70,9 @@
                                     Veuillez entrer votre nom complet
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="customer_email" class="form-label">Email</label>
-                                <input type="email"
-                                       class="form-control"
-                                       id="customer_email"
-                                       name="customer_email"
-                                       value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
-                                       placeholder="exemple@email.com">
-                                <small class="text-muted">Pour recevoir la confirmation de commande</small>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="customer_phone" class="form-label">Téléphone <span class="text-orange">*</span></label>
+
+                            <div class="col-12">
+                                <label for="customer_phone" class="form-label">Téléphone principal <span class="text-orange">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">+221</span>
                                     <input type="tel"
@@ -94,17 +85,6 @@
                                 </div>
                                 <div class="invalid-feedback">
                                     Entrez votre numéro de téléphone
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="customer_phone2" class="form-label">Téléphone secondaire</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">+221</span>
-                                    <input type="tel"
-                                           class="form-control"
-                                           id="customer_phone2"
-                                           name="customer_phone2"
-                                           placeholder="76 123 45 67">
                                 </div>
                             </div>
                         </div>
@@ -121,40 +101,16 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-12">
-                                <label for="customer_address" class="form-label">Adresse complète <span class="text-orange">*</span></label>
+                                <label for="customer_address" class="form-label">Adresse complète <small class="text-muted">(optionnelle)</small></label>
                                 <textarea class="form-control"
                                           id="customer_address"
                                           name="customer_address"
                                           rows="3"
-                                          placeholder="Quartier, Rue, Numéro de maison, Points de repère..."
-                                          required></textarea>
-                                <div class="invalid-feedback">
-                                    Veuillez entrer une adresse de livraison
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="city" class="form-label">Ville <span class="text-orange">*</span></label>
-                                <select class="form-select" id="city" name="city" required>
-                                    <option value="">Sélectionnez une ville</option>
-                                    <option value="dakar">Dakar</option>
-                                    <option value="pikine">Pikine</option>
-                                    <option value="guediawaye">Guédiawaye</option>
-                                    <option value="rufisque">Rufisque</option>
-                                    <option value="thies">Thiès</option>
-                                    <option value="autres">Autres</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="quartier" class="form-label">Quartier</label>
-                                <input type="text"
-                                       class="form-control"
-                                       id="quartier"
-                                       name="quartier"
-                                       placeholder="Ex: Médina, Plateau...">
+                                          placeholder="Adresse complète (la confirmation sera faite sur WhatsApp)"></textarea>
                             </div>
                         </div>
 
-                        <!-- Delivery Options -->
+                        <!-- Delivery Options (kept) -->
                         <div class="mt-4">
                             <h6>Options de livraison</h6>
                             <div class="form-check">
@@ -173,7 +129,7 @@
                     </div>
                 </div>
 
-                <!-- Payment Method -->
+                <!-- Payment Method (compact horizontal logos) -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-light">
                         <h5 class="mb-0">
@@ -181,107 +137,39 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div class="payment-methods">
-                            <!-- Orange Money -->
-                            <div class="payment-method mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input"
-                                           type="radio"
-                                           name="payment_method"
-                                           id="orange_money"
-                                           value="orange-money"
-                                           checked>
-                                    <label class="form-check-label w-100" for="orange_money">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <img src="{% static 'shop/img/orangemoney.png' %}"
-                                                     alt="Orange Money"
-                                                     class="me-2"
-                                                     style="height: 30px; width: auto;"
-                                                     onerror="this.src='{% static 'shop/img/placeholder.jpg' %}'">
-                                                <strong>Orange Money</strong>
-                                            </div>
-                                        </div>
-                                        <small class="text-muted d-block mt-1">
-                                            Paiement sécurisé via Orange Money
-                                        </small>
-                                    </label>
-                                </div>
-                                <div class="payment-details mt-3" id="orange_money_details">
-                                    <input type="tel"
-                                           class="form-control"
-                                           placeholder="Numéro Orange Money (77/78 XXX XX XX)"
-                                           name="orange_money_number">
-                                </div>
-                            </div>
+                        <div class="d-flex gap-3 flex-wrap align-items-center payment-options">
+                            <label class="payment-option d-flex flex-column align-items-center text-center p-2" for="orange_money">
+                                <input class="form-check-input d-none" type="radio" name="payment_method" id="orange_money" value="orange-money" checked>
+                                <img src="{% static 'shop/img/orangemoney.png' %}" alt="Orange Money" style="height:44px;width:auto;" onerror="this.src='{% static 'shop/img/placeholder.jpg' %}'">
+                                <small class="mt-2">Orange Money</small>
+                            </label>
 
-                            <!-- Wave -->
-                            <div class="payment-method mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input"
-                                           type="radio"
-                                           name="payment_method"
-                                           id="wave"
-                                           value="wave">
-                                    <label class="form-check-label w-100" for="wave">
-                                        <div class="d-flex align-items-center">
-                                            <img src="{% static 'shop/img/wave.png' %}"
-                                                 alt="Wave"
-                                                 class="me-2"
-                                                 style="height: 30px; width: auto;"
-                                                 onerror="this.src='{% static 'shop/img/placeholder.jpg' %}'">
-                                            <strong>Wave</strong>
-                                        </div>
-                                        <small class="text-muted d-block mt-1">
-                                            Paiement rapide avec Wave
-                                        </small>
-                                    </label>
-                                </div>
-                                <div class="payment-details mt-3 d-none" id="wave_details">
-                                    <input type="tel"
-                                           class="form-control"
-                                           placeholder="Numéro Wave (76/77/78 XXX XX XX)"
-                                           name="wave_number">
-                                </div>
-                            </div>
+                            <label class="payment-option d-flex flex-column align-items-center text-center p-2" for="wave">
+                                <input class="form-check-input d-none" type="radio" name="payment_method" id="wave" value="wave">
+                                <img src="{% static 'shop/img/wave.png' %}" alt="Wave" style="height:44px;width:auto;" onerror="this.src='{% static 'shop/img/placeholder.jpg' %}'">
+                                <small class="mt-2">Wave</small>
+                            </label>
 
-                            <!-- Cash on Delivery -->
-                            <div class="payment-method">
-                                <div class="form-check">
-                                    <input class="form-check-input"
-                                           type="radio"
-                                           name="payment_method"
-                                           id="cash"
-                                           value="cash">
-                                    <label class="form-check-label w-100" for="cash">
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-money-bill-wave fa-2x text-success me-3"></i>
-                                            <strong>Paiement à la livraison</strong>
-                                        </div>
-                                        <small class="text-muted d-block mt-1">
-                                            Payez en espèces à la réception de votre commande
-                                        </small>
-                                    </label>
-                                </div>
+                            <label class="payment-option d-flex flex-column align-items-center text-center p-2" for="cash">
+                                <input class="form-check-input d-none" type="radio" name="payment_method" id="cash" value="cash">
+                                <i class="fas fa-money-bill-wave fa-2x text-success"></i>
+                                <small class="mt-2">Cash</small>
+                            </label>
+                        </div>
+
+                        <!-- Payment details kept but hidden until relevant -->
+                        <div class="mt-3">
+                            <div class="payment-details d-none" id="orange_money_details">
+                                <input type="tel" class="form-control" placeholder="Numéro Orange Money (77/78 XXX XX XX)" name="orange_money_number">
+                            </div>
+                            <div class="payment-details d-none" id="wave_details">
+                                <input type="tel" class="form-control" placeholder="Numéro Wave (76/77/78 XXX XX XX)" name="wave_number">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Additional Notes -->
-                <div class="card shadow-sm">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0">
-                            <i class="fas fa-comment text-primary"></i> Instructions supplémentaires
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <textarea class="form-control"
-                                  name="notes"
-                                  rows="3"
-                                  placeholder="Instructions pour la livraison, commentaires sur la commande..."></textarea>
-                    </div>
-                </div>
+                <!-- Additional notes removed (handled via WhatsApp) -->
             </div>
 
             <!-- Right Column - Order Summary -->
@@ -536,6 +424,46 @@
     padding-left: 1.5rem;
 }
 
+/* Payment Options (Logo Selector) */
+.payment-option {
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    background: #fff;
+    min-width: 100px;
+}
+
+.payment-option:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Selected payment option styling */
+.payment-option input[type="radio"]:checked {
+    pointer-events: none;
+}
+
+/* Style the parent label when radio is checked */
+.payment-option input[type="radio"]:checked + img {
+    filter: brightness(1.15);
+}
+
+.payment-option input[type="radio"]:checked ~ small {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Use CSS :has() to style the label container itself when it contains a checked input */
+.payment-option:has(input[type="radio"]:checked) {
+    border-color: var(--primary);
+    border-width: 3px;
+    background: rgba(216, 27, 96, 0.08);
+    box-shadow: 0 4px 12px rgba(216, 27, 96, 0.15);
+}
+
 /* Form Validation */
 .was-validated .form-control:valid {
     border-color: var(--success);
@@ -551,10 +479,47 @@
         display: none;
     }
 
+    /* Force horizontal layout for steps on small screens (fit three items on one row)
+       Use fixed thirds so items do not slide; reduce padding/font so they fit */
+    .checkout-steps .row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+
+    /* Each step occupies one third of the row so all three are visible */
+    .checkout-steps .col-md-4,
+    .checkout-steps .col {
+        flex: 0 0 33.3333%;
+        max-width: 33.3333%;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.2rem;
+        min-width: 0;
+    }
+
     .step-icon {
         width: 50px;
         height: 50px;
         font-size: 1.2rem;
+    }
+
+    .step-title {
+        font-size: 0.95rem;
+        margin-top: 0.25rem;
+        white-space: nowrap;
     }
 }
 </style>
@@ -562,6 +527,18 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('checkoutForm');
+
+    // Payment method selection handler - make labels clickable
+    document.querySelectorAll('.payment-option').forEach(label => {
+        label.addEventListener('click', function(e) {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio && e.target !== radio) {
+                radio.checked = true;
+                // Trigger change event
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    });
 
     // Payment method toggle
     document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
@@ -571,7 +548,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 detail.classList.add('d-none');
             });
 
-            // Show selected payment details
+            // Show selected payment details (map IDs correctly: orange_money, wave, cash)
             const detailsId = this.id + '_details';
             const details = document.getElementById(detailsId);
             if (details) {

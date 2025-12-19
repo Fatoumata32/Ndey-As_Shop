@@ -78,7 +78,7 @@ class Category(models.Model):
 class Product(models.Model):
     """Modèle pour les produits"""
     name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=250, unique=True, blank=True)
+    slug = models.SlugField(max_length=250, unique=False, blank=True, null=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -98,9 +98,15 @@ class Product(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
-        # Génération automatique du slug
-        if not self.slug:
+        # Génération automatique du slug - only on creation
+        if not self.slug and self.name:
             self.slug = slugify(self.name)
+            # Handle slug uniqueness
+            base_slug = self.slug
+            counter = 1
+            while Product.objects.filter(slug=self.slug).exists():
+                self.slug = f"{base_slug}-{counter}"
+                counter += 1
             
         # Gestion du stock
         self.sold_out = self.quantity <= 0
@@ -287,10 +293,10 @@ class Order(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    customer_name = models.CharField(max_length=200,null=True, blank=True)
+    customer_name = models.CharField(max_length=200, null=True, blank=True)
     customer_email = models.EmailField(null=True, blank=True)
-    customer_phone = models.CharField(max_length=20)
-    customer_address = models.TextField()
+    customer_phone = models.CharField(max_length=20, null=True, blank=True)
+    customer_address = models.TextField(null=True, blank=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
