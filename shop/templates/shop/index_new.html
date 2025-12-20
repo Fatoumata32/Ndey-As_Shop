@@ -336,6 +336,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.body.appendChild(alert);
                     setTimeout(() => alert.remove(), 3000);
                 } else {
+                    const msg = (data.message || '').toLowerCase();
+                    if (msg.includes('taille')) {
+                        window.location.href = `/product/${productId}/`;
+                        return;
+                    }
                     alert(data.message);
                 }
             })

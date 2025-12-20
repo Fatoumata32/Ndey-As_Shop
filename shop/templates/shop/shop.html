@@ -1071,39 +1071,70 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Quick view
-    document.querySelectorAll('.quick-view-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = this.dataset.productId;
-            const modalBody = document.querySelector('#quickViewModal .modal-body');
-            const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+    // Quick view with abort handling and cleanup
+    (function() {
+        let quickViewController = null;
+        const modalElement = document.getElementById('quickViewModal');
+        const modal = new bootstrap.Modal(modalElement);
+        const modalBody = document.querySelector('#quickViewModal .modal-body');
 
-            // Show loading spinner
-            modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border" style="color: #d81b60;" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
-            modal.show();
+        document.querySelectorAll('.quick-view-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
 
-            // Load product details via fetch
-            fetch(`/product/${productId}/`)
-                .then(response => response.text())
-                .then(html => {
-                    // Extract product info from the full page HTML
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const productInfo = doc.querySelector('.product-details');
+                // Abort any previous request
+                if (quickViewController) {
+                    try { quickViewController.abort(); } catch (e) {}
+                    quickViewController = null;
+                }
 
-                    if (productInfo) {
-                        modalBody.innerHTML = productInfo.innerHTML;
-                    } else {
-                        // Fallback: redirect to product page
-                        window.location.href = `/product/${productId}/`;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading product details:', error);
-                    modalBody.innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des détails du produit.</div>';
-                });
+                quickViewController = new AbortController();
+                const signal = quickViewController.signal;
+
+                // Show loading spinner
+                modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border" style="color: #d81b60;" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                modal.show();
+
+                fetch(`/product/${productId}/`, { signal })
+                    .then(response => response.text())
+                    .then(html => {
+                        // Extract product info from the full page HTML
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const productInfo = doc.querySelector('.product-details');
+
+                        if (productInfo) {
+                            modalBody.innerHTML = productInfo.innerHTML;
+                        } else {
+                            // Fallback: redirect to product page
+                            window.location.href = `/product/${productId}/`;
+                        }
+                    })
+                    .catch(error => {
+                        if (error.name === 'AbortError') {
+                            // Request was aborted — just clear
+                            modalBody.innerHTML = '';
+                            return;
+                        }
+                        console.error('Error loading product details:', error);
+                        modalBody.innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des détails du produit.</div>';
+                    })
+                    .finally(() => {
+                        quickViewController = null;
+                    });
+            });
         });
-    });
+
+        // Clear modal content and abort fetch when modal is hidden
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            if (quickViewController) {
+                try { quickViewController.abort(); } catch (e) {}
+                quickViewController = null;
+            }
+            // remove any lingering spinner or content
+            try { modalBody.innerHTML = ''; } catch (e) {}
+        });
+    })();
 
     // Size filter
     document.querySelectorAll('.size-btn').forEach(button => {

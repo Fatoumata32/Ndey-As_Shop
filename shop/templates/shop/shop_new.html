@@ -565,15 +565,62 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Quick view
-    document.querySelectorAll('.quick-view-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = this.dataset.productId;
-            // Load product details via AJAX and show in modal
-            const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
-            modal.show();
+    // Quick view with abort handling and cleanup (prevents stuck spinner)
+    (function() {
+        let quickViewController = null;
+        const modalElement = document.getElementById('quickViewModal');
+        const modal = new bootstrap.Modal(modalElement);
+        const modalBody = document.querySelector('#quickViewModal .modal-body');
+
+        document.querySelectorAll('.quick-view-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+
+                // Abort any previous request
+                if (quickViewController) {
+                    try { quickViewController.abort(); } catch (e) {}
+                    quickViewController = null;
+                }
+
+                quickViewController = new AbortController();
+                const signal = quickViewController.signal;
+
+                // Show modal and spinner
+                modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border" style="color: #d81b60;" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                modal.show();
+
+                fetch(`/product/${productId}/`, { signal })
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const productInfo = doc.querySelector('.product-details');
+                        if (productInfo) {
+                            modalBody.innerHTML = productInfo.innerHTML;
+                        } else {
+                            window.location.href = `/product/${productId}/`;
+                        }
+                    })
+                    .catch(error => {
+                        if (error.name === 'AbortError') {
+                            modalBody.innerHTML = '';
+                            return;
+                        }
+                        console.error('Error loading product details:', error);
+                        modalBody.innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des détails du produit.</div>';
+                    })
+                    .finally(() => { quickViewController = null; });
+            });
         });
-    });
+
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            if (quickViewController) {
+                try { quickViewController.abort(); } catch (e) {}
+                quickViewController = null;
+            }
+            try { modalBody.innerHTML = ''; } catch (e) {}
+        });
+    })();
 
     // Size filter
     document.querySelectorAll('.size-btn').forEach(button => {

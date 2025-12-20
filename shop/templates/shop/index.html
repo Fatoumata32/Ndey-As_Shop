@@ -453,6 +453,18 @@
                         this.classList.add('btn-orange');
                         this.disabled = false;
                     }, 2000);
+                } else {
+                    // If server asks to select a size, redirect to product page
+                    const msg = (data.message || '').toLowerCase();
+                    if (msg.includes('taille')) {
+                        window.location.href = `/product/${productId}/`;
+                        return;
+                    }
+
+                    // Show error message and restore button
+                    try { alert(data.message || 'Erreur lors de l\'ajout au panier'); } catch (e) {}
+                    this.innerHTML = originalText;
+                    this.disabled = false;
                 }
             })
             .catch(error => {
