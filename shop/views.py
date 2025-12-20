@@ -1394,6 +1394,16 @@ def product_add(request):
                         'recent_products': recent_products,
                     }
                     return render(request, 'shop/admin/product_add.html', context)
+            elif on_sale:
+                # If on_sale is True, sale_price is required
+                messages.error(request, 'Le prix de promotion est obligatoire lorsque le produit est en promotion.')
+                categories = Category.objects.all()
+                recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
+                context = {
+                    'categories': categories,
+                    'recent_products': recent_products,
+                }
+                return render(request, 'shop/admin/product_add.html', context)
 
             # Validation de la quantité
             try:
@@ -1548,6 +1558,15 @@ def product_edit(request, pk):
                         'existing_images': product.images.all(),
                     }
                     return render(request, 'shop/admin/product_edit.html', context)
+            elif on_sale:
+                # If on_sale is True, sale_price is required
+                messages.error(request, 'Le prix de promotion est obligatoire lorsque le produit est en promotion.')
+                context = {
+                    'form': ProductForm(instance=product),
+                    'product': product,
+                    'existing_images': product.images.all(),
+                }
+                return render(request, 'shop/admin/product_edit.html', context)
 
             # Validation de la quantité
             try:

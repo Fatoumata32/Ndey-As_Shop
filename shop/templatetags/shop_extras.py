@@ -1,6 +1,7 @@
 # shop/templatetags/shop_extras.py
 from django import template
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+import re
 from ..models import Cart
 
 register = template.Library()
@@ -9,14 +10,34 @@ register = template.Library()
 def discount_percent(original_price, sale_price):
     """Calcule le pourcentage de réduction"""
     try:
-        original = Decimal(str(original_price))
-        sale = Decimal(str(sale_price))
+        def to_decimal(val):
+            if val is None:
+                return None
+            s = str(val).strip()
+            # remove non-breaking spaces and normal spaces
+            s = s.replace('\u00A0', '').replace(' ', '')
+            # replace comma with dot for decimals
+            s = s.replace(',', '.')
+            # strip any other non-numeric characters except dot and minus
+            s = re.sub(r"[^0-9.\-]", "", s)
+            if s in ('', '.', '-', '-.'):
+                return None
+            try:
+                return Decimal(s)
+            except InvalidOperation:
+                return None
+
+        original = to_decimal(original_price)
+        sale = to_decimal(sale_price)
+
+        if original is None or sale is None:
+            return 0
 
         if original > sale and original > 0:
             discount = ((original - sale) / original) * 100
             return round(discount)
         return 0
-    except (ValueError, TypeError, ZeroDivisionError):
+    except (ValueError, TypeError, ZeroDivisionError, InvalidOperation):
         return 0
 
 @register.filter

@@ -786,11 +786,25 @@
         // Validate sale price
         const price = parseFloat(document.getElementById('id_price').value);
         const salePrice = parseFloat(document.getElementById('id_sale_price').value);
+        const onSale = document.getElementById('id_on_sale').checked;
 
-        if (salePrice && salePrice >= price) {
+        // If on_sale is checked, sale_price must be provided and valid
+        if (onSale) {
+            if (!document.getElementById('id_sale_price').value || isNaN(salePrice)) {
+                alert('Veuillez entrer un prix promo lorsque le produit est en promotion');
+                loadingOverlay.classList.remove('show');
+                return false;
+            }
+            if (salePrice >= price) {
+                alert('Le prix promo doit être inférieur au prix normal');
+                loadingOverlay.classList.remove('show');
+                return false;
+            }
+        } else if (salePrice && salePrice >= price) {
+            // If on_sale is not checked but sale_price is provided, validate it
             alert('Le prix promo doit être inférieur au prix normal');
             loadingOverlay.classList.remove('show');
-            return;
+            return false;
         }
 
         // Submit form
@@ -800,8 +814,16 @@
     // Toggle sale price based on promotion checkbox
     document.getElementById('id_on_sale').addEventListener('change', function() {
         const salePriceField = document.getElementById('id_sale_price');
-        if (this.checked && !salePriceField.value) {
+        if (this.checked) {
+            // When checking on_sale, enable the field and focus on it
+            salePriceField.removeAttribute('disabled');
             salePriceField.focus();
+            salePriceField.classList.add('is-required');
+        } else {
+            // When unchecking on_sale, disable the field and clear it
+            salePriceField.setAttribute('disabled', 'disabled');
+            salePriceField.value = '';
+            salePriceField.classList.remove('is-required');
         }
     });
 

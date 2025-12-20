@@ -554,7 +554,7 @@
 </div>
 
 <!-- Size Selection Modal -->
-<div class="modal fade" id="sizeModal" tabindex="-1" aria-labelledby="sizeModalLabel" aria-hidden="true">
+<div class="modal fade" id="sizeModal" tabindex="-1" aria-labelledby="sizeModalLabel">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -925,6 +925,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Modal variables
     let currentProductId = null;
     let currentProductSizes = [];
+    let lastTriggerElement = null; // element that opened the modal, used to restore focus
     const sizeModal = new bootstrap.Modal(document.getElementById('sizeModal'));
 
     // Modal quantity functions
@@ -946,6 +947,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', async function() {
             const productId = this.dataset.productId;
             currentProductId = productId;
+            lastTriggerElement = this;
 
             // Get product info from the card
             const card = this.closest('.card');
@@ -964,11 +966,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
 
                     // Create size buttons
-                    const sizeOptionsHtml = data.sizes.map(size => `
-                        <span class="size-option-modal" data-size="${size.name}">
-                            ${size.name}
+                    const sizeOptionsHtml = data.sizes.map(size => {
+                        const name = (size && size.name) ? size.name : size;
+                        return `
+                        <span class="size-option-modal" data-size="${name}">
+                            ${name}
                         </span>
-                    `).join('');
+                    `;
+                    }).join('');
 
                     document.getElementById('modalSizeOptions').innerHTML = sizeOptionsHtml;
 
@@ -1010,6 +1015,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         addToCartDirectly(currentProductId, quantity, selectedSize.dataset.size);
         sizeModal.hide();
+    });
+
+    // Restore focus to the element that opened the modal when it is hidden
+    document.getElementById('sizeModal').addEventListener('hidden.bs.modal', function () {
+        try {
+            if (lastTriggerElement && typeof lastTriggerElement.focus === 'function') {
+                lastTriggerElement.focus();
+            }
+        } catch (e) {
+            // ignore
+        }
     });
 
     // Function to add to cart

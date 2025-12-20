@@ -809,11 +809,12 @@ function loadCategories(selectElementId = 'productCategory') {
     });
 }
 
-function showSizeOptions(categoryId, containerId = 'sizeOptions', checkboxesId = 'sizeCheckboxes', displayId = 'selectedSizesDisplay') {
+async function showSizeOptions(categoryId, containerId = 'sizeOptions', checkboxesId = 'sizeCheckboxes', displayId = 'selectedSizesDisplay') {
     const sizeOptionsDiv = document.getElementById(containerId);
     const sizeCheckboxes = document.getElementById(checkboxesId);
-    const category = categories.find(cat => cat.id === categoryId);
-    
+    const category = categories.find(cat => String(cat.id) === String(categoryId));
+
+    // If local category definition exists and has attributes, use it
     if (category && category.attributes && category.attributes.length > 0) {
         sizeCheckboxes.innerHTML = '';
         category.attributes.forEach((attr, index) => {
@@ -825,12 +826,38 @@ function showSizeOptions(categoryId, containerId = 'sizeOptions', checkboxesId =
             `;
             sizeCheckboxes.appendChild(checkboxDiv);
         });
-        
+
         updateSelectedSizesDisplay(checkboxesId, displayId);
         sizeOptionsDiv.style.display = 'block';
-    } else {
-        sizeOptionsDiv.style.display = 'none';
+        return;
     }
+
+    // Fallback: try fetching sizes from server (handles numeric IDs from DB)
+    try {
+        sizeCheckboxes.innerHTML = '';
+        const resp = await fetch(`/ajax/category-sizes/${categoryId}/`);
+        if (!resp.ok) throw new Error('Network response was not ok');
+        const data = await resp.json();
+        if (data && Array.isArray(data.sizes) && data.sizes.length > 0) {
+            data.sizes.forEach((size, index) => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'size-checkbox';
+                checkboxDiv.innerHTML = `
+                    <input type="checkbox" id="${containerId}_size_${index}" value="${size.name}" onchange="updateSelectedSizesDisplay('${checkboxesId}', '${displayId}')">
+                    <label for="${containerId}_size_${index}">${size.name}</label>
+                `;
+                sizeCheckboxes.appendChild(checkboxDiv);
+            });
+
+            updateSelectedSizesDisplay(checkboxesId, displayId);
+            sizeOptionsDiv.style.display = 'block';
+            return;
+        }
+    } catch (e) {
+        // ignore and hide
+    }
+
+    sizeOptionsDiv.style.display = 'none';
 }
 
 function updateSelectedSizesDisplay(checkboxesId, displayId) {
