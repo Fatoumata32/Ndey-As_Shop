@@ -417,7 +417,6 @@
                     <th>Nom</th>
                     <th>Catégorie</th>
                     <th>Prix</th>
-                    <th>Stock</th>
                     <th>Statut</th>
                     <th>Actions</th>
                 </tr>
@@ -435,14 +434,11 @@
                     <td><strong>{{ product.name }}</strong></td>
                     <td>{{ product.category.name }}</td>
                     <td>{{ product.price }} FCFA</td>
-                    <td>{{ product.quantity }}</td>
                     <td>
                         {% if product.sold_out %}
-                        <span class="badge badge-danger">Rupture</span>
-                        {% elif product.quantity <= 5 %}
-                        <span class="badge badge-warning">Stock faible</span>
+                        <span class="badge badge-danger">Épuisé</span>
                         {% else %}
-                        <span class="badge badge-success">En stock</span>
+                        <span class="badge badge-success">Disponible</span>
                         {% endif %}
                     </td>
                     <td>

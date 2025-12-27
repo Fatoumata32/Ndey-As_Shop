@@ -489,9 +489,9 @@
                         <div id="imagePreviewContainer" class="image-preview-container"></div>
                     </div>
 
-                    <!-- Prix et Stock -->
+                    <!-- Prix -->
                     <div class="form-section">
-                        <h3><i class="fas fa-tag"></i> Prix et Stock</h3>
+                        <h3><i class="fas fa-tag"></i> Prix</h3>
 
                         <div class="price-group mb-3">
                             <div>
@@ -505,12 +505,6 @@
                                        value="{% if product.sale_price %}{{ product.sale_price|floatformat:0 }}{% endif %}" min="0" step="100">
                                 <small class="text-muted">Laissez vide si pas de promotion</small>
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="id_quantity" class="form-label">Quantité en Stock *</label>
-                            <input type="number" class="form-control" id="id_quantity" name="quantity"
-                                   value="{{ product.quantity }}" required min="0">
                         </div>
 
                         <div class="mb-3">
@@ -626,10 +620,6 @@
                         {% endif %}
                     </span>
                 </div>
-                <div class="product-info-item">
-                    <span class="product-info-label">Stock</span>
-                    <span class="product-info-value">{{ product.quantity }} unités</span>
-                </div>
             </div>
 
             <!-- Quick Actions -->
@@ -652,11 +642,11 @@
                     </li>
                     <li class="mb-2">
                         <i class="fas fa-check text-success"></i>
-                        Mettez à jour régulièrement le stock
+                        Utilisez les promotions pour booster les ventes
                     </li>
                     <li class="mb-2">
                         <i class="fas fa-check text-success"></i>
-                        Utilisez les promotions pour booster les ventes
+                        Mettez à jour le statut "Épuisé" si nécessaire
                     </li>
                 </ul>
             </div>
