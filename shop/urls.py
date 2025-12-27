@@ -48,6 +48,7 @@ urlpatterns = [
     # Produits
     path('gestion/produits/', views.product_list, name='product_list'),
     path('gestion/produits/ajouter/', views.product_add, name='product_add'),
+    path('gestion/produits/ajouter-lot/', views.bulk_product_add, name='bulk_product_add'),
     path('gestion/produits/<int:pk>/modifier/', views.product_edit, name='product_edit'),
     path('gestion/produits/<int:pk>/supprimer/', views.product_delete, name='product_delete'),
     path('gestion/produits/<int:pk>/toggle-status/', views.product_toggle_status, name='product_toggle_status'),

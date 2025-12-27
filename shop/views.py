@@ -1455,6 +1455,128 @@ def product_add(request):
 
 @login_required
 @user_passes_test(is_staff)
+def bulk_product_add(request):
+    """Ajout intelligent de plusieurs produits en lot"""
+    import json
+
+    if request.method == 'POST':
+        try:
+            # Récupérer les données JSON des produits
+            products_data = json.loads(request.POST.get('products_data', '[]'))
+
+            if not products_data:
+                messages.error(request, 'Aucun produit à ajouter.')
+                return redirect('shop:bulk_product_add')
+
+            created_products = []
+            errors = []
+
+            with transaction.atomic():
+                for idx, product_data in enumerate(products_data):
+                    try:
+                        # Validation des champs obligatoires
+                        name = product_data.get('name', '').strip()
+                        category_id = product_data.get('category_id')
+                        price = product_data.get('price')
+
+                        if not name or not category_id or not price:
+                            errors.append(f"Produit {idx + 1}: Champs obligatoires manquants (nom, catégorie, prix)")
+                            continue
+
+                        # Récupérer la catégorie
+                        try:
+                            category = Category.objects.get(id=category_id)
+                        except Category.DoesNotExist:
+                            errors.append(f"Produit {idx + 1} ({name}): Catégorie invalide")
+                            continue
+
+                        # Créer le produit
+                        product = Product.objects.create(
+                            name=name,
+                            description=product_data.get('description', ''),
+                            category=category,
+                            price=float(price),
+                            sale_price=float(product_data.get('sale_price')) if product_data.get('sale_price') else None,
+                            on_sale=product_data.get('on_sale', False),
+                            sold_out=product_data.get('sold_out', False)
+                        )
+
+                        # Ajouter les tailles
+                        size_ids = product_data.get('sizes', [])
+                        if size_ids:
+                            for size_id in size_ids:
+                                try:
+                                    size = Size.objects.get(id=size_id)
+                                    product.sizes.add(size)
+                                except Size.DoesNotExist:
+                                    pass
+
+                        # Traiter les images associées
+                        image_indices = product_data.get('image_indices', [])
+                        if image_indices:
+                            images = request.FILES.getlist('images')
+                            for i, img_idx in enumerate(image_indices):
+                                if 0 <= img_idx < len(images):
+                                    try:
+                                        ProductImage.objects.create(
+                                            product=product,
+                                            image=images[img_idx],
+                                            is_primary=(i == 0),
+                                            order=i
+                                        )
+                                    except Exception as e:
+                                        logger.error(f"Erreur ajout image {img_idx} pour {name}: {str(e)}")
+
+                        created_products.append(product.name)
+
+                    except Exception as e:
+                        errors.append(f"Produit {idx + 1}: {str(e)}")
+                        logger.error(f"Erreur création produit {idx + 1}: {str(e)}")
+
+            # Messages de résultat
+            if created_products:
+                messages.success(request, f'{len(created_products)} produit(s) créé(s) avec succès: {", ".join(created_products)}')
+
+            if errors:
+                for error in errors:
+                    messages.warning(request, error)
+
+            return redirect('shop:product_list')
+
+        except Exception as e:
+            logger.error(f"Erreur lors de l'ajout en lot: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
+            messages.error(request, f'Erreur lors de l\'ajout en lot: {str(e)}')
+
+    # GET request
+    categories = Category.objects.all().order_by('name')
+    all_sizes = Size.objects.all().order_by('display_order', 'name')
+
+    # Serialize data for JavaScript
+    import json
+    categories_json = json.dumps([
+        {'id': cat.id, 'name': cat.name, 'icon': cat.icon if hasattr(cat, 'icon') else ''}
+        for cat in categories
+    ])
+    sizes_json = json.dumps([
+        {'id': size.id, 'name': size.name}
+        for size in all_sizes
+    ])
+
+    context = {
+        'categories': categories,
+        'all_sizes': all_sizes,
+        'categories_json': categories_json,
+        'sizes_json': sizes_json,
+        'recent_products': Product.objects.select_related('category').order_by('-created_at')[:5],
+    }
+
+    return render(request, 'shop/admin/bulk_product_add.html', context)
+
+
+@login_required
+@user_passes_test(is_staff)
 def product_edit(request, pk):
     """Modifier un produit"""
     product = get_object_or_404(Product, pk=pk)

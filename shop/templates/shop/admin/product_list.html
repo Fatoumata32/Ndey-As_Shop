@@ -302,9 +302,14 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
             <h1><i class="fas fa-box"></i> Gestion des Produits</h1>
-            <a href="{% url 'shop:product_add' %}" class="btn-add-product">
-                <i class="fas fa-plus-circle"></i> Ajouter un Produit
-            </a>
+            <div>
+                <a href="{% url 'shop:bulk_product_add' %}" class="btn-add-product me-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-magic"></i> Ajout Intelligent (Lot)
+                </a>
+                <a href="{% url 'shop:product_add' %}" class="btn-add-product">
+                    <i class="fas fa-plus-circle"></i> Ajouter un Produit
+                </a>
+            </div>
         </div>
     </div>
 </div>
