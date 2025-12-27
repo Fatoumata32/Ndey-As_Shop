@@ -344,15 +344,30 @@
 
         <!-- Image Previews -->
         <div class="image-preview-container" id="imagePreviewContainer"></div>
+
+        <!-- Smart Actions -->
+        <div class="mt-3 text-center" id="smartActionsZone" style="display: none;">
+            <button type="button" class="btn btn-light btn-lg me-2" onclick="manualSmartAnalyze()">
+                <i class="fas fa-magic"></i> Analyse Intelligente
+            </button>
+            <button type="button" class="btn btn-outline-light" onclick="clearAllImages()">
+                <i class="fas fa-trash"></i> Tout effacer
+            </button>
+        </div>
     </div>
 
     <!-- Products Section -->
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3><i class="fas fa-boxes"></i> Produits à créer</h3>
-            <button type="button" class="add-product-btn" onclick="addProductCard()">
-                <i class="fas fa-plus"></i> Ajouter un produit
-            </button>
+            <div>
+                <button type="button" class="btn btn-outline-secondary me-2" onclick="manualSmartAnalyze()" title="Créer automatiquement les produits depuis les noms de fichiers">
+                    <i class="fas fa-brain"></i> Détection Auto
+                </button>
+                <button type="button" class="add-product-btn" onclick="addProductCard()">
+                    <i class="fas fa-plus"></i> Ajouter un produit
+                </button>
+            </div>
         </div>
 
         <div id="productsContainer">
@@ -425,7 +440,8 @@ function handleFiles(files) {
                 file: file,
                 url: e.target.result,
                 assigned: false,
-                productId: null
+                productId: null,
+                filename: file.name
             };
             uploadedImages.push(imageData);
             renderImagePreview(imageData);
@@ -433,6 +449,129 @@ function handleFiles(files) {
         };
         reader.readAsDataURL(file);
     });
+
+    // Analyse intelligente après upload
+    if (imageFiles.length > 0) {
+        setTimeout(() => smartAnalyzeImages(), 500);
+    }
+}
+
+// Fonction d'analyse intelligente des images
+function smartAnalyzeImages() {
+    const groups = groupImagesByName(uploadedImages);
+
+    if (Object.keys(groups).length > 0 && confirm(`${Object.keys(groups).length} produit(s) détecté(s) automatiquement. Voulez-vous créer les produits automatiquement ?`)) {
+        autoCreateProductsFromGroups(groups);
+    }
+}
+
+// Grouper les images par nom de fichier similaire
+function groupImagesByName(images) {
+    const groups = {};
+
+    images.forEach(img => {
+        if (img.assigned) return;
+
+        // Extraire le nom de base du fichier (sans numéro et extension)
+        const baseName = extractBaseName(img.filename);
+
+        if (!groups[baseName]) {
+            groups[baseName] = [];
+        }
+        groups[baseName].push(img);
+    });
+
+    // Ne garder que les groupes avec au moins une image
+    return Object.fromEntries(
+        Object.entries(groups).filter(([name, imgs]) => imgs.length > 0)
+    );
+}
+
+// Extraire le nom de base du fichier
+function extractBaseName(filename) {
+    // Supprimer l'extension
+    let name = filename.replace(/\.[^/.]+$/, '');
+
+    // Supprimer les numéros à la fin (ex: "robe-1", "robe_2")
+    name = name.replace(/[-_]\d+$/, '');
+    name = name.replace(/\s+\d+$/, '');
+    name = name.replace(/\(\d+\)$/, '');
+
+    // Nettoyer et formater
+    name = name.replace(/[-_]/g, ' ');
+    name = name.trim();
+
+    // Capitaliser
+    return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+// Créer automatiquement les produits à partir des groupes
+function autoCreateProductsFromGroups(groups) {
+    Object.entries(groups).forEach(([productName, images]) => {
+        const productId = productIdCounter++;
+
+        // Déterminer la catégorie suggérée
+        const suggestedCategory = suggestCategory(productName);
+
+        const product = {
+            id: productId,
+            name: productName,
+            description: `${productName} de qualité`,
+            category_id: suggestedCategory,
+            price: '',
+            sale_price: '',
+            on_sale: false,
+            sold_out: false,
+            sizes: [],
+            image_indices: []
+        };
+
+        products.push(product);
+        renderProductCard(product);
+
+        // Assigner automatiquement les images
+        images.forEach(img => {
+            assignImageToProduct(img.id, productId);
+        });
+    });
+
+    updateStats();
+
+    if (bulkUploadForm.style.display === 'none') {
+        bulkUploadForm.style.display = 'block';
+    }
+}
+
+// Suggérer une catégorie basée sur le nom du produit
+function suggestCategory(productName) {
+    const name = productName.toLowerCase();
+
+    // Mapping de mots-clés vers catégories
+    const categoryKeywords = {
+        'robe': ['robe', 'dress'],
+        'pantalon': ['pantalon', 'jean', 'pants'],
+        'chemise': ['chemise', 'shirt', 'blouse'],
+        'chaussure': ['chaussure', 'shoe', 'basket', 'sandale'],
+        'sac': ['sac', 'bag', 'pochette'],
+        'bijou': ['bijou', 'collier', 'bracelet', 'bague', 'boucle'],
+        'tissu': ['tissu', 'fabric', 'wax', 'pagne'],
+        'accessoire': ['accessoire', 'foulard', 'ceinture', 'chapeau']
+    };
+
+    // Chercher la correspondance
+    for (const [catName, keywords] of Object.entries(categoryKeywords)) {
+        for (const keyword of keywords) {
+            if (name.includes(keyword)) {
+                // Trouver l'ID de la catégorie correspondante
+                const category = categories.find(cat =>
+                    cat.name.toLowerCase().includes(catName)
+                );
+                if (category) return category.id;
+            }
+        }
+    }
+
+    return ''; // Pas de suggestion
 }
 
 function renderImagePreview(imageData) {
@@ -466,11 +605,50 @@ function removeImage(imageId) {
     uploadedImages = uploadedImages.filter(img => img.id !== imageId);
     renderAllImages();
     updateStats();
+    checkSmartActionsVisibility();
 }
 
 function renderAllImages() {
     imagePreviewContainer.innerHTML = '';
     uploadedImages.forEach(img => renderImagePreview(img));
+    checkSmartActionsVisibility();
+}
+
+function checkSmartActionsVisibility() {
+    const smartZone = document.getElementById('smartActionsZone');
+    if (uploadedImages.length > 0) {
+        smartZone.style.display = 'block';
+    } else {
+        smartZone.style.display = 'none';
+    }
+}
+
+function manualSmartAnalyze() {
+    const unassignedImages = uploadedImages.filter(img => !img.assigned);
+
+    if (unassignedImages.length === 0) {
+        alert('Toutes les images sont déjà assignées!');
+        return;
+    }
+
+    const groups = groupImagesByName(unassignedImages);
+
+    if (Object.keys(groups).length === 0) {
+        alert('Aucun produit détecté automatiquement. Veuillez ajouter les produits manuellement.');
+        return;
+    }
+
+    if (confirm(`${Object.keys(groups).length} produit(s) détecté(s):\n\n${Object.keys(groups).join('\n')}\n\nCréer automatiquement?`)) {
+        autoCreateProductsFromGroups(groups);
+    }
+}
+
+function clearAllImages() {
+    if (confirm('Voulez-vous vraiment effacer toutes les images?')) {
+        uploadedImages = [];
+        renderAllImages();
+        updateStats();
+    }
 }
 
 function addProductCard() {
@@ -521,6 +699,7 @@ function renderProductCard(product) {
                 <div class="mb-3">
                     <label class="form-label fw-bold">Nom du produit *</label>
                     <input type="text" class="form-control" placeholder="Ex: Robe traditionnelle"
+                           value="${product.name || ''}"
                            onchange="updateProductData(${product.id}, 'name', this.value)">
                 </div>
 
@@ -529,7 +708,7 @@ function renderProductCard(product) {
                     <select class="form-select" onchange="updateProductData(${product.id}, 'category_id', this.value)">
                         <option value="">-- Sélectionnez une catégorie --</option>
                         {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.name }}</option>
+                        <option value="{{ category.id }}" ${product.category_id == '{{ category.id }}' ? 'selected' : ''}>{{ category.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -538,11 +717,13 @@ function renderProductCard(product) {
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Prix (F CFA) *</label>
                         <input type="number" class="form-control" step="0.01" placeholder="Ex: 15000"
+                               value="${product.price || ''}"
                                onchange="updateProductData(${product.id}, 'price', this.value)">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Prix en solde (F CFA)</label>
                         <input type="number" class="form-control" step="0.01" placeholder="Ex: 12000"
+                               value="${product.sale_price || ''}"
                                onchange="updateProductData(${product.id}, 'sale_price', this.value)">
                     </div>
                 </div>
@@ -550,6 +731,7 @@ function renderProductCard(product) {
                 <div class="mb-3">
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="onSale${product.id}"
+                               ${product.on_sale ? 'checked' : ''}
                                onchange="updateProductData(${product.id}, 'on_sale', this.checked)">
                         <label class="form-check-label" for="onSale${product.id}">
                             <i class="fas fa-tag"></i> En solde
@@ -557,6 +739,7 @@ function renderProductCard(product) {
                     </div>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="soldOut${product.id}"
+                               ${product.sold_out ? 'checked' : ''}
                                onchange="updateProductData(${product.id}, 'sold_out', this.checked)">
                         <label class="form-check-label" for="soldOut${product.id}">
                             <i class="fas fa-times-circle"></i> Épuisé
@@ -569,7 +752,7 @@ function renderProductCard(product) {
                 <div class="mb-3">
                     <label class="form-label fw-bold">Description</label>
                     <textarea class="form-control" rows="4" placeholder="Description du produit..."
-                              onchange="updateProductData(${product.id}, 'description', this.value)"></textarea>
+                              onchange="updateProductData(${product.id}, 'description', this.value)">${product.description || ''}</textarea>
                 </div>
 
                 <div class="mb-3">

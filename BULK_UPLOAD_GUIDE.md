@@ -11,19 +11,27 @@ La fonctionnalité d'**Ajout Intelligent de Produits** permet d'ajouter plusieur
 - Ou cliquez pour sélectionner des fichiers
 - Prévisualisation instantanée de toutes les images
 
-### 2. **Groupement Intelligent d'Images**
+### 2. **Détection Automatique de Produits**
+- **Analyse intelligente des noms de fichiers**: Le système détecte automatiquement les produits à partir des noms de vos images
+- **Regroupement automatique**: Les images similaires (ex: "robe-1.jpg", "robe-2.jpg") sont automatiquement groupées
+- **Suggestion de catégories**: Le système suggère la catégorie appropriée basée sur le nom du produit
+- **Création automatique**: Créez tous vos produits en un clic après l'upload d'images
+
+### 3. **Groupement Intelligent d'Images**
 - Assignez facilement des images à différents produits
 - Glissez-déposez les images depuis la zone de prévisualisation vers les produits
 - Une image peut être réassignée à un autre produit en un clic
 - Visualisation claire des images assignées vs non-assignées
+- Bouton "Analyse Intelligente" pour déclencher la détection automatique manuellement
 
-### 3. **Gestion Intelligente de Produits**
+### 4. **Gestion Intelligente de Produits**
 - Créez autant de produits que nécessaire
 - Chaque produit peut avoir plusieurs images
 - Remplissez tous les détails du produit (nom, catégorie, prix, description, etc.)
 - Sélectionnez les tailles disponibles pour chaque produit
+- Les produits créés automatiquement sont pré-remplis avec nom et description
 
-### 4. **Statistiques en Temps Réel**
+### 5. **Statistiques en Temps Réel**
 - Nombre total d'images uploadées
 - Nombre de produits à créer
 - Nombre d'images assignées
@@ -36,12 +44,35 @@ La fonctionnalité d'**Ajout Intelligent de Produits** permet d'ajouter plusieur
 3. Cliquez sur le bouton **"Ajout Intelligent (Lot)"**
 
 ### Étape 2: Uploader vos images
-1. Dans la zone d'upload violette:
+1. Dans la zone d'upload rose:
    - **Option A**: Glissez-déposez toutes vos images d'un coup
    - **Option B**: Cliquez sur "Parcourir les fichiers" et sélectionnez plusieurs images
 
 2. Les images apparaissent immédiatement en prévisualisation
 3. Chaque image non assignée porte un badge orange "Non assignée"
+
+### 🎯 Étape 2b: Analyse Intelligente (NOUVEAU!)
+
+**Après l'upload, le système analyse automatiquement vos images:**
+
+1. **Nommage intelligent de vos fichiers** pour une meilleure détection:
+   - ✅ `robe-rouge-1.jpg`, `robe-rouge-2.jpg` → Détecté comme "Robe rouge"
+   - ✅ `sac-cuir-avant.jpg`, `sac-cuir-arriere.jpg` → Détecté comme "Sac cuir"
+   - ✅ `bijou_collier_1.jpg`, `bijou_collier_2.jpg` → Détecté comme "Bijou collier"
+
+2. **Le système vous propose automatiquement**:
+   - Création de produits basée sur les noms de fichiers
+   - Groupement automatique des images similaires
+   - Suggestion de catégories appropriées
+
+3. **Acceptez ou refusez la proposition**:
+   - **Accepter**: Les produits sont créés automatiquement avec images assignées
+   - **Refuser**: Continuez manuellement
+
+4. **Déclenchement manuel**:
+   - Cliquez sur "Analyse Intelligente" à tout moment
+   - Cliquez sur "Détection Auto" dans la section produits
+   - Utile si vous refusez la première fois ou ajoutez plus d'images
 
 ### Étape 3: Créer les produits
 1. Cliquez sur **"Ajouter un produit"** pour chaque produit que vous voulez créer
