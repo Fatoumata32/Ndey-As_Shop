@@ -4,6 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NDEY'AS SHOP - Détails du Produit</title>
+
+    <!-- Schema.org Product Structured Data for SEO -->
+    <script type="application/ld+json" id="product-schema">
+    {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "",
+        "image": [],
+        "description": "",
+        "sku": "",
+        "brand": {
+            "@type": "Brand",
+            "name": "NDEY'AS SHOP"
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": "",
+            "priceCurrency": "XOF",
+            "price": "",
+            "availability": "https://schema.org/InStock",
+            "seller": {
+                "@type": "Organization",
+                "name": "NDEY'AS SHOP",
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "Zac Mbao",
+                    "addressLocality": "Dakar",
+                    "addressCountry": "SN"
+                }
+            }
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.5",
+            "reviewCount": "1"
+        }
+    }
+    </script>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -454,6 +493,51 @@
                 addToCartBtn.innerHTML = '<i class="fas fa-ban me-2"></i>Rupture de stock';
             } else {
                 addToCartBtn.onclick = () => addToCart(productId);
+            }
+
+            // Update Schema.org structured data for SEO
+            updateSchemaData(product);
+        }
+
+        function updateSchemaData(product) {
+            const schemaScript = document.getElementById('product-schema');
+            if (schemaScript) {
+                const schema = {
+                    "@context": "https://schema.org/",
+                    "@type": "Product",
+                    "name": product.name,
+                    "image": product.media && product.media.length > 0 ? product.media : [],
+                    "description": product.description,
+                    "sku": `NDEY-${product.id}`,
+                    "brand": {
+                        "@type": "Brand",
+                        "name": "NDEY'AS SHOP"
+                    },
+                    "offers": {
+                        "@type": "Offer",
+                        "url": window.location.href,
+                        "priceCurrency": "XOF",
+                        "price": product.onSale && product.salePrice ? product.salePrice : product.price,
+                        "availability": product.soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+                        "seller": {
+                            "@type": "Organization",
+                            "name": "NDEY'AS SHOP",
+                            "address": {
+                                "@type": "PostalAddress",
+                                "streetAddress": "Zac Mbao",
+                                "addressLocality": "Dakar",
+                                "addressCountry": "SN"
+                            }
+                        }
+                    }
+                };
+
+                // Add category if available
+                if (product.category) {
+                    schema.category = product.category;
+                }
+
+                schemaScript.textContent = JSON.stringify(schema, null, 2);
             }
         }
 

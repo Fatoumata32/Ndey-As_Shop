@@ -2356,3 +2356,92 @@ def toggle_favorite(request):
             'message': str(e)
         })
 
+
+# ==================== SEO - SITEMAP & ROBOTS ====================
+
+def sitemap_xml(request):
+    """
+    Génère un sitemap.xml dynamique pour le SEO
+    Liste toutes les URLs importantes du site pour les moteurs de recherche
+    """
+    from django.urls import reverse
+    from datetime import datetime
+
+    # URL du site (à configurer selon votre domaine)
+    site_url = request.build_absolute_uri('/').rstrip('/')
+
+    # Pages statiques
+    static_pages = [
+        {'loc': reverse('shop:index'), 'priority': '1.0', 'changefreq': 'daily'},
+        {'loc': reverse('shop:shop'), 'priority': '0.9', 'changefreq': 'daily'},
+        {'loc': reverse('shop:contact'), 'priority': '0.7', 'changefreq': 'monthly'},
+        {'loc': reverse('shop:login'), 'priority': '0.6', 'changefreq': 'monthly'},
+    ]
+
+    # Produits (actifs uniquement)
+    products = Product.objects.filter(sold_out=False).order_by('-created_at')
+    product_urls = []
+    for product in products:
+        product_urls.append({
+            'loc': reverse('shop:product_detail', args=[product.id]),
+            'lastmod': product.updated_at.strftime('%Y-%m-%d'),
+            'priority': '0.8',
+            'changefreq': 'weekly'
+        })
+
+    # Catégories
+    categories = Category.objects.all()
+
+    # Construction du XML
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+
+    # Pages statiques
+    for page in static_pages:
+        xml_content += '  <url>\n'
+        xml_content += f'    <loc>{site_url}{page["loc"]}</loc>\n'
+        xml_content += f'    <priority>{page["priority"]}</priority>\n'
+        xml_content += f'    <changefreq>{page["changefreq"]}</changefreq>\n'
+        xml_content += '  </url>\n'
+
+    # Produits
+    for product in product_urls:
+        xml_content += '  <url>\n'
+        xml_content += f'    <loc>{site_url}{product["loc"]}</loc>\n'
+        xml_content += f'    <lastmod>{product["lastmod"]}</lastmod>\n'
+        xml_content += f'    <priority>{product["priority"]}</priority>\n'
+        xml_content += f'    <changefreq>{product["changefreq"]}</changefreq>\n'
+        xml_content += '  </url>\n'
+
+    xml_content += '</urlset>'
+
+    return HttpResponse(xml_content, content_type='application/xml')
+
+
+def robots_txt(request):
+    """
+    Génère le fichier robots.txt pour guider les crawlers des moteurs de recherche
+    """
+    site_url = request.build_absolute_uri('/').rstrip('/')
+
+    robots_content = f"""# robots.txt pour NDEY'AS SHOP
+# Boutique en ligne Sénégal - Mode africaine et traditionnelle
+
+User-agent: *
+Allow: /
+Disallow: /gestion/
+Disallow: /admin/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /mon-profil/
+Disallow: /mes-commandes/
+Disallow: /ajax/
+
+# Sitemap
+Sitemap: {site_url}/sitemap.xml
+
+# Crawl-delay pour préserver les ressources serveur
+Crawl-delay: 1
+"""
+
+    return HttpResponse(robots_content, content_type='text/plain')

@@ -76,4 +76,8 @@ urlpatterns = [
     path('product/<int:product_id>/review/add/', views.add_review, name='add_review'),
     path('product/<int:product_id>/review/delete/', views.delete_review, name='delete_review'),
     path('product/<int:product_id>/reviews/', views.get_product_reviews, name='get_product_reviews'),
+
+    # SEO - Sitemap et Robots
+    path('sitemap.xml', views.sitemap_xml, name='sitemap'),
+    path('robots.txt', views.robots_txt, name='robots'),
 ]

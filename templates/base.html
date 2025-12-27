@@ -4,9 +4,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}NDEY'AS SHOP - Votre boutique en ligne pour des produits de qualité{% endblock %}">
-    <meta name="keywords" content="{% block meta_keywords %}boutique, shopping, e-commerce, Sénégal{% endblock %}">
-    <title>{% block title %}NDEY'AS SHOP{% endblock %}</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}NDEY'AS SHOP - Boutique en ligne Sénégal 🛍️ Robes, sacs, bijoux, tissus traditionnels. Livraison rapide Dakar. Prix abordables. Qualité garantie 🌟{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}boutique en ligne Sénégal, e-commerce Dakar, vêtements africains, robes traditionnelles, bijoux sénégalais, sacs femme, tissus wax, mode africaine, shopping Sénégal, NDEY'AS SHOP{% endblock %}">
+    <meta name="author" content="NDEY'AS SHOP">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow">
+    <link rel="canonical" href="{% block canonical_url %}https://www.ndeyeas.shop{{ request.path }}{% endblock %}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="https://www.ndeyeas.shop{{ request.path }}">
+    <meta property="og:title" content="{% block og_title %}{% block title %}NDEY'AS SHOP - Boutique en Ligne Sénégal{% endblock %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Découvrez NDEY'AS SHOP, votre boutique en ligne au Sénégal. Robes, bijoux, sacs, tissus traditionnels de qualité. Livraison rapide à Dakar.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'shop/img/ndeyeas.jpg' %}{% endblock %}">
+    <meta property="og:site_name" content="NDEY'AS SHOP">
+    <meta property="og:locale" content="fr_SN">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://www.ndeyeas.shop{{ request.path }}">
+    <meta name="twitter:title" content="{% block twitter_title %}NDEY'AS SHOP - Boutique en Ligne Sénégal{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Boutique en ligne au Sénégal pour vêtements, bijoux et accessoires de qualité{% endblock %}">
+    <meta name="twitter:image" content="{% static 'shop/img/ndeyeas.jpg' %}">
+
+    <!-- Geographic Meta Tags -->
+    <meta name="geo.region" content="SN">
+    <meta name="geo.placename" content="Dakar">
+    <meta name="geo.position" content="14.6928;-17.4467">
+    <meta name="ICBM" content="14.6928, -17.4467">
+
+    <!-- Schema.org Organization Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "NDEY'AS SHOP",
+        "url": "https://www.ndeyeas.shop",
+        "logo": "https://www.ndeyeas.shop{% static 'shop/img/ndeyeas.jpg' %}",
+        "description": "Boutique en ligne spécialisée dans la mode africaine et traditionnelle sénégalaise. Vêtements, bijoux, sacs et tissus de qualité.",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Zac Mbao",
+            "addressLocality": "Dakar",
+            "addressRegion": "Dakar",
+            "addressCountry": "SN"
+        },
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+221-77-545-74-82",
+            "contactType": "customer service",
+            "availableLanguage": ["fr", "wo"]
+        },
+        "sameAs": [
+            "https://www.facebook.com/ndeyasshop",
+            "https://www.instagram.com/ndeyasshop"
+        ]
+    }
+    </script>
+
+    {% block extra_schema %}{% endblock %}
+
+    <title>{% block title %}NDEY'AS SHOP - Boutique en Ligne Sénégal 🛍️{% endblock %}</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/jpg" href="{% static 'shop/img/ndeyeas.jpg' %}">
