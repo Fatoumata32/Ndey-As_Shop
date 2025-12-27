@@ -84,7 +84,6 @@ class Product(models.Model):
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     on_sale = models.BooleanField(default=False)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
-    quantity = models.IntegerField(default=0)
     sold_out = models.BooleanField(default=False)
     sizes = models.ManyToManyField(Size, blank=True, related_name='products')
     icon = models.CharField(max_length=50, blank=True)
@@ -107,9 +106,7 @@ class Product(models.Model):
             while Product.objects.filter(slug=self.slug).exists():
                 self.slug = f"{base_slug}-{counter}"
                 counter += 1
-            
-        # Gestion du stock
-        self.sold_out = self.quantity <= 0
+
         super().save(*args, **kwargs)
     
     def get_current_price(self):
@@ -133,22 +130,6 @@ class Product(models.Model):
     def primary_image(self):
         """Retourne l'image principale du produit"""
         return self.images.filter(is_primary=True).first() or self.images.first()
-    
-    def is_in_stock(self):
-        """Vérifie si le produit est en stock"""
-        return self.quantity > 0 and not self.sold_out
-    
-    def can_purchase(self, quantity=1):
-        """Vérifie si on peut acheter une certaine quantité"""
-        return self.is_in_stock() and self.quantity >= quantity
-    
-    def reduce_stock(self, quantity):
-        """Réduit le stock après un achat"""
-        if self.can_purchase(quantity):
-            self.quantity -= quantity
-            self.save()
-            return True
-        return False
     
     def get_absolute_url(self):
         """Retourne l'URL du produit utilisant le slug"""

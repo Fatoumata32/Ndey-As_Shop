@@ -40,8 +40,8 @@ class ProductForm(forms.ModelForm):
     
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'sale_price', 'on_sale', 
-                  'category', 'quantity', 'sizes', 'icon']
+        fields = ['name', 'description', 'price', 'sale_price', 'on_sale',
+                  'category', 'sizes', 'icon']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -67,11 +67,6 @@ class ProductForm(forms.ModelForm):
             'category': forms.Select(attrs={
                 'class': 'form-control'
             }),
-            'quantity': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'min': '0',
-                'placeholder': 'Quantité en stock'
-            }),
             'on_sale': forms.CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
@@ -89,13 +84,11 @@ class ProductForm(forms.ModelForm):
             'price': 'Prix (F CFA)',
             'sale_price': 'Prix en solde (F CFA)',
             'category': 'Catégorie',
-            'quantity': 'Quantité en stock',
             'on_sale': 'En solde',
             'sizes': 'Tailles disponibles',
             'icon': 'Icône'
         }
         help_texts = {
-            'quantity': 'Nombre d\'unités disponibles',
             'sale_price': 'Laissez vide si pas en solde',
             'icon': 'Emoji ou caractère pour représenter le produit'
         }
@@ -107,7 +100,6 @@ class ProductForm(forms.ModelForm):
         self.fields['description'].required = True
         self.fields['price'].required = True
         self.fields['category'].required = True
-        self.fields['quantity'].required = True
         
         # Ajouter un placeholder pour la catégorie
         self.fields['category'].empty_label = "-- Sélectionnez une catégorie --"
@@ -136,15 +128,8 @@ class ProductForm(forms.ModelForm):
         
         return sale_price
     
-    def clean_quantity(self):
-        quantity = self.cleaned_data.get('quantity')
-        if quantity is not None and quantity < 0:
-            raise ValidationError('La quantité ne peut pas être négative.')
-        return quantity
-    
     def clean(self):
         cleaned_data = super().clean()
-        quantity = cleaned_data.get('quantity')
         on_sale = cleaned_data.get('on_sale')
         sale_price = cleaned_data.get('sale_price')
         

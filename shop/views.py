@@ -196,18 +196,21 @@ from django.contrib import messages
 def product_detail(request, product_id):
     """Détail d'un produit"""
     try:
-        # Fetch product by ID (ensure it exists)
-        product = get_object_or_404(Product, id=product_id)
-        
+        # Fetch product by ID with optimized queries
+        product = get_object_or_404(
+            Product.objects.select_related('category').prefetch_related('images', 'sizes', 'reviews__user'),
+            id=product_id
+        )
+
         # Vérifier si le produit est épuisé
         if product.sold_out:
             messages.warning(request, f"Le produit '{product.name}' est actuellement épuisé.")
-        
-        # Récupérer des produits similaires
+
+        # Récupérer des produits similaires avec optimisation
         related_products = Product.objects.filter(
             category=product.category,
             sold_out=False
-        ).exclude(id=product.id)[:4]
+        ).exclude(id=product.id).select_related('category').prefetch_related('images')[:4]
 
         # Vérifier si le produit est dans les favoris de l'utilisateur
         is_favorited = False
@@ -234,6 +237,8 @@ def product_detail(request, product_id):
 def cart_view(request):
     """Vue du panier"""
     cart = get_or_create_cart(request)
+    # Optimiser les requêtes pour les items du panier
+    cart.items.all().select_related('product__category').prefetch_related('product__images')
     context = {
         'cart': cart,
     }
@@ -269,13 +274,6 @@ def add_to_cart(request):
                     'message': 'Veuillez sélectionner une taille pour ce produit.'
                 })
 
-            # Vérifier le stock
-            if product.quantity < quantity:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Désolé, seulement {product.quantity} unité(s) disponible(s) en stock pour ce produit.'
-                })
-            
             # Obtenir ou créer l'article du panier avec selected_size toujours défini
             cart_item, created = CartItem.objects.get_or_create(
                 cart=cart,
@@ -283,21 +281,8 @@ def add_to_cart(request):
                 selected_size=selected_size or '',  # S'assurer que ce n'est jamais None
                 defaults={'quantity': quantity}
             )
-            
+
             if not created:
-                # Vérifier si l'ajout ne dépasse pas le stock
-                if cart_item.quantity + quantity > product.quantity:
-                    available = product.quantity - cart_item.quantity
-                    if available <= 0:
-                        return JsonResponse({
-                            'success': False,
-                            'message': f'Désolé, vous avez déjà atteint la limite de stock pour ce produit ({product.quantity} unité(s) dans votre panier).'
-                        })
-                    else:
-                        return JsonResponse({
-                            'success': False,
-                            'message': f'Désolé, seulement {available} unité(s) supplémentaire(s) disponible(s). Vous avez déjà {cart_item.quantity} unité(s) dans votre panier.'
-                        })
                 cart_item.quantity += quantity
                 cart_item.save()
             
@@ -329,11 +314,6 @@ def update_cart_item(request):
         if quantity <= 0:
             cart_item.delete()
         else:
-            if quantity > cart_item.product.quantity:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Désolé, seulement {cart_item.product.quantity} unité(s) disponible(s) en stock pour ce produit.'
-                })
             cart_item.quantity = quantity
             cart_item.save()
 
@@ -386,8 +366,11 @@ def checkout(request):
     """Page de commande améliorée"""
     cart = get_or_create_cart(request)
 
+    # Optimiser les requêtes pour les items du panier
+    cart_items = cart.items.select_related('product__category').prefetch_related('product__images').all()
+
     # Vérifier si le panier est vide
-    if not cart.items.exists():
+    if not cart_items.exists():
         messages.warning(request, 'Votre panier est vide.')
         return redirect('shop:cart')
 
@@ -436,12 +419,8 @@ def checkout(request):
                     status='pending'
                 )
 
-                # Créer les articles de commande et mettre à jour le stock
+                # Créer les articles de commande
                 for cart_item in cart.items.all():
-                    # Vérifier le stock disponible
-                    if cart_item.product.quantity < cart_item.quantity:
-                        raise ValueError(f"Stock insuffisant pour {cart_item.product.name}")
-
                     OrderItem.objects.create(
                         order=order,
                         product=cart_item.product,
@@ -449,12 +428,6 @@ def checkout(request):
                         price=cart_item.product.get_current_price(),
                         selected_size=cart_item.selected_size or ''
                     )
-
-                    # Mettre à jour le stock du produit
-                    cart_item.product.quantity -= cart_item.quantity
-                    if cart_item.product.quantity == 0:
-                        cart_item.product.sold_out = True
-                    cart_item.product.save()
 
                 # Vider le panier
                 cart.items.all().delete()
@@ -946,7 +919,7 @@ def user_profile(request):
 @login_required
 def user_orders(request):
     """Vue pour afficher les commandes de l'utilisateur"""
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    orders = Order.objects.filter(user=request.user).prefetch_related('items__product__images').order_by('-created_at')
 
     # Filtrage par statut si spécifié
     status_filter = request.GET.get('status')
@@ -1172,7 +1145,7 @@ def reorder(request, order_id):
         # Ajouter les articles de la commande au panier
         items_added = []
         for order_item in order.items.all():
-            if order_item.product and order_item.product.is_in_stock():
+            if order_item.product and not order_item.product.sold_out:
                 cart_item, created = CartItem.objects.get_or_create(
                     cart=cart,
                     product=order_item.product,
@@ -1313,8 +1286,6 @@ def product_list(request):
         products = products.filter(sold_out=True)
     elif status_filter == 'available':
         products = products.filter(sold_out=False)
-    elif status_filter == 'low_stock':
-        products = products.filter(quantity__lte=5, sold_out=False)
     
     # Pagination
     paginator = Paginator(products, 20)
@@ -1346,7 +1317,6 @@ def product_add(request):
             category_id = request.POST.get('category')
             price = request.POST.get('price')
             sale_price = request.POST.get('sale_price')
-            quantity = request.POST.get('quantity', 1)
             on_sale = request.POST.get('on_sale') == 'on'
             sold_out = request.POST.get('sold_out') == 'on'
 
@@ -1405,21 +1375,6 @@ def product_add(request):
                 }
                 return render(request, 'shop/admin/product_add.html', context)
 
-            # Validation de la quantité
-            try:
-                quantity_int = int(quantity)
-                if quantity_int < 0:
-                    raise ValueError("La quantité ne peut pas être négative")
-            except ValueError as e:
-                messages.error(request, f'Quantité invalide: {str(e)}')
-                categories = Category.objects.all()
-                recent_products = Product.objects.select_related('category').order_by('-created_at')[:5]
-                context = {
-                    'categories': categories,
-                    'recent_products': recent_products,
-                }
-                return render(request, 'shop/admin/product_add.html', context)
-
             # Vérifier que la catégorie existe
             try:
                 category = Category.objects.get(id=category_id)
@@ -1441,7 +1396,6 @@ def product_add(request):
                     category=category,
                     price=price_float,
                     sale_price=sale_price_float,
-                    quantity=quantity_int,
                     on_sale=on_sale,
                     sold_out=sold_out
                 )
@@ -1513,7 +1467,6 @@ def product_edit(request, pk):
             category_id = request.POST.get('category')
             price = request.POST.get('price')
             sale_price = request.POST.get('sale_price')
-            quantity = request.POST.get('quantity', 0)
             on_sale = request.POST.get('on_sale') == 'on'
             sold_out = request.POST.get('sold_out') == 'on'
 
@@ -1568,20 +1521,6 @@ def product_edit(request, pk):
                 }
                 return render(request, 'shop/admin/product_edit.html', context)
 
-            # Validation de la quantité
-            try:
-                quantity_int = int(quantity)
-                if quantity_int < 0:
-                    raise ValueError("La quantité ne peut pas être négative")
-            except ValueError as e:
-                messages.error(request, f'Quantité invalide: {str(e)}')
-                context = {
-                    'form': ProductForm(instance=product),
-                    'product': product,
-                    'existing_images': product.images.all(),
-                }
-                return render(request, 'shop/admin/product_edit.html', context)
-
             # Vérifier que la catégorie existe
             try:
                 category = Category.objects.get(id=category_id)
@@ -1601,7 +1540,6 @@ def product_edit(request, pk):
                 product.category = category
                 product.price = price_float
                 product.sale_price = sale_price_float
-                product.quantity = quantity_int
                 product.on_sale = on_sale
                 product.sold_out = sold_out
                 # The save() method will auto-generate/update the slug

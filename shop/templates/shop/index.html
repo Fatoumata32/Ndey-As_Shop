@@ -301,7 +301,7 @@
                 <div class="product-card h-100">
                     <div class="card border-0 shadow-sm h-100">
                         <!-- Product Image -->
-                        <div class="product-image position-relative overflow-hidden">
+                        <div class="product-image position-relative overflow-hidden" style="cursor: pointer;" onclick="window.location.href='{% url 'shop:product_detail' product.id %}'">
                             {% if product.primary_image %}
                             <img src="{{ product.primary_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
                             {% else %}
