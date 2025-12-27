@@ -1,0 +1,98 @@
+═══════════════════════════════════════════════════════════════════
+  GUIDE DE DÉPLOIEMENT RAPIDE - NDEY'AS SHOP
+  Migration: Suppression du champ quantity
+═══════════════════════════════════════════════════════════════════
+
+📋 RÉSUMÉ DES MODIFICATIONS
+─────────────────────────────────────────────────────────────────
+✅ Suppression complète de la gestion de stock (champ quantity)
+✅ Ajout du clic sur image pour voir le détail produit
+✅ Optimisation des performances (select_related, prefetch_related)
+✅ Correction de la configuration django-allauth
+
+📦 FICHIERS MODIFIÉS
+─────────────────────────────────────────────────────────────────
+- shop/models.py                    (suppression champ quantity)
+- shop/forms.py                     (formulaire sans quantity)
+- shop/views.py                     (logique sans stock)
+- shop/templates/shop/index.html    (clic sur image)
+- shop/migrations/0013_*.py         (migration BDD)
+- ndeyas_shop/settings.py           (config allauth)
+
+🚀 COMMANDES DE DÉPLOIEMENT (À EXÉCUTER SUR LE SERVEUR)
+─────────────────────────────────────────────────────────────────
+
+1️⃣ CONNEXION AU SERVEUR
+   ssh FarmConnects@ndeyeas.shop
+
+2️⃣ NAVIGATION ET ACTIVATION ENV
+   source /home/FarmConnects/.virtualenvs/env/bin/activate
+   cd /home/FarmConnects/ndeyeas_shop
+
+3️⃣ MISE À JOUR DU CODE
+   git pull origin master
+
+4️⃣ VÉRIFICATION DES MIGRATIONS
+   python manage.py showmigrations shop
+   
+   # Vous devriez voir:
+   # [X] 0012_...
+   # [ ] 0013_remove_product_quantity  ← Cette ligne doit être décochée
+
+5️⃣ APPLICATION DES MIGRATIONS
+   python manage.py migrate shop
+
+6️⃣ VÉRIFICATION
+   python manage.py check
+
+7️⃣ REDÉMARRAGE DU SERVEUR
+   # Méthode 1 (recommandée):
+   touch /var/www/ndeyeas_shop_uwsgi.ini
+   
+   # Méthode 2 (si nécessaire):
+   sudo systemctl restart uwsgi
+   sudo systemctl restart nginx
+
+8️⃣ TESTS POST-DÉPLOIEMENT
+   - Visitez: https://www.ndeyeas.shop/
+   - Testez le clic sur une image de produit
+   - Vérifiez l'ajout au panier
+   - Accédez à l'admin et ajoutez un produit
+
+═══════════════════════════════════════════════════════════════════
+
+🆘 EN CAS DE PROBLÈME
+─────────────────────────────────────────────────────────────────
+
+PROBLÈME: AssertionError avec allauth
+SOLUTION: Vérifier settings.py - doit avoir:
+   ACCOUNT_LOGIN_METHODS = {'email', 'username'}
+   ACCOUNT_SIGNUP_FIELDS = ['email*', 'username', 'password1*', 'password2*']
+
+PROBLÈME: Migration déjà appliquée
+SOLUTION: Vérifier avec:
+   python manage.py showmigrations shop
+
+PROBLÈME: Erreur "no such column: shop_product.quantity"
+SOLUTION: La migration n'est pas appliquée, exécuter:
+   python manage.py migrate shop --fake-initial
+
+PROBLÈME: Le serveur ne redémarre pas
+SOLUTION: 
+   # Vérifier les logs
+   sudo journalctl -u uwsgi -n 50
+   
+   # Redémarrer manuellement
+   sudo systemctl stop uwsgi
+   sudo systemctl start uwsgi
+
+═══════════════════════════════════════════════════════════════════
+
+📞 SUPPORT
+─────────────────────────────────────────────────────────────────
+Si vous rencontrez des problèmes, consultez:
+- DEPLOYMENT_GUIDE.md (guide complet)
+- Les logs du serveur: /var/log/uwsgi/
+- Les logs Django: dans le dossier logs/ du projet
+
+═══════════════════════════════════════════════════════════════════
