@@ -971,12 +971,14 @@ bulkUploadForm.addEventListener('submit', (e) => {
     // Prepare form data
     const formData = new FormData(bulkUploadForm);
 
-    // Add all images
-    uploadedImages.forEach(img => {
+    // Create a mapping from image ID to array index
+    const imageIdToIndexMap = {};
+    uploadedImages.forEach((img, index) => {
+        imageIdToIndexMap[img.id] = index;
         formData.append('images', img.file);
     });
 
-    // Prepare products data
+    // Prepare products data with corrected image indices
     const productsData = products.map(product => ({
         name: product.name,
         description: product.description,
@@ -986,7 +988,8 @@ bulkUploadForm.addEventListener('submit', (e) => {
         on_sale: product.on_sale,
         sold_out: product.sold_out,
         sizes: product.sizes,
-        image_indices: product.image_indices
+        // Convert image IDs to their corresponding indices in the uploaded array
+        image_indices: product.image_indices.map(imgId => imageIdToIndexMap[imgId])
     }));
 
     document.getElementById('productsDataInput').value = JSON.stringify(productsData);
