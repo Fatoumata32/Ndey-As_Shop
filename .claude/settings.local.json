@@ -7,7 +7,8 @@
       "Bash(if not exist \"C:\\Users\\PC\\Documents\\project\\ndeyeASshop2.0\\Ndey-As_Shop\\media\\products\" mkdir \"C:\\Users\\PC\\Documents\\project\\ndeyeASshop2.0\\Ndey-As_Shop\\media\\products\")",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(timeout 3 bash -c \"while ! curl -s http://127.0.0.1:8000/ > /dev/null; do sleep 0.5; done && echo ''Server is running''\")"
     ],
     "deny": [],
     "ask": []
