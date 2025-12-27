@@ -1291,9 +1291,18 @@ def product_list(request):
     paginator = Paginator(products, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     categories = Category.objects.all()
-    
+
+    # Calculate statistics from all products (not just current page)
+    all_products = Product.objects.all()
+    stats = {
+        'total_products': all_products.count(),
+        'available_products': all_products.filter(sold_out=False).count(),
+        'on_sale_products': all_products.filter(on_sale=True).count(),
+        'sold_out_products': all_products.filter(sold_out=True).count(),
+    }
+
     context = {
         'page_obj': page_obj,
         'products': page_obj,
@@ -1301,8 +1310,9 @@ def product_list(request):
         'current_category': category_filter,
         'search_query': search_query,
         'current_status': status_filter,
+        'stats': stats,
     }
-    
+
     return render(request, 'shop/admin/product_list.html', context)
 
 

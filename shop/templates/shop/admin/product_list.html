@@ -321,7 +321,7 @@
             <div class="stat-card-icon primary">
                 <i class="fas fa-box"></i>
             </div>
-            <h3>{{ products.paginator.count|default:0 }}</h3>
+            <h3>{{ stats.total_products|default:0 }}</h3>
             <p>Total Produits</p>
         </div>
 
@@ -329,7 +329,7 @@
             <div class="stat-card-icon success">
                 <i class="fas fa-check-circle"></i>
             </div>
-            <h3>{{ products.object_list|length|default:0 }}</h3>
+            <h3>{{ stats.available_products|default:0 }}</h3>
             <p>Disponibles</p>
         </div>
 
@@ -337,7 +337,7 @@
             <div class="stat-card-icon warning">
                 <i class="fas fa-fire"></i>
             </div>
-            <h3>{% if products %}{{ products.object_list|selectattr:"on_sale"|list|length|default:0 }}{% else %}0{% endif %}</h3>
+            <h3>{{ stats.on_sale_products|default:0 }}</h3>
             <p>En Promotion</p>
         </div>
 
@@ -345,7 +345,7 @@
             <div class="stat-card-icon danger">
                 <i class="fas fa-ban"></i>
             </div>
-            <h3>{% if products %}{{ products.object_list|selectattr:"sold_out"|list|length|default:0 }}{% else %}0{% endif %}</h3>
+            <h3>{{ stats.sold_out_products|default:0 }}</h3>
             <p>Épuisés</p>
         </div>
     </div>
