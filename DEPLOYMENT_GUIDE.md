@@ -1,5 +1,62 @@
 # Guide de Déploiement - Ndeyas Shop
 
+## 🚨 Déploiement Urgent - Migration Base de Données
+
+**IMPORTANT**: Une migration critique doit être appliquée sur le serveur de production pour supprimer le champ `quantity` des produits.
+
+### Étapes de Déploiement Immédiat
+
+1. **Se connecter au serveur**
+   ```bash
+   ssh FarmConnects@ndeyeas.shop
+   ```
+
+2. **Activer l'environnement virtuel**
+   ```bash
+   source /home/FarmConnects/.virtualenvs/env/bin/activate
+   cd /home/FarmConnects/ndeyeas_shop
+   ```
+
+3. **Mettre à jour le code**
+   ```bash
+   git pull origin master
+   ```
+
+4. **Appliquer les migrations**
+   ```bash
+   python manage.py migrate shop
+   ```
+
+5. **Redémarrer le serveur**
+   ```bash
+   # Option 1: uWSGI avec touch
+   touch /var/www/ndeyeas_shop_uwsgi.ini
+
+   # Option 2: Restart systemd service
+   sudo systemctl restart uwsgi
+
+   # Si nécessaire, redémarrer Nginx
+   sudo systemctl restart nginx
+   ```
+
+6. **Vérifier que tout fonctionne**
+   - Visitez: https://www.ndeyeas.shop/
+   - Testez l'ajout au panier
+   - Vérifiez la page admin
+
+### 🔄 Utilisation du Script de Déploiement Automatique
+
+Un script `deploy.sh` a été créé pour automatiser le processus:
+
+```bash
+# Sur le serveur
+cd /home/FarmConnects/ndeyeas_shop
+chmod +x deploy.sh
+./deploy.sh
+```
+
+---
+
 ## Options de Déploiement
 
 ### 1. Déploiement sur Railway (Recommandé - Gratuit pour commencer)
