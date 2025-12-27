@@ -5,8 +5,16 @@
 
 {% block extra_css %}
 <style>
+    :root {
+        --primary-pink: #d81b60;
+        --primary-dark: #ad1457;
+        --secondary-pink: #f06292;
+        --light-pink: #f8bbd0;
+        --success-green: #4caf50;
+    }
+
     .bulk-upload-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #d81b60 0%, #f06292 100%);
         border-radius: 20px;
         padding: 40px;
         margin-bottom: 30px;
@@ -84,7 +92,7 @@
         position: absolute;
         top: 10px;
         right: 10px;
-        background: #4CAF50;
+        background: var(--success-green);
         color: white;
         padding: 4px 10px;
         border-radius: 20px;
@@ -94,7 +102,7 @@
     }
 
     .image-badge.unassigned {
-        background: #FF9800;
+        background: #ffc107;
     }
 
     .remove-image-btn {
@@ -120,7 +128,7 @@
         padding: 25px;
         margin-bottom: 20px;
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        border-left: 5px solid #667eea;
+        border-left: 5px solid var(--primary-pink);
         transition: all 0.3s ease;
     }
 
@@ -141,7 +149,7 @@
     .product-card-title {
         font-size: 18px;
         font-weight: bold;
-        color: #667eea;
+        color: var(--primary-pink);
     }
 
     .assigned-images {
@@ -167,7 +175,7 @@
         object-fit: cover;
         border-radius: 8px;
         cursor: pointer;
-        border: 2px solid #667eea;
+        border: 2px solid var(--primary-pink);
         transition: all 0.2s ease;
     }
 
@@ -177,7 +185,7 @@
     }
 
     .add-product-btn {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #d81b60 0%, #f06292 100%);
         color: white;
         border: none;
         padding: 15px 30px;
@@ -186,12 +194,12 @@
         font-weight: bold;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 15px rgba(216, 27, 96, 0.4);
     }
 
     .add-product-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        box-shadow: 0 6px 20px rgba(216, 27, 96, 0.6);
     }
 
     .remove-product-btn {
@@ -211,7 +219,7 @@
 
     .smart-suggest-badge {
         display: inline-block;
-        background: #4CAF50;
+        background: var(--success-green);
         color: white;
         padding: 4px 12px;
         border-radius: 20px;
@@ -235,7 +243,7 @@
     }
 
     .submit-all-btn {
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        background: linear-gradient(135deg, var(--success-green) 0%, #45a049 100%);
         color: white;
         border: none;
         padding: 20px 50px;
@@ -267,7 +275,7 @@
     .stats-number {
         font-size: 36px;
         font-weight: bold;
-        color: #667eea;
+        color: var(--primary-pink);
         margin: 10px 0;
     }
 
