@@ -696,18 +696,14 @@
                 <div class="product-gallery">
                     <div class="main-image-container">
                         <div class="product-badges">
-                            {% if product.sold_out %}
-                            <div class="badge-custom badge-soldout">Rupture de Stock</div>
-                            {% else %}
-                                {% if product.is_new %}
-                                <div class="badge-custom badge-new">Nouveau</div>
-                                {% endif %}
-                                {% if product.on_sale and product.sale_price %}
-                                <div class="badge-custom badge-sale">-{{ product|discount_percent:product.sale_price }}%</div>
-                                {% endif %}
-                                {% if product.is_featured %}
-                                <div class="badge-custom badge-featured">⭐ Vedette</div>
-                                {% endif %}
+                            {% if product.is_new %}
+                            <div class="badge-custom badge-new">Nouveau</div>
+                            {% endif %}
+                            {% if product.on_sale and product.sale_price %}
+                            <div class="badge-custom badge-sale">-{{ product|discount_percent:product.sale_price }}%</div>
+                            {% endif %}
+                            {% if product.is_featured %}
+                            <div class="badge-custom badge-featured">⭐ Vedette</div>
                             {% endif %}
                         </div>
                         {% if product.primary_image %}
@@ -762,7 +758,6 @@
                     </div>
                     {% endif %}
 
-                    {% if not product.sold_out %}
                     <!-- Size Selection -->
                     {% if product.sizes.exists %}
                     <div class="size-selection">
@@ -817,13 +812,6 @@
                         </button>
                         {% endif %}
                     </div>
-                    {% else %}
-                    <div class="action-buttons">
-                        <button class="btn-add-cart" disabled>
-                            <i class="fas fa-times"></i> Produit Épuisé
-                        </button>
-                    </div>
-                    {% endif %}
 
                     <!-- Product Features -->
                     <div class="product-features">
@@ -909,8 +897,8 @@
                     </tr>
                     {% endif %}
                     <tr>
-                        <td><strong>Stock</strong></td>
-                        <td>{% if product.sold_out %}Épuisé{% else %}{{ product.quantity }} unités{% endif %}</td>
+                        <td><strong>Disponibilité</strong></td>
+                        <td><span class="badge bg-success">Disponible</span></td>
                     </tr>
                 </table>
             </div>
