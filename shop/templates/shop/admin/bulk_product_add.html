@@ -549,7 +549,6 @@ function autoCreateProductsFromGroups(groups) {
             price: '',
             sale_price: '',
             on_sale: false,
-            sold_out: false,
             sizes: [],
             image_indices: []
         };
@@ -700,7 +699,6 @@ function addProductCard() {
         price: '',
         sale_price: '',
         on_sale: false,
-        sold_out: false,
         sizes: [],
         image_indices: []
     };
@@ -768,20 +766,12 @@ function renderProductCard(product) {
                 </div>
 
                 <div class="mb-3">
-                    <div class="form-check form-check-inline">
+                    <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="onSale${product.id}"
                                ${product.on_sale ? 'checked' : ''}
                                onchange="updateProductData(${product.id}, 'on_sale', this.checked)">
                         <label class="form-check-label" for="onSale${product.id}">
                             <i class="fas fa-tag"></i> En solde
-                        </label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="soldOut${product.id}"
-                               ${product.sold_out ? 'checked' : ''}
-                               onchange="updateProductData(${product.id}, 'sold_out', this.checked)">
-                        <label class="form-check-label" for="soldOut${product.id}">
-                            <i class="fas fa-times-circle"></i> Épuisé
                         </label>
                     </div>
                 </div>
@@ -986,7 +976,6 @@ bulkUploadForm.addEventListener('submit', (e) => {
         price: product.price,
         sale_price: product.sale_price,
         on_sale: product.on_sale,
-        sold_out: product.sold_out,
         sizes: product.sizes,
         // Convert image IDs to their corresponding indices in the uploaded array
         image_indices: product.image_indices.map(imgId => imageIdToIndexMap[imgId])
