@@ -28,7 +28,7 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table align-middle">
+                        <table class="table align-middle cart-table">
                             <thead>
                                 <tr>
                                     <th>Produit</th>
@@ -255,6 +255,38 @@
 
     .cart-item .input-group {
         width: 110px;
+    }
+
+    .cart-table thead {
+        display: none;
+    }
+
+    .cart-table tbody tr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        row-gap: 8px;
+        padding: 8px 0;
+    }
+
+    .cart-table tbody tr td {
+        border-top: none;
+        padding: 4px 0;
+    }
+
+    .cart-table tbody tr td:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .cart-table .quantity-input {
+        width: 90px;
+    }
+
+    .cart-table .item-total {
+        font-size: 1.05rem;
+    }
+
+    .cart-table .remove-item {
+        justify-self: end;
     }
 }
 </style>
