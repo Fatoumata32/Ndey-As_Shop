@@ -106,8 +106,27 @@ def is_staff(user):
 
 def index(request):
     """Page d'accueil"""
-    products = Product.objects.filter(sold_out=False).select_related('category').prefetch_related('images')[:6]
+    from django.db.models import Count
+    import random
+    
+    # Récupérer les catégories
     categories = Category.objects.all()
+    
+    # Récupérer les produits par catégorie et les mélanger
+    all_products = []
+    for category in categories:
+        category_products = list(Product.objects.filter(
+            sold_out=False,
+            category=category
+        ).select_related('category').prefetch_related('images')[:3])
+        all_products.extend(category_products)
+    
+    # Mélanger les produits
+    random.shuffle(all_products)
+    
+    # Prendre les 6 premiers produits mélangés
+    products = all_products[:6]
+    
     context = {
         'products': products,
         'categories': categories,
@@ -117,6 +136,9 @@ def index(request):
 
 def shop(request):
     """Page boutique avec tous les produits"""
+    from django.db.models import Count
+    import random
+    
     products = Product.objects.filter(sold_out=False).select_related('category').prefetch_related('images', 'sizes')
     categories = Category.objects.annotate(product_count=Count('products'))
     
@@ -161,6 +183,33 @@ def shop(request):
         products = products.order_by('name')
     elif sort == 'newest':
         products = products.order_by('-created_at')
+    else:
+        # Par défaut: mélanger par catégorie si pas de catégorie filtrée ou pas de tri spécifique
+        if not category_filter or category_filter == 'all':
+            # Récupérer tous les produits et les mélanger par catégorie
+            products_list = list(products)
+            
+            # Grouper par catégorie
+            products_by_category = {}
+            for product in products_list:
+                cat_id = product.category_id
+                if cat_id not in products_by_category:
+                    products_by_category[cat_id] = []
+                products_by_category[cat_id].append(product)
+            
+            # Mélanger chaque catégorie et recombiner
+            all_products = []
+            for cat_id in sorted(products_by_category.keys()):
+                cat_products = products_by_category[cat_id]
+                random.shuffle(cat_products)
+                all_products.extend(cat_products)
+            
+            products = all_products
+        else:
+            # Si une catégorie est filtrée, mélanger les produits de cette catégorie
+            products_list = list(products)
+            random.shuffle(products_list)
+            products = products_list
 
     # Pagination - 12 produits par page
     paginator = Paginator(products, 12)
