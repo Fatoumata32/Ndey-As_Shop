@@ -76,7 +76,7 @@ import json
 import logging
 import urllib.parse
 
-from .models import Product, Category, Cart, CartItem, Order, OrderItem, Contact, ProductImage, Size, ProductReview
+from .models import Product, Category, Cart, CartItem, Order, OrderItem, Contact, ProductImage, Size, ProductReview, PageView
 from .forms import ProductForm, CategoryForm, ProductImageForm
 
 logger = logging.getLogger(__name__)
