@@ -256,7 +256,6 @@ class SizeAdmin(admin.ModelAdmin):
     search_fields = ['name']
     ordering = ['name']
 
-@admin.register(PageView)
 class PageViewAdmin(admin.ModelAdmin):
     list_display = ['page_url', 'user_display', 'ip_address', 'timestamp']
     list_filter = ['timestamp', 'page_url']
@@ -275,3 +274,6 @@ class PageViewAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
+
+# PageView is not registered in admin site - use admin_dashboard instead
+# admin.site.register(PageView, PageViewAdmin)
