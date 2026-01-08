@@ -214,25 +214,190 @@
         color: #fff !important;
     }
 
+    /* Mobile-specific improvements */
+    @media (max-width: 576px) {
+        .product-actions {
+            opacity: 1 !important;
+        }
+
+        .product-card:hover .product-image img {
+            transform: none;
+        }
+    }
+
+    /* Container responsive */
+    .container-fluid {
+        padding-left: var(--bs-gutter-x, 0.75rem);
+        padding-right: var(--bs-gutter-x, 0.75rem);
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
+        .hero {
+            min-height: 500px;
+            height: 80vh;
+        }
+
+        .hero-content {
+            padding: 1.5rem;
+            justify-content: flex-end;
+            padding-bottom: 3rem;
+        }
+
         .hero-content h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            letter-spacing: 3px;
         }
 
         .hero-content h2 {
-            font-size: 2rem;
+            font-size: 1.5rem;
+            padding: 8px 15px;
+            margin-bottom: 1rem;
         }
 
         .hero-content p {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
         }
 
         .btn-hero {
-            padding: 12px 30px;
-            font-size: 1rem;
+            padding: 12px 25px;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            border-radius: 40px;
+        }
+
+        .btn-hero:hover {
+            transform: translateY(-3px) scale(1.03);
         }
     }
+
+    @media (max-width: 576px) {
+        .hero {
+            min-height: 400px;
+            height: 70vh;
+        }
+
+        .hero-content {
+            padding: 1rem;
+            padding-bottom: 2rem;
+        }
+
+        .hero-content h1 {
+            font-size: 2rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .hero-content h2 {
+            font-size: 1.2rem;
+            padding: 6px 12px;
+            margin-bottom: 0.8rem;
+        }
+
+        .hero-content p {
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            max-width: 90%;
+        }
+
+        .btn-hero {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            border: 3px solid #d81b60;
+        }
+
+        /* Search Section Mobile */
+        .search-form .input-group {
+            flex-direction: column;
+        }
+
+        .search-form .form-control {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 0;
+        }
+
+        .search-form .btn {
+            border-radius: 0 0 10px 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        /* Product Cards Mobile */
+        .col-6 {
+            padding: 0.5rem !important;
+        }
+
+        .product-image {
+            height: 150px;
+        }
+
+        .product-card {
+            margin: 0;
+        }
+
+        .product-card .card-body {
+            padding: 0.75rem;
+        }
+
+        .product-card h5 {
+            font-size: 0.9rem;
+            margin: 0.25rem 0;
+        }
+
+        .product-card .text-muted {
+            font-size: 0.75rem;
+        }
+
+        .product-card .h5 {
+            font-size: 1rem;
+        }
+
+        .product-actions .btn {
+            font-size: 0.75rem;
+            padding: 0.4rem 0.6rem;
+        }
+
+        .product-actions .btn .fa {
+            margin-right: 0.25rem;
+        }
+
+        /* Newsletter Mobile */
+        .py-5 {
+            padding: 2rem 0 !important;
+        }
+
+        form.d-flex {
+            flex-direction: column;
+            gap: 0.5rem !important;
+        }
+
+        form.d-flex input,
+        form.d-flex button {
+            width: 100%;
+            font-size: 0.9rem;
+            padding: 0.75rem;
+        }
+
+        /* Featured Products Section */
+        .display-5 {
+            font-size: 1.8rem;
+        }
+
+        .lead {
+            font-size: 0.95rem;
+        }
+
+        .mb-5 {
+            margin-bottom: 1.5rem !important;
+        }
+    }
+
 </style>
 {% endblock %}
 
@@ -258,30 +423,34 @@
 
 
 <!-- Search Section -->
-<section id="search" class="py-5 bg-light">
-    <div class="container">
-        <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="display-5 fw-bold">Rechercher</h2>
-            <p class="lead text-muted">Trouvez rapidement vos produits</p>
-        </div>
-        <div class="row justify-content-center">
-            <div class="col-lg-8 col-md-10" data-aos="zoom-in">
-                <form action="{% url 'shop:shop' %}" method="get" class="search-form">
-                    <div class="input-group input-group-lg shadow-sm">
-                        <input type="text"
-                               name="q"
-                               class="form-control"
-                               placeholder="Rechercher un produit, une marque, une catégorie..."
-                               aria-label="Rechercher">
-                        <button class="btn btn-orange px-4" type="submit">
-                            <i class="fas fa-search me-2"></i>Rechercher
-                        </button>
+<section id="search" class="py-4 py-md-5 bg-light">
+    <div class="container-fluid px-3 px-md-0">
+        <div class="container">
+            <div class="text-center mb-4 mb-md-5" data-aos="fade-up">
+                <h2 class="display-5 fw-bold mb-2">Rechercher</h2>
+                <p class="lead text-muted">Trouvez rapidement vos produits</p>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-12 col-sm-11 col-md-10 col-lg-8" data-aos="zoom-in">
+                    <form action="{% url 'shop:shop' %}" method="get" class="search-form">
+                        <div class="input-group input-group-lg shadow-sm">
+                            <input type="text"
+                                   name="q"
+                                   class="form-control"
+                                   placeholder="Rechercher un produit..."
+                                   aria-label="Rechercher">
+                            <button class="btn btn-orange px-3 px-md-4" type="submit">
+                                <i class="fas fa-search me-1 me-md-2"></i>
+                                <span class="d-none d-sm-inline">Rechercher</span>
+                                <span class="d-inline d-sm-none">OK</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-2 mt-md-3">
+                        <small class="text-muted d-block" style="font-size: 0.8rem;">
+                            Ex: "Robe", "Boubou", "Accessoires"
+                        </small>
                     </div>
-                </form>
-                <div class="text-center mt-3">
-                    <small class="text-muted">
-                        Exemple: "Robe", "Boubou", "Accessoires"...
-                    </small>
                 </div>
             </div>
         </div>
@@ -289,113 +458,117 @@
 </section>
 
 <!-- Featured Products -->
-<section class="py-5">
-    <div class="container">
-        <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="display-5 fw-bold">Tendances</h2>
-            <p class="lead text-muted">Nos best-sellers</p>
-        </div>
-        <div class="row g-4">
-            {% for product in products %}
-            <div class="col-lg-4 col-md-6 col-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
-                <div class="product-card h-100">
-                    <div class="card border-0 shadow-sm h-100">
-                        <!-- Product Image -->
-                        <div class="product-image position-relative overflow-hidden" style="cursor: pointer;" onclick="window.location.href='{% url 'shop:product_detail' product.id %}'">
-                            {% if product.primary_image %}
-                            <img src="{{ product.primary_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                            {% else %}
-                            <img src="{% static 'shop/img/placeholder.jpg' %}" class="card-img-top" alt="{{ product.name }}">
-                            {% endif %}
-
-                            <!-- Badges -->
-                            <div class="product-badges position-absolute top-0 start-0 p-2">
-                                {% if product.is_new %}
-                                <span class="badge bg-success mb-1">Nouveau</span><br>
+<section class="py-4 py-md-5">
+    <div class="container-fluid px-3 px-md-0">
+        <div class="container">
+            <div class="text-center mb-4 mb-md-5" data-aos="fade-up">
+                <h2 class="display-5 fw-bold mb-2">Tendances</h2>
+                <p class="lead text-muted">Nos best-sellers</p>
+            </div>
+            <div class="row g-2 g-md-3 g-lg-4">
+                {% for product in products %}
+                <div class="col-6 col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter }}00">
+                    <div class="product-card h-100">
+                        <div class="card border-0 shadow-sm h-100">
+                            <!-- Product Image -->
+                            <div class="product-image position-relative overflow-hidden" style="cursor: pointer;" onclick="window.location.href='{% url 'shop:product_detail' product.id %}'">
+                                {% if product.primary_image %}
+                                <img src="{{ product.primary_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                                {% else %}
+                                <img src="{% static 'shop/img/placeholder.jpg' %}" class="card-img-top" alt="{{ product.name }}">
                                 {% endif %}
-                                {% if product.on_sale and product.discount_percent %}
-                                <span class="badge bg-danger">-{{ product.discount_percent }}%</span>
-                                {% endif %}
-                            </div>
 
-                            <!-- Quick Actions -->
-                            <div class="product-actions position-absolute bottom-0 w-100 p-3 bg-white bg-opacity-90">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <a href="{% url 'shop:product_detail' product.id %}" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-eye"></i> Voir
-                                    </a>
-                                    <button class="btn btn-sm btn-orange add-to-cart" data-product-id="{{ product.id }}">
-                                        <i class="fas fa-cart-plus"></i> Ajouter
-                                    </button>
+                                <!-- Badges -->
+                                <div class="product-badges position-absolute top-0 start-0 p-2">
+                                    {% if product.is_new %}
+                                    <span class="badge bg-success mb-1" style="font-size: 0.7rem;">Nouveau</span><br>
+                                    {% endif %}
+                                    {% if product.on_sale and product.discount_percent %}
+                                    <span class="badge bg-danger" style="font-size: 0.7rem;">-{{ product.discount_percent }}%</span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Quick Actions -->
+                                <div class="product-actions position-absolute bottom-0 w-100 p-2 bg-white bg-opacity-90">
+                                    <div class="d-flex justify-content-between align-items-center gap-1">
+                                        <a href="{% url 'shop:product_detail' product.id %}" class="btn btn-sm btn-outline-danger flex-grow-1 text-truncate">
+                                            <i class="fas fa-eye"></i> <span class="d-none d-sm-inline">Voir</span>
+                                        </a>
+                                        <button class="btn btn-sm btn-orange add-to-cart flex-grow-1 text-truncate" data-product-id="{{ product.id }}">
+                                            <i class="fas fa-cart-plus"></i> <span class="d-none d-sm-inline">Ajouter</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Product Details -->
-                        <div class="card-body">
-                            <p class="text-muted small mb-1">{{ product.category.name }}</p>
-                            <h5 class="card-title">{{ product.name }}</h5>
+                            <!-- Product Details -->
+                            <div class="card-body p-2 p-md-3">
+                                <p class="text-muted small mb-1" style="font-size: 0.75rem;">{{ product.category.name }}</p>
+                                <h5 class="card-title" style="font-size: 0.9rem; line-height: 1.2;">{{ product.name }}</h5>
 
-                            <!-- Rating -->
-                            <div class="mb-2">
-                                <small class="text-warning">
-                                    {% with avg_rating=product.get_average_rating total_reviews=product.get_rating_count %}
-                                    {% for i in "12345" %}
-                                        {% if forloop.counter <= avg_rating %}
-                                        <i class="fas fa-star"></i>
-                                        {% elif forloop.counter|add:"-0.5" <= avg_rating %}
-                                        <i class="fas fa-star-half-alt"></i>
-                                        {% else %}
-                                        <i class="far fa-star"></i>
-                                        {% endif %}
-                                    {% endfor %}
-                                    <span class="text-muted">({{ total_reviews }})</span>
-                                    {% endwith %}
-                                </small>
-                            </div>
+                                <!-- Rating -->
+                                <div class="mb-2">
+                                    <small class="text-warning" style="font-size: 0.7rem;">
+                                        {% with avg_rating=product.get_average_rating total_reviews=product.get_rating_count %}
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= avg_rating %}
+                                            <i class="fas fa-star"></i>
+                                            {% elif forloop.counter|add:"-0.5" <= avg_rating %}
+                                            <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                            <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="text-muted">({{ total_reviews }})</span>
+                                        {% endwith %}
+                                    </small>
+                                </div>
 
-                            <!-- Price -->
-                            <div class="d-flex align-items-center">
-                                {% if product.on_sale %}
-                                <span class="h5 mb-0" style="color: #d81b60;">{{ product.sale_price }} FCFA</span>
-                                <span class="text-muted text-decoration-line-through ms-2">{{ product.price }} FCFA</span>
-                                {% else %}
-                                <span class="h5 mb-0" style="color: #d81b60;">{{ product.price }} FCFA</span>
-                                {% endif %}
+                                <!-- Price -->
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if product.on_sale %}
+                                    <span style="color: #d81b60; font-weight: bold; font-size: 0.95rem;">{{ product.sale_price }} FCFA</span>
+                                    <span class="text-muted text-decoration-line-through" style="font-size: 0.8rem;">{{ product.price }}</span>
+                                    {% else %}
+                                    <span style="color: #d81b60; font-weight: bold; font-size: 0.95rem;">{{ product.price }} FCFA</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                {% empty %}
+                <div class="col-12 text-center">
+                    <p class="text-muted">Aucun produit disponible pour le moment</p>
+                </div>
+                {% endfor %}
             </div>
-            {% empty %}
-            <div class="col-12 text-center">
-                <p class="text-muted">Aucun produit disponible pour le moment</p>
-            </div>
-            {% endfor %}
-        </div>
 
-        <!-- View All Products Button -->
-        <div class="text-center mt-5">
-            <a href="{% url 'shop:shop' %}" class="btn btn-orange btn-lg px-5 rounded-pill">
-                Voir Tous les Produits <i class="fas fa-arrow-right ms-2"></i>
-            </a>
+            <!-- View All Products Button -->
+            <div class="text-center mt-4 mt-md-5">
+                <a href="{% url 'shop:shop' %}" class="btn btn-orange btn-lg px-4 rounded-pill" style="font-size: 0.95rem;">
+                    Voir Tous les Produits <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
         </div>
     </div>
 </section>
 
 <!-- Newsletter Section -->
-<section class="py-5 text-white" style="background: linear-gradient(135deg, #d81b60 0%, #ad1457 100%);">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6" data-aos="fade-right">
-                <h3 class="mb-3">Newsletter</h3>
-                <p>Offres et nouveautés exclusives</p>
-            </div>
-            <div class="col-lg-6" data-aos="fade-left">
-                <form class="d-flex gap-2">
-                    <input type="email" class="form-control form-control-lg" placeholder="Votre email">
-                    <button type="submit" class="btn btn-light btn-lg px-4">S'inscrire</button>
-                </form>
+<section class="py-4 py-md-5 text-white" style="background: linear-gradient(135deg, #d81b60 0%, #ad1457 100%);">
+    <div class="container-fluid px-3 px-md-0">
+        <div class="container">
+            <div class="row align-items-center g-3">
+                <div class="col-12 col-md-6 text-center text-md-start" data-aos="fade-right">
+                    <h3 class="mb-2">Newsletter</h3>
+                    <p class="mb-3 mb-md-0">Offres et nouveautés exclusives</p>
+                </div>
+                <div class="col-12 col-md-6" data-aos="fade-left">
+                    <form class="d-flex gap-2">
+                        <input type="email" class="form-control form-control-lg" placeholder="Votre email" required>
+                        <button type="submit" class="btn btn-light btn-lg px-3 px-md-4">S'inscrire</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
