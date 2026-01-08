@@ -462,27 +462,19 @@
                     </thead>
                     <tbody>
                         {% if top_pages %}
-                            {% with total=total_views %}
-                                {% for page in top_pages %}
-                                <tr>
-                                    <td style="word-break: break-word; font-size: 0.85rem;">
-                                        <a href="{{ page.page_url }}" target="_blank" style="color: #d81b60; text-decoration: none;">
-                                            {{ page.page_url|truncatewords:3 }}
-                                        </a>
-                                    </td>
-                                    <td><strong>{{ page.count }}</strong></td>
-                                    <td>
-                                        <small>
-                                            {% if total > 0 %}
-                                                {{ page.count|mul:100|div:total|floatformat:1 }}%
-                                            {% else %}
-                                                0%
-                                            {% endif %}
-                                        </small>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            {% endwith %}
+                            {% for page in top_pages %}
+                            <tr>
+                                <td style="word-break: break-word; font-size: 0.85rem;">
+                                    <a href="{{ page.page_url }}" target="_blank" style="color: #d81b60; text-decoration: none;">
+                                        {{ page.page_url|truncatewords:3 }}
+                                    </a>
+                                </td>
+                                <td><strong>{{ page.count }}</strong></td>
+                                <td>
+                                    <small>{{ page.percentage }}%</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
                         {% else %}
                         <tr>
                             <td colspan="3" style="text-align: center; padding: 2rem; color: #999;">Aucune donnée disponible</td>

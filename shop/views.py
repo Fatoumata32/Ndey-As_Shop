@@ -1299,9 +1299,23 @@ def admin_dashboard(request):
     week_views = PageView.objects.filter(timestamp__gte=this_week_start).count()
     
     # Top pages
-    top_pages = PageView.objects.values('page_url').annotate(
+    top_pages_raw = PageView.objects.values('page_url').annotate(
         count=Count('id')
     ).order_by('-count')[:10]
+    
+    # Calculate percentages in view
+    total_views_count = PageView.objects.count()
+    top_pages = []
+    for page in top_pages_raw:
+        if total_views_count > 0:
+            percentage = round((page['count'] / total_views_count) * 100, 1)
+        else:
+            percentage = 0
+        top_pages.append({
+            'page_url': page['page_url'],
+            'count': page['count'],
+            'percentage': percentage
+        })
     
     # Views by day (last 7 days)
     views_by_day = []
