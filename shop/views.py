@@ -1228,6 +1228,10 @@ def reset_password(request):
 @login_required
 def admin_dashboard(request):
     """Dashboard admin personnalisé"""
+    from django.db.models import Count
+    from datetime import timedelta, datetime
+    from django.utils import timezone
+    
     total_products = Product.objects.count()
     total_categories = Category.objects.count()
     total_orders = Order.objects.count()
@@ -1237,6 +1241,33 @@ def admin_dashboard(request):
     recent_orders = Order.objects.order_by('-created_at')[:5]
     categories = Category.objects.all()
     
+    # Traffic analytics
+    today = timezone.now().date()
+    this_week_start = timezone.now() - timedelta(days=7)
+    
+    total_views = PageView.objects.count()
+    today_views = PageView.objects.filter(timestamp__date=today).count()
+    week_views = PageView.objects.filter(timestamp__gte=this_week_start).count()
+    
+    # Top pages
+    top_pages = PageView.objects.values('page_url').annotate(
+        count=Count('id')
+    ).order_by('-count')[:10]
+    
+    # Views by day (last 7 days)
+    views_by_day = []
+    for i in range(6, -1, -1):
+        date = (timezone.now() - timedelta(days=i)).date()
+        count = PageView.objects.filter(timestamp__date=date).count()
+        views_by_day.append({
+            'date': date.strftime('%a'),
+            'count': count
+        })
+    
+    # Unique visitors
+    unique_visitors = PageView.objects.values('ip_address').distinct().count()
+    unique_authenticated = PageView.objects.filter(user__isnull=False).values('user').distinct().count()
+    
     context = {
         'total_products': total_products,
         'total_categories': total_categories,
@@ -1245,6 +1276,14 @@ def admin_dashboard(request):
         'products': recent_products,
         'orders': recent_orders,
         'categories': categories,
+        # Traffic data
+        'total_views': total_views,
+        'today_views': today_views,
+        'week_views': week_views,
+        'top_pages': top_pages,
+        'views_by_day': views_by_day,
+        'unique_visitors': unique_visitors,
+        'unique_authenticated': unique_authenticated,
     }
     
     return render(request, 'shop/admin/dashboard.html', context)

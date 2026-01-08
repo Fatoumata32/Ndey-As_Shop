@@ -371,3 +371,25 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.product.name}"
+
+
+class PageView(models.Model):
+    """Modèle pour tracker le trafic du site"""
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='page_views')
+    page_url = models.CharField(max_length=500)
+    page_title = models.CharField(max_length=200, blank=True, null=True)
+    referrer = models.CharField(max_length=500, blank=True, null=True)
+    user_agent = models.CharField(max_length=500, blank=True, null=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    session_id = models.CharField(max_length=100, blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['page_url', '-timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.page_url} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"

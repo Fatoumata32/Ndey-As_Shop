@@ -14,11 +14,8 @@ def discount_percent(original_price, sale_price):
             if val is None:
                 return None
             s = str(val).strip()
-            # remove non-breaking spaces and normal spaces
             s = s.replace('\u00A0', '').replace(' ', '')
-            # replace comma with dot for decimals
             s = s.replace(',', '.')
-            # strip any other non-numeric characters except dot and minus
             s = re.sub(r"[^0-9.\-]", "", s)
             if s in ('', '.', '-', '-.'):
                 return None
@@ -80,7 +77,6 @@ def cart_count(request):
         if cart:
             return cart.items.count()
     else:
-        # Pour les utilisateurs anonymes, utiliser la session
         session_key = request.session.session_key
         if session_key:
             cart = Cart.objects.filter(session_key=session_key).first()
@@ -96,7 +92,6 @@ def cart_item_count(request):
         if cart:
             return cart.items.count()
     else:
-        # Pour les utilisateurs anonymes, utiliser la session
         session_key = request.session.session_key
         if session_key:
             cart = Cart.objects.filter(session_key=session_key).first()
@@ -136,3 +131,23 @@ def empty_stars(value):
         return 5 - full_stars - half_star
     except (ValueError, TypeError):
         return 5
+
+
+@register.filter
+def mul(value, arg):
+    """Multiplie deux valeurs"""
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return 0
+
+
+@register.filter
+def div(value, arg):
+    """Divise deux valeurs"""
+    try:
+        if float(arg) == 0:
+            return 0
+        return float(value) / float(arg)
+    except (ValueError, TypeError):
+        return 0

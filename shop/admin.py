@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.db.models import Count, Sum, Avg
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import Category, Product, ProductImage, ProductVideo, Cart, CartItem, Order, OrderItem, Contact, Size
+from .models import Category, Product, ProductImage, ProductVideo, Cart, CartItem, Order, OrderItem, Contact, Size, PageView
 
 # Admin Site Configuration
 admin.site.site_header = "Ndeyas Shop Administration"
@@ -255,3 +255,23 @@ class SizeAdmin(admin.ModelAdmin):
     list_display = ['name']
     search_fields = ['name']
     ordering = ['name']
+
+@admin.register(PageView)
+class PageViewAdmin(admin.ModelAdmin):
+    list_display = ['page_url', 'user_display', 'ip_address', 'timestamp']
+    list_filter = ['timestamp', 'page_url']
+    search_fields = ['page_url', 'ip_address', 'user__username']
+    readonly_fields = ['user', 'page_url', 'page_title', 'referrer', 'user_agent', 'ip_address', 'session_id', 'timestamp']
+    ordering = ['-timestamp']
+    
+    def user_display(self, obj):
+        if obj.user:
+            return format_html('<strong>{}</strong>', obj.user.username)
+        return '<em>Anonymous</em>'
+    user_display.short_description = 'Utilisateur'
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
