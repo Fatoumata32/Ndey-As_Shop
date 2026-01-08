@@ -112,20 +112,16 @@ def index(request):
     # Récupérer les catégories
     categories = Category.objects.all()
     
-    # Récupérer les produits par catégorie et les mélanger
-    all_products = []
-    for category in categories:
-        category_products = list(Product.objects.filter(
-            sold_out=False,
-            category=category
-        ).select_related('category').prefetch_related('images')[:5])
-        all_products.extend(category_products)
+    # Récupérer TOUS les produits disponibles
+    all_products = list(Product.objects.filter(
+        sold_out=False
+    ).select_related('category').prefetch_related('images'))
     
-    # Mélanger les produits
+    # Mélanger TOUS les produits de façon aléatoire
     random.shuffle(all_products)
     
-    # Prendre les 18 premiers produits mélangés (3 rangées de 6)
-    products = all_products[:18]
+    # Prendre 6 produits au hasard
+    products = all_products[:6]
     
     context = {
         'products': products,
