@@ -180,32 +180,10 @@ def shop(request):
     elif sort == 'newest':
         products = products.order_by('-created_at')
     else:
-        # Par défaut: mélanger par catégorie si pas de catégorie filtrée ou pas de tri spécifique
-        if not category_filter or category_filter == 'all':
-            # Récupérer tous les produits et les mélanger par catégorie
-            products_list = list(products)
-            
-            # Grouper par catégorie
-            products_by_category = {}
-            for product in products_list:
-                cat_id = product.category_id
-                if cat_id not in products_by_category:
-                    products_by_category[cat_id] = []
-                products_by_category[cat_id].append(product)
-            
-            # Mélanger chaque catégorie et recombiner
-            all_products = []
-            for cat_id in sorted(products_by_category.keys()):
-                cat_products = products_by_category[cat_id]
-                random.shuffle(cat_products)
-                all_products.extend(cat_products)
-            
-            products = all_products
-        else:
-            # Si une catégorie est filtrée, mélanger les produits de cette catégorie
-            products_list = list(products)
-            random.shuffle(products_list)
-            products = products_list
+        # Mélange aléatoire complet de tous les produits (comme page d'accueil)
+        products_list = list(products)
+        random.shuffle(products_list)
+        products = products_list
 
     # Pagination - 12 produits par page
     paginator = Paginator(products, 12)
