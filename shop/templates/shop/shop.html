@@ -192,9 +192,9 @@
 <!-- Hero Section Shop -->
 <section class="shop-hero">
     <div class="shop-hero-slideshow">
-        <div class="shop-hero-slide active" style="background-image: url('{% static "shop/img/SHOP-BG2.jpg" %}');"></div>
-        <div class="shop-hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG3.jpg" %}');"></div>
-        <div class="shop-hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG4.jpg" %}');"></div>
+        <div class="shop-hero-slide active" data-bg="{% static 'shop/img/SHOP-BG2.jpg' %}"></div>
+        <div class="shop-hero-slide" data-bg="{% static 'shop/img/SHOP-BG3.jpg' %}"></div>
+        <div class="shop-hero-slide" data-bg="{% static 'shop/img/SHOP-BG4.jpg' %}"></div>
     </div>
     <div class="container">
         <div class="shop-hero-content">
@@ -355,12 +355,16 @@
                                     <a href="{% url 'shop:product_detail' product.id %}">
                                         {% if product.primary_image %}
                                         <img src="{{ product.primary_image.image.url }}"
-                                             class="card-img-top"
-                                             alt="{{ product.name }}">
+                                            class="card-img-top"
+                                            alt="{{ product.name }}"
+                                            loading="lazy" decoding="async" fetchpriority="low"
+                                            width="400" height="400">
                                         {% else %}
                                         <img src="{% static 'shop/img/placeholder.jpg' %}"
-                                             class="card-img-top"
-                                             alt="{{ product.name }}">
+                                            class="card-img-top"
+                                            alt="{{ product.name }}"
+                                            loading="lazy" decoding="async" fetchpriority="low"
+                                            width="400" height="400">
                                         {% endif %}
                                     </a>
 
@@ -576,16 +580,27 @@ let currentShopSlide = 0;
 const shopSlides = document.querySelectorAll('.shop-hero-slide');
 const totalShopSlides = shopSlides.length;
 
+function ensureShopHeroBg(el) {
+    if (!el) return;
+    const bg = el.getAttribute('data-bg');
+    if (bg && (!el.style.backgroundImage || el.style.backgroundImage === '')) {
+        el.style.backgroundImage = `url('${bg}')`;
+    }
+}
+
 function nextShopSlide() {
     if (shopSlides.length > 0) {
         shopSlides[currentShopSlide].classList.remove('active');
         currentShopSlide = (currentShopSlide + 1) % totalShopSlides;
+        ensureShopHeroBg(shopSlides[currentShopSlide]);
         shopSlides[currentShopSlide].classList.add('active');
     }
 }
 
 // Change de slide toutes les 5 secondes
 if (shopSlides.length > 1) {
+    // Assure que la première image est chargée au démarrage
+    ensureShopHeroBg(shopSlides[currentShopSlide]);
     setInterval(nextShopSlide, 5000);
 }
 </script>

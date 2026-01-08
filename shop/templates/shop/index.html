@@ -405,10 +405,10 @@
 <!-- Hero Section avec Slideshow -->
 <section class="hero">
     <div class="hero-slideshow">
-        <div class="hero-slide active" style="background-image: url('{% static "shop/img/SHOP-BG1.jpg" %}');"></div>
-        <div class="hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG2.jpg" %}');"></div>
-        <div class="hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG3.jpg" %}');"></div>
-        <div class="hero-slide" style="background-image: url('{% static "shop/img/SHOP-BG4.jpg" %}');"></div>
+        <div class="hero-slide active" data-bg="{% static 'shop/img/SHOP-BG1.jpg' %}"></div>
+        <div class="hero-slide" data-bg="{% static 'shop/img/SHOP-BG2.jpg' %}"></div>
+        <div class="hero-slide" data-bg="{% static 'shop/img/SHOP-BG3.jpg' %}"></div>
+        <div class="hero-slide" data-bg="{% static 'shop/img/SHOP-BG4.jpg' %}"></div>
     </div>
     <div class="container">
         <div class="hero-content">
@@ -472,11 +472,19 @@
                         <div class="card border-0 shadow-sm h-100">
                             <!-- Product Image -->
                             <div class="product-image position-relative overflow-hidden" style="cursor: pointer;" onclick="window.location.href='{% url 'shop:product_detail' product.id %}'">
-                                {% if product.primary_image %}
-                                <img src="{{ product.primary_image.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                                {% else %}
-                                <img src="{% static 'shop/img/placeholder.jpg' %}" class="card-img-top" alt="{{ product.name }}">
-                                {% endif %}
+                                  {% if product.primary_image %}
+                                  <img src="{{ product.primary_image.image.url }}"
+                                      class="card-img-top"
+                                      alt="{{ product.name }}"
+                                      loading="lazy" decoding="async" fetchpriority="low"
+                                      width="400" height="400">
+                                  {% else %}
+                                  <img src="{% static 'shop/img/placeholder.jpg' %}"
+                                      class="card-img-top"
+                                      alt="{{ product.name }}"
+                                      loading="lazy" decoding="async" fetchpriority="low"
+                                      width="400" height="400">
+                                  {% endif %}
 
                                 <!-- Badges -->
                                 <div class="product-badges position-absolute top-0 start-0 p-2">
@@ -582,13 +590,24 @@
     const slides = document.querySelectorAll('.hero-slide');
     const totalSlides = slides.length;
 
+    function ensureHeroBg(el) {
+        if (!el) return;
+        const bg = el.getAttribute('data-bg');
+        if (bg && (!el.style.backgroundImage || el.style.backgroundImage === '')) {
+            el.style.backgroundImage = `url('${bg}')`;
+        }
+    }
+
     function nextSlide() {
         slides[currentSlide].classList.remove('active');
         currentSlide = (currentSlide + 1) % totalSlides;
+        ensureHeroBg(slides[currentSlide]);
         slides[currentSlide].classList.add('active');
     }
 
     // Change de slide toutes les 5 secondes
+    // Assure que l'image du premier slide est chargée au démarrage
+    ensureHeroBg(slides[currentSlide]);
     setInterval(nextSlide, 5000);
 
     // Add to cart functionality
