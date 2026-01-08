@@ -32,7 +32,7 @@
                             <thead>
                                 <tr>
                                     <th>Produit</th>
-                                    <th>Prix</th>
+                                    <th class="price-col">Prix</th>
                                     <th>Quantité</th>
                                     <th>Total</th>
                                     <th></th>
@@ -67,7 +67,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td class="price-col">
                                         {% if item.product.on_sale and item.product.sale_price %}
                                         <span class="text-muted text-decoration-line-through small">
                                             {{ item.product.price }} FCFA
@@ -237,6 +237,25 @@
 
 .cart-item:hover {
     background-color: #f8f9fa;
+}
+
+@media (max-width: 576px) {
+    .price-col {
+        display: none;
+    }
+
+    .cart-item .img-thumbnail {
+        width: 60px;
+        height: 60px;
+    }
+
+    .cart-item h6 {
+        font-size: 0.95rem;
+    }
+
+    .cart-item .input-group {
+        width: 110px;
+    }
 }
 </style>
 
