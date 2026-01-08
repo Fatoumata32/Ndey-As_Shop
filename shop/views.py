@@ -118,14 +118,14 @@ def index(request):
         category_products = list(Product.objects.filter(
             sold_out=False,
             category=category
-        ).select_related('category').prefetch_related('images')[:3])
+        ).select_related('category').prefetch_related('images')[:5])
         all_products.extend(category_products)
     
     # Mélanger les produits
     random.shuffle(all_products)
     
-    # Prendre les 6 premiers produits mélangés
-    products = all_products[:6]
+    # Prendre les 18 premiers produits mélangés (3 rangées de 6)
+    products = all_products[:18]
     
     context = {
         'products': products,
