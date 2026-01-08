@@ -38,6 +38,10 @@ CACHES = {
     }
 }
 
+# Use cache-backed sessions for better performance and reliability
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
 # Logging
 LOGGING = {
     'version': 1,
